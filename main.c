@@ -29,12 +29,13 @@ int main (void) {
 
   osKernelStart ();                         // start thread execution
 
-	sim900->startup(sim900);
 	while(1)
 	{
 		
-		 sim900->startup(sim900);
-		osDelay(1000);
+		sim900->startup(sim900);
+		osDelay(3000);
+		sim900->shutdown(sim900);
+		osDelay(3000);
 		
 	}
 }

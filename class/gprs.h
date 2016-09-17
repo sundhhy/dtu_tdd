@@ -6,6 +6,7 @@ CLASS(gprs_t)
 {
 	// public
 	void (*startup)( gprs_t *self);
+	void (*shutdown)( gprs_t *self);
 	
 };
 
