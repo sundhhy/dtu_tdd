@@ -19,7 +19,24 @@ gpio_pins	Gprs_powerkey =  {
 	GPIO_Pin_0
 };
 
-
+USART_InitTypeDef USART_InitStructure = {
+		9600,
+		USART_WordLength_8b,
+		USART_StopBits_1,
+		USART_Parity_No,
+		USART_Mode_Rx | USART_Mode_Tx,
+		USART_HardwareFlowControl_None,
+};
+USART_InitTypeDef Conf_GprsUsart = {
+		9600,
+		USART_WordLength_8b,
+		USART_StopBits_1,
+		USART_Parity_No,
+		USART_Mode_Rx | USART_Mode_Tx,
+		USART_HardwareFlowControl_None,
+		
+	
+};
 
 
 

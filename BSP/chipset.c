@@ -178,78 +178,78 @@ void GPIO_Configuration(void)
 }
 
 ///*! USART Configuration */
-//void USART_Configuration(void)
-//{
-//    USART_InitTypeDef USART_InitStructure;
+void USART_Configuration(void)
+{
+    USART_InitTypeDef USART_InitStructure;
 
-//    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitTypeDef GPIO_InitStructure;
 
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2|GPIO_Pin_4;        //tx
-//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-//    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2|GPIO_Pin_4;        //tx
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;                   //rx
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-//    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;                   //rx
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;                   //tx
-//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-//    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;                   //tx
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                  //rx
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-//    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                  //rx
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                   //tx
-//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-//    GPIO_Init(GPIOB, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;                   //tx
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;                  //rx
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-//    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8|GPIO_Pin_7;
-//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-//    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_5|GPIO_Pin_7;
-//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;                  //rx
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 
-//    USART_InitStructure.USART_BaudRate = 9600;
-//    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-//    USART_InitStructure.USART_StopBits = USART_StopBits_1;
-//    USART_InitStructure.USART_Parity = USART_Parity_No ;
-//    USART_InitStructure.USART_HardwareFlowControl =USART_HardwareFlowControl_None;
-//    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8|GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-//    /* Configure USART1 basic and asynchronous paramters */
-//    USART_Init(USART1, &USART_InitStructure);
-//    USART_Init(USART2, &USART_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_5|GPIO_Pin_7;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 
-//   
-//    USART_Init(USART3, &Conf_GprsUsart);
+    USART_InitStructure.USART_BaudRate = 9600;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No ;
+    USART_InitStructure.USART_HardwareFlowControl =USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
-//    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-////	USART_ITConfig(USART1, USART_IT_IDLE, ENABLE);
-//    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-////	USART_ITConfig(USART2, USART_IT_IDLE, ENABLE);
-//    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-//	USART_ITConfig(USART3, USART_IT_IDLE, ENABLE);
+    /* Configure USART1 basic and asynchronous paramters */
+    USART_Init(USART1, &USART_InitStructure);
+    USART_Init(USART2, &USART_InitStructure);
 
-//    /* Enable USART1 */
-//    USART_Cmd(USART1, ENABLE);
-//    USART_Cmd(USART2, ENABLE);
-//    USART_Cmd(USART3, ENABLE);
-//}
+
+   
+    USART_Init(USART3, &Conf_GprsUsart);
+
+    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+//	USART_ITConfig(USART1, USART_IT_IDLE, ENABLE);
+    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+//	USART_ITConfig(USART2, USART_IT_IDLE, ENABLE);
+    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(USART3, USART_IT_IDLE, ENABLE);
+
+    /* Enable USART1 */
+    USART_Cmd(USART1, ENABLE);
+    USART_Cmd(USART2, ENABLE);
+    USART_Cmd(USART3, ENABLE);
+}
 
 //void Init_TIM2(void)
 //{
