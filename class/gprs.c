@@ -24,7 +24,18 @@ void startup(gprs_t *self)
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	osDelay(100);
     GPIO_SetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	osDelay(3000);
+	osDelay(1100);
+    GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
+	
+}
+
+void shutdown(gprs_t *self)
+{
+	
+	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
+	osDelay(100);
+    GPIO_SetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
+	osDelay(1500);
     GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	
 }
@@ -39,8 +50,9 @@ void startup(gprs_t *self)
 
 
 
+
 CTOR(gprs_t)
 FUNCTION_SETTING(startup, startup);
-//FUNCTION_SETTING(destory, cmm_destory);
+FUNCTION_SETTING(shutdown, shutdown);
 
 END_CTOR

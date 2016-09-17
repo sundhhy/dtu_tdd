@@ -17,7 +17,7 @@ int main (void) {
 	
 	 
   // initialize peripherals here
-	RCC_Configuration();
+//	RCC_Configuration();
 	
 	NVIC_Configuration();
 	
@@ -33,7 +33,7 @@ int main (void) {
 	while(1)
 	{
 		
-		
+		 sim900->startup(sim900);
 		osDelay(1000);
 		
 	}
