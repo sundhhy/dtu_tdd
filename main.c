@@ -68,6 +68,7 @@ int main (void) {
 
   osKernelStart ();                         // start thread execution
 
+#ifdef TDD_GPRS_ONOFF
 	while(1)
 	{
 		
@@ -77,4 +78,14 @@ int main (void) {
 		osDelay(3000);
 		
 	}
+#endif
+	
+#ifdef TDD_GPRS_USART
+	while(1)
+	{
+		
+		
+	}
+	
+#endif
 }

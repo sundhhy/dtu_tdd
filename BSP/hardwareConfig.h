@@ -6,6 +6,8 @@
 
 #define	GPRS_COM			3			///< gprs模块使用的串口号	
 #define	DEBUG_COM			1
+#define GPRS_USART_RXBUF_SIZE		256
+
 
 #if GPRS_COM == 3
 #define GPRS_USART	USART3
@@ -30,6 +32,19 @@ typedef struct
 
 
 
+typedef struct 
+{
+	
+	DMA_Channel_TypeDef		*dma_base;
+	uint32_t		dma_number;		
+	uint32_t		dma_channel;
+	int 			dma_tx_irq;
+	uint32_t		dma_tx_flag;
+	uint32_t		dma_rx_flag;
+	
+}Dma_source;
+
+
 extern gpio_pins	Gprs_powerkey;
 
 
@@ -38,5 +53,8 @@ extern gpio_pins	Gprs_powerkey;
 
 extern USART_InitTypeDef USART_InitStructure;
 extern USART_InitTypeDef Conf_GprsUsart;
+extern Dma_source DMA_gprs_usart;
+extern char Gprs_usart_txbuf[64];
+extern char Gprs_usart_rxbuf[GPRS_USART_RXBUF_SIZE];
 
 #endif

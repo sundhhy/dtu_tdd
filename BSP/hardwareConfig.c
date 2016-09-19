@@ -14,6 +14,8 @@
 #include "hardwareConfig.h"
 
 
+char Gprs_usart_txbuf[64];
+char Gprs_usart_rxbuf[GPRS_USART_RXBUF_SIZE];
 gpio_pins	Gprs_powerkey =  {
 	GPIOB,
 	GPIO_Pin_0
@@ -37,6 +39,21 @@ USART_InitTypeDef Conf_GprsUsart = {
 		
 	
 };
+
+/** DMA通道的使用
+ *
+ */
+Dma_source DMA_gprs_usart = {
+	DMA1_Channel1,
+	1,					/// dma1
+	1,
+	DMA1_Channel1_IRQn,
+	DMA1_FLAG_TC1 | DMA1_FLAG_TE1,
+	DMA1_FLAG_GL3,
+};
+
+
+
 
 
 

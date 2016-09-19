@@ -16,7 +16,7 @@
 #include "stm32f10x_gpio.h"
 #include "hardwareConfig.h"
 #include "cmsis_os.h"  
-
+#include "debug.h"
 
 void startup(gprs_t *self)
 {
