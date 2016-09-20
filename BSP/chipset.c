@@ -150,74 +150,6 @@ void NVIC_Configuration(void)
     NVIC_Init(&NVIC_InitStructure);
 }
 
-void DMA_Uart_Init(void)
-
-{
-
-	DMA_InitTypeDef DMA_InitStructure;	
-
-    /* DMA clock enable */
-
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); // ??DMA1??
-
-   
-
-   
-
-//=DMA_Configuration==============================================================================//	
-	
-	
-/*--- LUMMOD_UART_Tx_DMA_Channel DMA Config ---*/
-
- 
-
-    DMA_Cmd(DMA_gprs_usart.dma_base, DISABLE);                           // 关闭DMA
-    DMA_DeInit(DMA_gprs_usart.dma_base);                                 // 恢复初始值
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&GPRS_USART->DR);// 外设地址
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)Gprs_usart_txbuf;        
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                      // 从内存到外设
-    DMA_InitStructure.DMA_BufferSize = 0;                    
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        // 外设地址不增加
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 // 内存地址增加
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据宽度1B
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址宽度1B
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // 单次传输模式
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
-    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
-    DMA_Init(DMA_gprs_usart.dma_base, &DMA_InitStructure);               // 
-
-    DMA_ClearFlag( DMA_gprs_usart.dma_tx_flag );                                 // 清楚标志
-
-	DMA_Cmd(DMA_gprs_usart.dma_base, DISABLE); // 
-
-    DMA_ITConfig(DMA_gprs_usart.dma_base, DMA_IT_TC, ENABLE);            // ????DMA????
-
-   
-
-/*--- LUMMOD_UART_Rx_DMA_Channel DMA Config ---*/
-
- 
-
-    DMA_Cmd(DMA_gprs_usart.dma_base, DISABLE);                           // 
-    DMA_DeInit(DMA_gprs_usart.dma_base);                                 //
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&GPRS_USART->DR);// ???????????
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)Gprs_usart_rxbuf;         // ??????????
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                      // ????????,????? -> ?????
-    DMA_InitStructure.DMA_BufferSize = GPRS_USART_RXBUF_SIZE;                     // ?????????????
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        // ??????????,??????DMA?????
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 // ???????????
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // ??????8?,1???
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // ??????8?,1???
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // ??????
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // ?????
-    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // ????????DMA??
-    DMA_Init(DMA_gprs_usart.dma_base, &DMA_InitStructure);               // ????
-    DMA_ClearFlag( DMA_gprs_usart.dma_rx_flag);                                 // ??DMA????
-    DMA_Cmd(DMA_gprs_usart.dma_base, ENABLE);                            // ????DMA??,??????
-
-   
-
-}
 
 
 ///*! GPIO Configuration */
@@ -311,17 +243,11 @@ void USART_Configuration(void)
     /* Configure USART1 basic and asynchronous paramters */
     USART_Init(USART1, &USART_InitStructure);
     USART_Init(USART2, &USART_InitStructure);
-
-
-   
-    USART_Init(USART3, &Conf_GprsUsart);
+    USART_Init(USART3, &USART_InitStructure);
 
     USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-//	USART_ITConfig(USART1, USART_IT_IDLE, ENABLE);
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-//	USART_ITConfig(USART2, USART_IT_IDLE, ENABLE);
     USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-	USART_ITConfig(USART3, USART_IT_IDLE, ENABLE);
 
     /* Enable USART1 */
     USART_Cmd(USART1, ENABLE);

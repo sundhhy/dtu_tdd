@@ -40,16 +40,18 @@ USART_InitTypeDef Conf_GprsUsart = {
 	
 };
 
-/** DMA通道的使用
+/** gprs uart DMA通道配置
  *
  */
 Dma_source DMA_gprs_usart = {
-	DMA1_Channel1,
-	1,					/// dma1
-	1,
-	DMA1_Channel1_IRQn,
-	DMA1_FLAG_TC1 | DMA1_FLAG_TE1,
+	DMA1_Channel2,
+	DMA1_FLAG_TC2 | DMA1_FLAG_TE2,
+	DMA1_Channel2_IRQn,
+	
+	DMA1_Channel3,
 	DMA1_FLAG_GL3,
+	DMA1_Channel3_IRQn,
+	
 };
 
 

@@ -35,13 +35,15 @@ typedef struct
 typedef struct 
 {
 	
-	DMA_Channel_TypeDef		*dma_base;
-	uint32_t		dma_number;		
-	uint32_t		dma_channel;
-	int 			dma_tx_irq;
+	DMA_Channel_TypeDef		*dma_tx_base;
 	uint32_t		dma_tx_flag;
-	uint32_t		dma_rx_flag;
+	int 				dma_tx_irq;
 	
+	DMA_Channel_TypeDef		*dma_rx_base;
+	uint32_t		dma_rx_flag;
+	int 				dma_rx_irq;
+	
+
 }Dma_source;
 
 

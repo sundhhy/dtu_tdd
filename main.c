@@ -7,7 +7,8 @@
 #include "chipset.h"
 #include "gprs.h"
 #include "hardwareConfig.h"
-
+#include "debug.h"
+#include "gprs_uart.h"
 
 #include "stm32f10x_usart.h"
 
@@ -40,12 +41,16 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
+#ifdef TDD_GPRS_USART
 
+char Test_buf[1024];
+#endif
 /*
  * main: initialize and start the system
  */
 int main (void) {
-	gprs_t *sim900 = gprs_t_new();;
+	gprs_t *sim900 = gprs_t_new();
+	int i = 0;
 	
   osKernelInitialize ();                    // initialize CMSIS-RTOS
 
@@ -56,8 +61,7 @@ int main (void) {
 	
 	NVIC_Configuration();
 	
-	GPIO_Configuration();
-	
+	GPIO_Configuration();	
 	USART_Configuration();
 //	
 	printf("DTU TDD start ...\r\n");
@@ -83,7 +87,12 @@ int main (void) {
 #ifdef TDD_GPRS_USART
 	while(1)
 	{
-		
+		i ++;
+		if( gprs_uart_test(Test_buf, 1024))
+		{
+			DPRINTF(" gprs uart test fail, the size is %d \r\n", i);
+			break;
+		}
 		
 	}
 	
