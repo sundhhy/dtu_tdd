@@ -36,12 +36,12 @@ typedef struct
 {
 	
 	DMA_Channel_TypeDef		*dma_tx_base;
-	uint32_t		dma_tx_flag;
-	int 				dma_tx_irq;
+	uint32_t				dma_tx_flag;
+	int 					dma_tx_irq;
 	
 	DMA_Channel_TypeDef		*dma_rx_base;
-	uint32_t		dma_rx_flag;
-	int 				dma_rx_irq;
+	uint32_t				dma_rx_flag;
+	int 					dma_rx_irq;
 	
 
 }Dma_source;

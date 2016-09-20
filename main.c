@@ -9,7 +9,8 @@
 #include "hardwareConfig.h"
 #include "debug.h"
 #include "gprs_uart.h"
-
+#include "sdhError.h"
+#include "string.h"
 #include "stm32f10x_usart.h"
 
 #include "stdio.h"
@@ -43,7 +44,7 @@ PUTCHAR_PROTOTYPE
 
 #ifdef TDD_GPRS_USART
 
-char Test_buf[1024];
+char Test_buf[512];
 #endif
 /*
  * main: initialize and start the system
@@ -64,14 +65,14 @@ int main (void) {
 	GPIO_Configuration();	
 	USART_Configuration();
 //	
-	printf("DTU TDD start ...\r\n");
+	printf(" DTU TDD start ...\r\n");
 	
 
   // create 'thread' functions that start executing,
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 
-  osKernelStart ();                         // start thread execution
-
+	osKernelStart ();                         // start thread execution
+	sim900->startup(sim900);
 #ifdef TDD_GPRS_ONOFF
 	while(1)
 	{
@@ -85,14 +86,17 @@ int main (void) {
 #endif
 	
 #ifdef TDD_GPRS_USART
+	gprs_uart_init();
 	while(1)
 	{
 		i ++;
-		if( gprs_uart_test(Test_buf, 1024))
-		{
-			DPRINTF(" gprs uart test fail, the size is %d \r\n", i);
-			break;
-		}
+		if( gprs_uart_test(Test_buf, 1024) == ERR_OK)
+			printf(" gprs uart test  %d sccusseed \r\n", i);
+		else
+			printf(" gprs uart test  %d fail \r\n", i);
+		
+		memset( Test_buf, 0, 512);
+		osDelay(1000);
 		
 	}
 	

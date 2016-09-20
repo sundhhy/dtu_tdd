@@ -45,7 +45,7 @@ USART_InitTypeDef Conf_GprsUsart = {
  */
 Dma_source DMA_gprs_usart = {
 	DMA1_Channel2,
-	DMA1_FLAG_TC2 | DMA1_FLAG_TE2,
+	DMA1_FLAG_GL2,
 	DMA1_Channel2_IRQn,
 	
 	DMA1_Channel3,

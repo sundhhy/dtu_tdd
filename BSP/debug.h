@@ -2,6 +2,7 @@
 #define __DEBUG_H__
 
 #define DEBUG_LEVEL		0
+#define DEBUG_SWITCH_ON
 #ifdef DEBUG_SWITCH_ON
 	#define DPRINTF(format, arg...) printf( format##arg)
 #else 
@@ -10,12 +11,12 @@
 
 
 
-#ifdef DEBUG_SWITCH_ON
+#ifdef DEBUG_SWITCH_ONkk
 /** print debug message only if debug message type is enabled...
  *  AND is of correct type AND is at least LWIP_DBG_LEVEL
  */
 #define LEVEL_DEBUGF(debug, message) do { \
-                               if (debug >= DEBUG_LEVEL)) { \
+                               if (debug >= DEBUG_LEVEL) { \
                                  printf(message); \
                                 
                                } \

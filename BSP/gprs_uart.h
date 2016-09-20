@@ -3,7 +3,13 @@
 #include "stdint.h"
 
 
-
+/**
+ * @brief gprs串口初始化
+ * 
+ * @return ERR_OK 成功
+ * @return 
+ */
+int gprs_uart_init(void);
 
 /**
  * @brief gprs串口发送功能
@@ -42,6 +48,9 @@ void gprs_Uart_ioctl(int cmd, ...);
  * @return 0xFF if error, else return 0
  */
 int gprs_uart_test(char *buf, int size);
+
+
+#define GPRS_UART_BUF_LEN		512
 
 #define GPRS_UART_CMD_SET_TXBLOCK	1
 #define GPRS_UART_CMD_CLR_TXBLOCK	2
