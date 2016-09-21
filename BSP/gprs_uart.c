@@ -20,6 +20,7 @@
 #include "osObjects.h"                      // RTOS object definitions
 #include <stdarg.h>
 #include <string.h>
+#include "def.h"
 
 
 
@@ -102,7 +103,7 @@ int gprs_uart_init(void)
 int gprs_Uart_write(char *data, uint16_t size)
 {
 	int ret;
-	if( data == 0)
+	if( data == NULL)
 		return ERR_BAD_PARAMETER;
 	DMA_gprs_usart.dma_tx_base->CMAR = (uint32_t)data;
 	DMA_gprs_usart.dma_tx_base->CNDTR = (uint16_t)size; 
@@ -142,16 +143,9 @@ int gprs_Uart_read(char *data, uint16_t size)
 {
 	int  ret;
 	int len = size;
-	if( data == 0)
+	if( data == NULL)
 		return ERR_BAD_PARAMETER;
-//	
-//	Gprs_uart_ctl.rx_tid =  osThreadGetId();
-//	
-//	DMA_gprs_usart.dma_rx_base->CMAR = (uint32_t)data;
-//	DMA_gprs_usart.dma_rx_base->CNDTR = (uint16_t)size; 
-//	DMA_Cmd( DMA_gprs_usart.dma_rx_base, ENABLE);        //开启DMA通道，等待接收数据
-//	
-//	Gprs_uart_ctl.read_size = size;
+	
 	if( Gprs_uart_ctl.rx_block)
 	{
 		if( Gprs_uart_ctl.rx_waittime_ms == 0)
@@ -208,12 +202,12 @@ void gprs_Uart_ioctl(int cmd, ...)
 		case GPRS_UART_CMD_CLR_RXBLOCK:
 			Gprs_uart_ctl.rx_block = 0;
 			break;
-		case GPRS_UART_CMD_SET_TXWAITTIME:
+		case GPRSUART_SET_TXWAITTIME_MS:
 			int_data = va_arg(arg_ptr, int);
 			va_end(arg_ptr); 
 			Gprs_uart_ctl.tx_waittime_ms = int_data;
 			break;
-		case GPRS_UART_CMD_SET_RXWAITTIME:
+		case GPRSUART_SET_RXWAITTIME_MS:
 			int_data = va_arg(arg_ptr, int);
 			va_end(arg_ptr); 
 			Gprs_uart_ctl.rx_waittime_ms = int_data;

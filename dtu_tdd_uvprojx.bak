@@ -364,7 +364,7 @@
               <MiscControls>--diag_suppress=1295</MiscControls>
               <Define>USE_STDPERIPH_DRIVER, STM32F10X_MD, USE_STM3210B_EVAL,HSE_VALUE=8000000</Define>
               <Undefine></Undefine>
-              <IncludePath>.\lw_oopc_v1.2;.\class;.\BSP</IncludePath>
+              <IncludePath>.\lw_oopc_v1.2;.\class;.\BSP;..\dtu_tdd</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -456,6 +456,16 @@
               <FileName>debug.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\BSP\debug.h</FilePath>
+            </File>
+            <File>
+              <FileName>gprs_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BSP\gprs_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>gprs_uart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BSP\gprs_uart.h</FilePath>
             </File>
           </Files>
         </Group>

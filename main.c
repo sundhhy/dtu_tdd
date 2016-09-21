@@ -8,7 +8,9 @@
 #include "gprs.h"
 #include "hardwareConfig.h"
 #include "debug.h"
+#ifdef TDD_GPRS_USART
 #include "gprs_uart.h"
+#endif
 #include "sdhError.h"
 #include "string.h"
 #include "stm32f10x_usart.h"
@@ -42,7 +44,7 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-#ifdef TDD_GPRS_USART
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS)
 
 char Test_buf[512];
 #endif
@@ -50,7 +52,7 @@ char Test_buf[512];
  * main: initialize and start the system
  */
 int main (void) {
-	gprs_t *sim900 = gprs_t_new();
+	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
 	
   osKernelInitialize ();                    // initialize CMSIS-RTOS
@@ -72,7 +74,7 @@ int main (void) {
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 
 	osKernelStart ();                         // start thread execution
-	sim900->startup(sim900);
+	sim800->startup(sim800);
 #ifdef TDD_GPRS_ONOFF
 	while(1)
 	{
@@ -99,6 +101,25 @@ int main (void) {
 		osDelay(1000);
 		
 	}
-	
 #endif
+
+#ifdef TDD_GPRS_SMS
+	while(1)
+	{
+		i ++;
+		
+		if( sim800->sms_test(sim800, "15858172663", Test_buf, 512) == ERR_OK)
+			printf(" sim800 sms test  %d sccusseed \r\n", i);
+		else
+			printf(" sim800 sms test  %d fail \r\n", i);
+		
+		osDelay(1000);
+		
+	}
+
+
+#endif	
+	
+	
+	
 }

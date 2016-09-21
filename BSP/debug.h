@@ -1,10 +1,10 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
-
+#include <stdio.h>
 #define DEBUG_LEVEL		0
 #define DEBUG_SWITCH_ON
 #ifdef DEBUG_SWITCH_ON
-	#define DPRINTF(format, arg...) printf( format##arg)
+	#define DPRINTF(format, arg...) printf( format,##arg)
 #else 
 	#define DPRINTF(format, arg...) 
 #endif
@@ -45,7 +45,7 @@
  *
  */
 //#define TDD_GPRS_ONOFF
-#define TDD_GPRS_USART
-
+//#define TDD_GPRS_USART
+#define TDD_GPRS_SMS
 
 #endif
