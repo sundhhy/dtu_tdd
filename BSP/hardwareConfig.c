@@ -30,7 +30,7 @@ USART_InitTypeDef USART_InitStructure = {
 		USART_HardwareFlowControl_None,
 };
 USART_InitTypeDef Conf_GprsUsart = {
-		9600,
+		115200,
 		USART_WordLength_8b,
 		USART_StopBits_1,
 		USART_Parity_No,

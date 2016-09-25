@@ -146,6 +146,8 @@ int gprs_Uart_read(char *data, uint16_t size)
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
 	
+	memset( data, 0, size);
+	
 	if( Gprs_uart_ctl.rx_block)
 	{
 		if( Gprs_uart_ctl.rx_waittime_ms == 0)
@@ -168,6 +170,7 @@ int gprs_Uart_read(char *data, uint16_t size)
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
 		memcpy( data, GprsUart_buf, len);
+		memset( GprsUart_buf, 0, len);
 		return len;
 	}
 	

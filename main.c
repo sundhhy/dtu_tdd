@@ -45,8 +45,8 @@ PUTCHAR_PROTOTYPE
 }
 
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS)
-
-char Test_buf[512];
+#define TEST_BUF_SIZE 1048
+char Test_buf[TEST_BUF_SIZE];
 #endif
 /*
  * main: initialize and start the system
@@ -54,7 +54,7 @@ char Test_buf[512];
 int main (void) {
 	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
-	
+	char c;
   osKernelInitialize ();                    // initialize CMSIS-RTOS
 
 	
@@ -74,25 +74,28 @@ int main (void) {
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 
 	osKernelStart ();                         // start thread execution
-	sim800->startup(sim800);
+	
+	sim800->init(sim800);
+	
 #ifdef TDD_GPRS_ONOFF
 	while(1)
 	{
 		
-		sim900->startup(sim900);
+		sim800->startup(sim800);
 		osDelay(3000);
-		sim900->shutdown(sim900);
+		sim800->shutdown(sim800);
 		osDelay(3000);
 		
 	}
 #endif
 	
 #ifdef TDD_GPRS_USART
-	gprs_uart_init();
+//	gprs_uart_init();
+	sim800->startup(sim800);
 	while(1)
 	{
 		i ++;
-		if( gprs_uart_test(Test_buf, 1024) == ERR_OK)
+		if( gprs_uart_test(Test_buf, TEST_BUF_SIZE) == ERR_OK)
 			printf(" gprs uart test  %d sccusseed \r\n", i);
 		else
 			printf(" gprs uart test  %d fail \r\n", i);
@@ -104,17 +107,45 @@ int main (void) {
 #endif
 
 #ifdef TDD_GPRS_SMS
+	
+	while(1)
+	{
+		if( sim800->startup(sim800) != ERR_OK)
+		{
+			
+			osDelay(1000);
+		}
+		else if( sim800->check_simCard(sim800) == ERR_OK)
+		{	
+			
+			break;
+		}
+		else {
+			
+			osDelay(1000);
+		}
+		
+	}
+	
 	while(1)
 	{
 		i ++;
 		
-		if( sim800->sms_test(sim800, "15858172663", Test_buf, 512) == ERR_OK)
+		if( sim800->sms_test(sim800, "15858172663", Test_buf, TEST_BUF_SIZE) == ERR_OK)
 			printf(" sim800 sms test  %d sccusseed \r\n", i);
 		else
 			printf(" sim800 sms test  %d fail \r\n", i);
 		
 		osDelay(1000);
-		
+//		printf(" test again Y/N  ? \r\n");
+//		c = '\n';
+//		while(c == '\n')
+//		{
+//			c = getchar();
+//		}
+//		
+//		if( c == 'N' || c== 'n')
+//			break;
 	}
 
 

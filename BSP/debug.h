@@ -11,7 +11,7 @@
 
 
 
-#ifdef DEBUG_SWITCH_ONkk
+#ifdef DEBUG_SWITCH_ONfff
 /** print debug message only if debug message type is enabled...
  *  AND is of correct type AND is at least LWIP_DBG_LEVEL
  */

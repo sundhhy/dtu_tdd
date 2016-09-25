@@ -245,7 +245,7 @@ void USART_Configuration(void)
     USART_Init(USART2, &USART_InitStructure);
     USART_Init(USART3, &USART_InitStructure);
 
-    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+//    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
     USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 

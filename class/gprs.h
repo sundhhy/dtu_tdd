@@ -13,7 +13,9 @@ CLASS(gprs_t)
 	int	(*check_simCard)( gprs_t *self);
 	
 	int	(*send_text_sms)(  gprs_t *self, char *phnNmbr, char *sms);
-	int	(*read_phnNmbr_sms)(  gprs_t *self, char *phnNmbr, char *buf, int bufsize);
+	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *buf, int *len);
+	int (*delete_sms)( gprs_t *self, int seq);
+	
 	
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
 };
