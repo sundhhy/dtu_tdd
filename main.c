@@ -54,7 +54,7 @@ char Test_buf[TEST_BUF_SIZE];
 int main (void) {
 	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
-	char c;
+//	char c;
   osKernelInitialize ();                    // initialize CMSIS-RTOS
 
 	

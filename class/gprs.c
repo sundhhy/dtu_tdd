@@ -460,6 +460,69 @@ int delete_sms( gprs_t *self, int seq)
 	}
 	
 }
+/**
+ * @brief 向指定的地址发起连接
+ *
+ * @details 1. .
+ *			2. 连接成功后向服务器发送数据.
+ *			3. 重复1和2，直到建立4个连接。同一个服务器可以建立多个连接。
+ *			4. 回显服务器发送的数据.
+ *			5. 服务器段发送finish来结束测试
+ * 
+ * @param[in]	self.
+ * @param[in]	addr. 
+ * @param[in]	portnum. 
+ * @retval	>=0 连接号
+ * @retval	ERR_FAIL 发送失败	
+ */
+ int tcp_cnnt( gprs_t *self, char *addr, int portnum)
+ {
+	 
+	 
+ }
+
+/**
+ * @brief 像指定的连接发送tcp数据.
+ *
+ * @details 1. .
+ *			2. 连接成功后向服务器发送数据.
+ *			3. 重复1和2，直到建立4个连接。同一个服务器可以建立多个连接。
+ *			4. 回显服务器发送的数据.
+ *			5. 服务器段发送finish来结束测试
+ * 
+ * @param[in]	self.
+ * @param[in]	cnnt_num. 连接号
+ * @param[in]	data. 发送数据地址
+ * @param[in]	len. 发送的数据长度
+ * @retval	ERR_OK 成功
+ * @retval	ERR_FAIL 发送失败	
+ */
+ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
+ {
+	 
+	 
+ }
+ /**
+ * @brief 从gprs接收数据.
+ *
+ * @details 1. .
+ *			2. 连接成功后向服务器发送数据.
+ *			3. 重复1和2，直到建立4个连接。同一个服务器可以建立多个连接。
+ *			4. 回显服务器发送的数据.
+ *			5. 服务器段发送finish来结束测试
+ * 
+ * @param[in]	self.
+ * @param[in]	buf. 接收的缓存地址
+ * @param[in]	lsize. 缓存长度
+ * @param[out]	lsize. 接收到的数据长度
+ * @retval	>0 数据的连接号
+ * @retval	ERR_FAIL 接收失败	
+ */
+ int recvform_tcp( gprs_t *self, char *buf, int *lsize)
+ {
+	 
+	 
+ }
 
 
 int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
@@ -509,6 +572,84 @@ int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 	return ERR_UNKOWN;
 }
 
+
+/**
+ * @brief 测试tcp的数据收发.
+ *
+ * @details 1. 向服务器发起连接.
+ *			2. 连接成功后向服务器发送数据.
+ *			3. 重复1和2，直到建立4个连接。同一个服务器可以建立多个连接。
+ *			4. 回显服务器发送的数据.
+ *			5. 服务器段发送finish来结束测试
+ * 
+ * @param[in]	self.
+ * @param[in]	tets_addr. 服务器的地址
+ * @param[in]	portnum. 服务器的端口号
+ * @param[in]	buf. 测试缓存地址
+ * @param[in]	bufsize. 测试缓存的大小
+ * @retval	OK	
+ * @retval	ERROR	
+ */
+int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize)
+{
+	short step = 0;
+	short i = 0;
+	int ret = 0;
+	int seq[4] = {-1};
+	int len = 0;
+	char *pp;
+	while(1)
+	{
+		switch( step)
+		{
+			case 0:
+				ret = self->tcp_cnnt( self, tets_addr, portnum);
+				if( ret < 0)
+					return ERR_FAIL;
+				step ++;
+				seq[i] = ret;
+				break;
+			case 1:
+				sprintf( buf, "the %d'st connect is established\n", i);
+				DPRINTF("%s \n", buf);
+				ret = self->sendto_tcp( self, seq[i], buf, strlen( buf) + 1);
+				if( ret != ERR_OK)
+				{
+					DPRINTF("send to connect %d tcp data fail \n", i);
+					return ERR_FAIL;
+				}
+				i ++;
+				if( i < 3)			///重复连接4次
+				{
+					step = 0;
+					break;
+				}
+				step ++;
+			case 2:
+				len = bufsize;
+				ret = self->recvform_tcp( self, buf, &len);
+				if( ret > 0)
+				{
+					pp = strstr((const char*)buf,"finished");
+					if( pp)
+						return ERR_OK;
+					
+					DPRINTF(" recv : %s \n", buf);
+					self->sendto_tcp( self, seq[i], buf, strlen( buf) + 1);
+				}
+				break;
+			default:break;
+			
+			
+		}		//switch
+		
+		
+	}		//while(1)
+	
+	
+	
+}
+
 static int serial_cmmn( char *buf, int bufsize)
 {
 	UART_SEND( buf, strlen(buf));
@@ -555,5 +696,11 @@ FUNCTION_SETTING(send_text_sms, send_text_sms);
 FUNCTION_SETTING(read_phnNmbr_TextSMS, read_phnNmbr_TextSMS);
 FUNCTION_SETTING(delete_sms, delete_sms);
 FUNCTION_SETTING(sms_test, sms_test);
+
+
+FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);
+FUNCTION_SETTING(sendto_tcp, sendto_tcp);
+FUNCTION_SETTING(recvform_tcp, recvform_tcp);
+FUNCTION_SETTING(tcp_test, tcp_test);
 
 END_CTOR
