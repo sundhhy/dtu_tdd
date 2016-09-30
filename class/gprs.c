@@ -43,7 +43,7 @@ static int prepare_ip(gprs_t *self);
 #define SMS_CHRC_SET_IRA	2
 #define SMS_CHRC_SET_HEX	3
 
-#define	CMDBUF_LEN		512
+#define	CMDBUF_LEN		64
 #define RETRY_TIMES	5
 
 #define Tx_RX_DELAY		1
@@ -324,6 +324,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 	short retry = RETRY_TIMES;
 	
 	char *pp = NULL;
+	char	*ptarget = buf;
 	
 	short number = 0;
 	char  text_begin = 0, text_end = 0;
@@ -368,12 +369,12 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 				break;
 				
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
-				sprintf( Gprs_cmd_buf, "AT+CMGR=%d\x00D\x00A", i);
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				sprintf( buf, "AT+CMGR=%d\x00D\x00A", i);
+				serial_cmmn( buf, *len);
 			
-				pp = Gprs_cmd_buf;			///假定pp的值是正常的
+				pp = buf;			///假定pp的值是正常的
 				if( phnNmbr)
-					pp = strstr((const char*)Gprs_cmd_buf,phnNmbr);
+					pp = strstr((const char*)buf,phnNmbr);
 				
 				
 				if( pp)
@@ -402,15 +403,15 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 						
 						if( text_begin) {
 							number ++;
-							*buf = *pp;
-							buf ++;
+							*ptarget = *pp;
+							ptarget ++;
 						}
 						
 						pp ++;
 							
 					}		// while( *pp != '\0')
 					
-					
+//todo  如果出现接收到的数据没有结尾怎么办？
 					return 0;
 				}
 				i ++;

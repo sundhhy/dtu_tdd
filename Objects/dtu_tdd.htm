@@ -3,9 +3,9 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5040049: Last Updated: Fri Sep 30 16:39:51 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5040049: Last Updated: Fri Sep 30 16:54:40 2016
 <BR><P>
-<H3>Maximum Stack Usage =        152 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =        160 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
 read_phnNmbr_TextSMS &rArr; atoi &rArr; strtol &rArr; _strtoul
 <P>
@@ -735,7 +735,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_sys_init
 </UL>
 
-<P><STRONG><a name="[3e]"></a>check_simCard</STRONG> (Thumb, 298 bytes, Stack size 24 bytes, gprs.o(i.check_simCard))
+<P><STRONG><a name="[3e]"></a>check_simCard</STRONG> (Thumb, 292 bytes, Stack size 24 bytes, gprs.o(i.check_simCard))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = check_simCard &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -759,7 +759,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_switch_req
 </UL>
 
-<P><STRONG><a name="[41]"></a>delete_sms</STRONG> (Thumb, 90 bytes, Stack size 24 bytes, gprs.o(i.delete_sms))
+<P><STRONG><a name="[41]"></a>delete_sms</STRONG> (Thumb, 88 bytes, Stack size 24 bytes, gprs.o(i.delete_sms))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = delete_sms &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -992,8 +992,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_Tick_Handler
 </UL>
 
-<P><STRONG><a name="[40]"></a>read_phnNmbr_TextSMS</STRONG> (Thumb, 358 bytes, Stack size 64 bytes, gprs.o(i.read_phnNmbr_TextSMS))
-<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = read_phnNmbr_TextSMS &rArr; atoi &rArr; strtol &rArr; _strtoul
+<P><STRONG><a name="[40]"></a>read_phnNmbr_TextSMS</STRONG> (Thumb, 362 bytes, Stack size 72 bytes, gprs.o(i.read_phnNmbr_TextSMS))
+<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = read_phnNmbr_TextSMS &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -1392,7 +1392,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;svcThreadGetId
 </UL>
 
-<P><STRONG><a name="[3f]"></a>send_text_sms</STRONG> (Thumb, 378 bytes, Stack size 48 bytes, gprs.o(i.send_text_sms))
+<P><STRONG><a name="[3f]"></a>send_text_sms</STRONG> (Thumb, 374 bytes, Stack size 48 bytes, gprs.o(i.send_text_sms))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
@@ -1407,7 +1407,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[44]"></a>sendto_tcp</STRONG> (Thumb, 114 bytes, Stack size 32 bytes, gprs.o(i.sendto_tcp))
+<P><STRONG><a name="[44]"></a>sendto_tcp</STRONG> (Thumb, 112 bytes, Stack size 32 bytes, gprs.o(i.sendto_tcp))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = sendto_tcp &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
@@ -1561,7 +1561,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_systick
 </UL>
 
-<P><STRONG><a name="[43]"></a>tcp_cnnt</STRONG> (Thumb, 152 bytes, Stack size 40 bytes, gprs.o(i.tcp_cnnt))
+<P><STRONG><a name="[43]"></a>tcp_cnnt</STRONG> (Thumb, 150 bytes, Stack size 40 bytes, gprs.o(i.tcp_cnnt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = tcp_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -1585,7 +1585,7 @@ Global Symbols
 <H3>
 Local Symbols
 </H3>
-<P><STRONG><a name="[aa]"></a>prepare_ip</STRONG> (Thumb, 288 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
+<P><STRONG><a name="[aa]"></a>prepare_ip</STRONG> (Thumb, 280 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -1613,7 +1613,7 @@ Local Symbols
 <LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 </UL>
 
-<P><STRONG><a name="[ac]"></a>set_sms2TextMode</STRONG> (Thumb, 80 bytes, Stack size 16 bytes, gprs.o(i.set_sms2TextMode))
+<P><STRONG><a name="[ac]"></a>set_sms2TextMode</STRONG> (Thumb, 78 bytes, Stack size 16 bytes, gprs.o(i.set_sms2TextMode))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
