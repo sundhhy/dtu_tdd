@@ -2,6 +2,8 @@
 #define __GPRS_H__
 #include "lw_oopc.h"
 
+#define IPMUX_NUM	4		//支持4路连接
+
 CLASS(gprs_t)
 {
 	// public
@@ -16,7 +18,7 @@ CLASS(gprs_t)
 	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *buf, int *len);
 	int (*delete_sms)( gprs_t *self, int seq);
 	
-	int (*tcp_cnnt)( gprs_t *self, char *addr, int portnum);
+	int (*tcp_cnnt)( gprs_t *self, int cnnt_num, char *addr, int portnum);
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
 	
