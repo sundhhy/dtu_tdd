@@ -396,6 +396,8 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 						}
 						if( text_end || number > ( *len - 1))
 						{
+							
+							*ptarget  = '\0';
 							*len = number;
 							return i;
 						}
@@ -595,6 +597,7 @@ int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 	int count = 0;
 	char *pp = NULL;
 	int len = bufsize;
+	DPRINTF("sms test ... \n");
 	strcpy( buf, "sms test ! reply \" Succeed \" in 30 second!\r\n"); 
 	
 //	for( count = 0; count < 1024; count ++)
@@ -624,15 +627,15 @@ int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 			break;
 		
 	}
-	
-	
+	self->delete_sms( self, ret);
+	DPRINTF(" recv sms : %s \n",buf);
 	pp = strstr((const char*)buf,"Succeed");
 	if(pp)
 	{
-		self->delete_sms( self, ret);
+		
 		return ERR_OK;
 	}
-	
+	DPRINTF("recv sms : %s \n",buf);
 	return ERR_UNKOWN;
 }
 
