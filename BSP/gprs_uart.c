@@ -169,6 +169,7 @@ int gprs_Uart_read(char *data, uint16_t size)
 	{
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
+		memset( data, 0, size);
 		memcpy( data, GprsUart_buf, len);
 		memset( GprsUart_buf, 0, len);
 		return len;
