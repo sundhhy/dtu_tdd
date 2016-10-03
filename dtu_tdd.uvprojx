@@ -468,6 +468,16 @@
               <FileType>5</FileType>
               <FilePath>.\BSP\gprs_uart.h</FilePath>
             </File>
+            <File>
+              <FileName>serial485_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BSP\serial485_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>serial485_uart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BSP\serial485_uart.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

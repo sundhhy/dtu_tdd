@@ -141,6 +141,12 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
+	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_tx_irq;   // 发送DMA配置
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     // 优先级配置
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
 
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 /*| RCC_APB1Periph_TIM3*/,ENABLE);
     NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
