@@ -11,6 +11,8 @@
 #ifdef TDD_GPRS_USART
 #include "gprs_uart.h"
 #endif
+#include "serial485_uart.h"
+
 #include "sdhError.h"
 #include "string.h"
 #include "stm32f10x_usart.h"
@@ -44,10 +46,10 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
+//#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
 #define TEST_BUF_SIZE 1048
 char Test_buf[TEST_BUF_SIZE];
-#endif
+//#endif
 /*
  * main: initialize and start the system
  */
@@ -184,6 +186,23 @@ int main (void) {
 
 	}
 
+#endif	
+	
+	
+#ifdef TDD_S485
+	s485_uart_init();
+	while(1)
+	{
+		i ++;
+		if( s485_uart_test(Test_buf, TEST_BUF_SIZE) == ERR_OK)
+			printf(" 485 uart test  %d sccusseed \r\n", i);
+		else
+			printf(" 485 uart test  %d fail \r\n", i);
+		
+		memset( Test_buf, 0, 512);
+		osDelay(1000);
+		
+	}
 #endif	
 	
 }

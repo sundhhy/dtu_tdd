@@ -6,7 +6,8 @@
 
 #define	GPRS_COM			3			///< gprs模块使用的串口号	
 #define	DEBUG_COM			1
-#define GPRS_USART_RXBUF_SIZE		256
+#define	SERAIL_485_COM		2
+
 
 
 #if GPRS_COM == 3
@@ -21,7 +22,9 @@
 #define DEBUG_USART	USART1
 #endif
 
-
+#if SERAIL_485_COM == 2
+#define SER485_USART	USART2
+#endif
 
 typedef struct 
 {
@@ -55,8 +58,9 @@ extern gpio_pins	Gprs_powerkey;
 
 extern USART_InitTypeDef USART_InitStructure;
 extern USART_InitTypeDef Conf_GprsUsart;
+extern USART_InitTypeDef Conf_S485Usart;
+
 extern Dma_source DMA_gprs_usart;
-extern char Gprs_usart_txbuf[64];
-extern char Gprs_usart_rxbuf[GPRS_USART_RXBUF_SIZE];
+extern Dma_source DMA_s485_usart;
 
 #endif

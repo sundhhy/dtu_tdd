@@ -26,5 +26,6 @@
 .\objects\main.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\main.o: .\BSP\debug.h
 .\objects\main.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\main.o: .\BSP\serial485_uart.h
 .\objects\main.o: sdhError.h
 .\objects\main.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

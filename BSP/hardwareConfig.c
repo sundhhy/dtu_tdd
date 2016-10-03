@@ -14,8 +14,6 @@
 #include "hardwareConfig.h"
 
 
-char Gprs_usart_txbuf[64];
-char Gprs_usart_rxbuf[GPRS_USART_RXBUF_SIZE];
 gpio_pins	Gprs_powerkey =  {
 	GPIOB,
 	GPIO_Pin_0
@@ -40,6 +38,17 @@ USART_InitTypeDef Conf_GprsUsart = {
 	
 };
 
+USART_InitTypeDef Conf_S485Usart = {
+		9600,
+		USART_WordLength_8b,
+		USART_StopBits_1,
+		USART_Parity_No,
+		USART_Mode_Rx | USART_Mode_Tx,
+		USART_HardwareFlowControl_None,
+		
+	
+};
+
 /** gprs uart DMA通道配置
  *
  */
@@ -55,7 +64,19 @@ Dma_source DMA_gprs_usart = {
 };
 
 
-
+/** 485 uart DMA通道配置
+ *
+ */
+Dma_source DMA_s485_usart = {
+	DMA1_Channel7,
+	DMA1_FLAG_GL7,
+	DMA1_Channel7_IRQn,
+	
+	DMA1_Channel6,
+	DMA1_FLAG_GL6,
+	DMA1_Channel6_IRQn,
+	
+};
 
 
 
