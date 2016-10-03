@@ -26,7 +26,7 @@
 
 
 static int set_sms2TextMode(gprs_t *self);
-static int serial_cmmn( char *buf, int bufsize);
+static int serial_cmmn( char *buf, int bufsize, int delay_ms);
 
 static int prepare_ip(gprs_t *self);
 
@@ -44,9 +44,7 @@ static int prepare_ip(gprs_t *self);
 #define SMS_CHRC_SET_HEX	3
 
 #define	CMDBUF_LEN		64
-#define RETRY_TIMES	5
 
-#define Tx_RX_DELAY		1
 
 //ip connect state
 #define CNNT_DISCONNECT		0
@@ -57,7 +55,6 @@ static struct {
 	int8_t	sms_msgFromt;
 	int8_t	sms_chrcSet;
 	
-	int8_t	ipready;
 	
 }Gprs_state;
 static struct {
@@ -77,7 +74,6 @@ int init(gprs_t *self)
 	
 	Gprs_state.sms_msgFromt = -1;
 	Gprs_state.sms_chrcSet = -1;
-	Gprs_state.ipready = 0;
 	return ERR_OK;
 }
 
@@ -122,7 +118,7 @@ int	check_simCard( gprs_t *self)
 			
 			case 0:
 				strcpy( Gprs_cmd_buf, "ATE0\r\n" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -164,7 +160,7 @@ int	check_simCard( gprs_t *self)
 //				break;	
 			case 2:
 				strcpy( Gprs_cmd_buf, "AT+CPIN?\x00D\x00A" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -183,7 +179,7 @@ int	check_simCard( gprs_t *self)
 				break;
 			case 3:
 				strcpy( Gprs_cmd_buf, "AT+CREG?\x00D\x00A" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				if(((Gprs_cmd_buf[9]=='0')&&
 					(Gprs_cmd_buf[11]=='1'))||
 				 ((Gprs_cmd_buf[9]=='0')&&
@@ -254,7 +250,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				}
 			
 				strcpy( Gprs_cmd_buf, "AT+CSCS=\"GSM\"\x00D\x00A" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 //				
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
@@ -358,7 +354,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 				break;
 			case 1:		///获取短信的总数量
 				strcpy( Gprs_cmd_buf, "AT+CPMS?\x00D\x00A" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				tmp = strcspn( Gprs_cmd_buf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
 				number = atoi( Gprs_cmd_buf + tmp);			///第一个数字就是短信的数量
 				if( number < 1)
@@ -370,7 +366,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 				
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
 				sprintf( buf, "AT+CMGR=%d\x00D\x00A", i);
-				serial_cmmn( buf, *len);
+				serial_cmmn( buf, *len, 1);
 			
 				pp = buf;			///假定pp的值是正常的
 				if( phnNmbr)
@@ -441,7 +437,7 @@ int delete_sms( gprs_t *self, int seq)
 	while(1)
 	{
 		sprintf( Gprs_cmd_buf, "AT+CMGD=%d\x00D\x00A", seq);
-		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 		pp = strstr((const char*)Gprs_cmd_buf,"OK");		
 		if( pp)
 			return ERR_OK;
@@ -476,6 +472,7 @@ int delete_sms( gprs_t *self, int seq)
  * @retval	>=0 连接号
  * @retval	ERR_FAIL 发送失败	
  * @retval	ERR_BAD_PARAMETER 输入的连接号超出范围
+ * @retval	ERR_ADDR_ERROR 输入的地址无法连接
  */
  int tcp_cnnt( gprs_t *self, int cnnt_num, char *addr, int portnum)
  {
@@ -495,23 +492,54 @@ int delete_sms( gprs_t *self, int seq)
 				if( ret != ERR_OK)
 					return ERR_FAIL;
 				step ++;
-				case 1:
-					sprintf( Gprs_cmd_buf, "AT+CIPSTART=%d,\"TCP\",\"%s\",%d\x00D\x00A", cnnt_num, addr, portnum);
-					serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+			case 1:		//先关闭这个连接
+				sprintf( Gprs_cmd_buf, "AT+CIPSTATUS=%d\x00D\x00A", cnnt_num);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,500);
+				pp = strstr((const char*)Gprs_cmd_buf,"CONNECTED");	
+				if( pp)
+				{
+					step ++;
+					break;
+				}
+				step += 2;
+				break;
+			case 2:
+				sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,1\x00D\x00A", cnnt_num);		//quick close
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+				step ++;
+				break;
+			case 3:
+				sprintf( Gprs_cmd_buf, "AT+CIPSTART=%d,\"TCP\",\"%s\",\"%d\"\x00D\x00A", cnnt_num, addr, portnum);
+				UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
+				osDelay(1000);
+				step++;
+			case 4:
+				
+				ret = UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
+				if( ret > 0)
+				{
 					pp = strstr((const char*)Gprs_cmd_buf,"OK");		
 					if( pp)
 					{
+						osDelay(1000);
 						Ip_cnnState.cnn_state[ cnnt_num] = CNNT_ESTABLISHED;
 						return ERR_OK;
 					}
-					retry --;
-					if( retry == 0)
-						return ERR_DEV_TIMEOUT;
-					osDelay(100);
-					break;
-				default:break;
-			}
+					pp = strstr((const char*)Gprs_cmd_buf,"ERROR");		
+					if( pp)
+					{
+						return ERR_ADDR_ERROR;
+					}
+				}
+				retry --;
+				if( retry == 0)
+					return ERR_DEV_TIMEOUT;
+				osDelay(1000);
+				
+				
+			default:break;
 		}
+	}
 		
  }
 
@@ -536,6 +564,7 @@ int delete_sms( gprs_t *self, int seq)
 int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 {
 	char *pp;
+	int retry = RETRY_TIMES;
 	if( cnnt_num > IPMUX_NUM)
 		return ERR_BAD_PARAMETER;
 	if( Ip_cnnState.cnn_state[ cnnt_num] != CNNT_ESTABLISHED)
@@ -545,12 +574,28 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 	UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
 	osDelay(100);
 	UART_SEND( data, len);
-	UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
+	while(1)
+	{
+		
+		UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"OK");		
+		if( pp)
+			return ERR_OK;
+		pp = strstr((const char*)Gprs_cmd_buf,"FAIL");		
+		if( pp)
+			return ERR_FAIL;
+		pp = strstr((const char*)Gprs_cmd_buf,"ERROR");		
+		if( pp)
+			return ERR_FAIL;
+		
+		retry --;
+		
+		osDelay(500);
+		if( retry == 0)
+			return ERR_OK;
+	}
 	
-	pp = strstr((const char*)Gprs_cmd_buf,"OK");		
-	if( pp)
-		return ERR_OK;
-	return ERR_FAIL;
 }
  /**
  * @brief 从gprs接收数据.
@@ -574,14 +619,25 @@ int recvform_tcp( gprs_t *self, char *buf, int *lsize)
 	char *pp;
 	int recv_seq = -1;
 	int tmp = 0;
-
-	ret = UART_RECV( buf, *lsize);
+	int buf_size = *lsize ;
+	*lsize = 0;
+	
+	ret = UART_RECV( buf, buf_size);
 	if( ret < 1)
 	 return ERR_FAIL;
 
+	pp = strstr((const char*)buf,"CLOSED");
+	if( pp)
+	{
+		tmp = strcspn( buf, "0123456789");	
+		recv_seq = atoi( buf + tmp);
+		Ip_cnnState.cnn_state[ recv_seq] = CNNT_DISCONNECT;
+		return recv_seq;
+	}
 	pp = strstr((const char*)buf,"RECEIVE");	
 	if( pp == NULL)
 		return ERR_FAIL;
+	
 	tmp = strcspn( buf, "0123456789");	
 	recv_seq = atoi( buf + tmp);
 	*lsize = atoi( buf + tmp + 1);
@@ -659,12 +715,13 @@ int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
  */
 int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize)
 {
-	short step = 0;
+	char step = 0;
+	char sum = 0;
 	short i = 0;
 	int ret = 0;
-	int seq[4] = {-1};
 	int len = 0;
 	char *pp;
+	char finish[IPMUX_NUM] = { 0};
 	while(1)
 	{
 		switch( step)
@@ -674,19 +731,18 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 				if( ret < 0)
 					return ERR_FAIL;
 				step ++;
-				seq[i] = ret;
 				break;
 			case 1:
 				sprintf( buf, "the %d'st connect is established\n", i);
 				DPRINTF("%s \n", buf);
-				ret = self->sendto_tcp( self, seq[i], buf, strlen( buf) + 1);
+				ret = self->sendto_tcp( self, i, buf, strlen( buf) + 1);
 				if( ret != ERR_OK)
 				{
 					DPRINTF("send to connect %d tcp data fail \n", i);
 					return ERR_FAIL;
 				}
 				i ++;
-				if( i < 3)			///重复连接4次
+				if( i < 4)			///重复连接4次
 				{
 					step = 0;
 					break;
@@ -695,15 +751,28 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 			case 2:
 				len = bufsize;
 				ret = self->recvform_tcp( self, buf, &len);
-				if( ret > 0)
+				if( len >= 0)
 				{
 					pp = strstr((const char*)buf,"finished");
 					if( pp)
-						return ERR_OK;
+					{
+						finish[ ret] = 1;
+						sum = 0;
+						for( i = 0; i < IPMUX_NUM; i++)
+						{
+							sum += finish[i];
+							
+						}
+						if( sum == IPMUX_NUM)
+							return ERR_OK;
+						
+					}
 					
 					DPRINTF(" recv : %s \n", buf);
-					self->sendto_tcp( self, seq[i], buf, strlen( buf) + 1);
+					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
 				}
+				if( Ip_cnnState.cnn_state[ ret] != CNNT_ESTABLISHED)
+					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
 				break;
 			default:break;
 			
@@ -717,12 +786,12 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 	
 }
 
-static int serial_cmmn( char *buf, int bufsize)
+static int serial_cmmn( char *buf, int bufsize, int delay_ms)
 {
 	UART_SEND( buf, strlen(buf));
-	#ifdef Tx_RX_DELAY
-	osDelay( Tx_RX_DELAY);
-#endif
+	if( delay_ms)
+		osDelay( delay_ms);
+
 	return UART_RECV( buf, bufsize);
 }
 
@@ -738,7 +807,7 @@ static int set_sms2TextMode(gprs_t *self)
 	while(1)
 	{
 		strcpy( Gprs_cmd_buf, "AT+CMGF=1\x00D\x00A" );
-		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 		pp = strstr((const char*)Gprs_cmd_buf,"OK");
 		if(pp)
 		{
@@ -761,17 +830,16 @@ static int prepare_ip(gprs_t *self)
 	short step = 0;
 	char *pp = NULL;
 	
-	if( Gprs_state.ipready)
-	{
+	if( Gprs_currentState == TCP_IP_OK)
 		return ERR_OK;
-	}
+	
 	while(1)
 	{
 		switch( step )
 		{
 			case 0:
-				strcpy( Gprs_cmd_buf, "AT+CIPMUX=1=1\x00D\x00A" );		//设置连接为多连接
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				strcpy( Gprs_cmd_buf, "AT+CIPMUX=1\x00D\x00A" );		//设置连接为多连接
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -780,14 +848,23 @@ static int prepare_ip(gprs_t *self)
 					break;;
 				}
 				
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
+				if(pp)
+				{
+					strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		//Deactivate GPRS PDP context
+					serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+					break;
+					
+				}
 				retry --;
 				if( retry == 0)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
+			
 			case 1:
 				strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置gprs接入点
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -803,7 +880,7 @@ static int prepare_ip(gprs_t *self)
 				break;
 			case 2:
 				strcpy( Gprs_cmd_buf, "AT+CIICR\x00D\x00A" );		//激活移动场景
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -819,11 +896,11 @@ static int prepare_ip(gprs_t *self)
 				break;
 			case 3:
 				strcpy( Gprs_cmd_buf, "AT+CIFSR\x00D\x00A" );			//获取ip地址
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,".");
 				if(pp)
 				{
-					Gprs_state.ipready = 1;
+					Gprs_currentState = TCP_IP_OK;
 					return ERR_OK;
 				}
 				
@@ -837,7 +914,7 @@ static int prepare_ip(gprs_t *self)
 				step = 0;
 				break;
 		}		//switch
-		
+		osDelay(1000);
 	}		//while
 	
 }

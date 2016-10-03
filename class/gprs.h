@@ -2,6 +2,8 @@
 #define __GPRS_H__
 #include "lw_oopc.h"
 
+#define RETRY_TIMES	5
+
 #define IPMUX_NUM	4		//支持4路连接
 
 CLASS(gprs_t)
@@ -43,12 +45,12 @@ typedef enum {
 //    GPRS_DK_S ,
 //    GPRS_QD_S ,
     GPRS_OPEN_FINISH,       /// GPRS 打开成功了
-		INIT_FINISH_OK,
+	INIT_FINISH_OK,
 //    TCPIP_IO_MODE,
 //    TCPIP_BJ_ADDR,
 //    TCPIP_CONNECT,
-//    TCP_IP_OK,
-//    TCP_IP_NO,
+    TCP_IP_OK,
+    TCP_IP_NO,
 //    TCP_IP_CONNECTING,
 
 //    GPRS_DEF_PDP_S,         /// 定义PDP场景

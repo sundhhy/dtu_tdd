@@ -12,5 +12,5 @@
 #define ERR_RES_UNAVAILABLE			-7					/* ??????			*/
 #define ERR_DEV_TIMEOUT					-8					/* ??????			*/
 #define ERR_FAIL								-9					/* ²Ù×÷Ê§°Ü		*/ 
-
+#define ERR_ADDR_ERROR						-10
 #endif

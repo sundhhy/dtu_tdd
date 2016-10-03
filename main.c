@@ -44,7 +44,7 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS)
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
 #define TEST_BUF_SIZE 1048
 char Test_buf[TEST_BUF_SIZE];
 #endif
@@ -151,6 +151,39 @@ int main (void) {
 
 #endif	
 	
+#ifdef TDD_GPRS_TCP
+	while(1)
+	{
+		if( sim800->startup(sim800) != ERR_OK)
+		{
+			
+			osDelay(1000);
+		}
+		else if( sim800->check_simCard(sim800) == ERR_OK)
+		{	
+			
+			break;
+		}
+		else {
+			
+			osDelay(1000);
+		}
+		
+	}
 	
+	while(1)
+	{
+		i ++;
+		
+		if( sim800->tcp_test(sim800, IPADDR, PORTNUM, Test_buf, TEST_BUF_SIZE) == ERR_OK)
+			printf(" sim800 tcp test  %d sccusseed \r\n", i);
+		else
+			printf(" sim800 tcp test  %d fail \r\n", i);
+		
+		osDelay(1000);
+
+	}
+
+#endif	
 	
 }
