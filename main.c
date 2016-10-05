@@ -47,7 +47,7 @@ PUTCHAR_PROTOTYPE
 }
 
 //#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
-#define TEST_BUF_SIZE 1048
+#define TEST_BUF_SIZE 512
 char Test_buf[TEST_BUF_SIZE];
 //#endif
 /*
@@ -200,7 +200,7 @@ int main (void) {
 			printf(" 485 uart test  %d fail \r\n", i);
 		
 		memset( Test_buf, 0, 512);
-		osDelay(1000);
+		osDelay(3000);
 		
 	}
 #endif	

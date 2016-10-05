@@ -7,7 +7,7 @@
 #define	GPRS_COM			3			///< gprs模块使用的串口号	
 #define	DEBUG_COM			1
 #define	SERAIL_485_COM		2
-
+#define W25Q_SPI			SPI1_BASE
 
 
 #if GPRS_COM == 3
@@ -33,8 +33,7 @@ typedef struct
 }gpio_pins;
 
 
-
-
+///stm32的外设的DMA请求与DMA通道的对应关系是固定的，不是随便配置的。参考STM32的参考手册
 typedef struct 
 {
 	

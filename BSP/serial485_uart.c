@@ -35,7 +35,7 @@ osSemaphoreId SemId_s485rxFrame;                         // Semaphore ID
 uint32_t os_semaphore_cb_Sem_s485rxFrame[2] = { 0 }; 
 const osSemaphoreDef_t os_semaphore_def_Sem_s485rxFrame = { (os_semaphore_cb_Sem_s485rxFrame) };
 
-char	S485Uart_buf[GPRS_UART_BUF_LEN];			//用于DMA接收缓存
+char	S485Uart_buf[S485_UART_BUF_LEN];			//用于DMA接收缓存
 static struct usart_control_t {
 	short	tx_block;		//阻塞标志
 	short	rx_block;
@@ -144,7 +144,7 @@ int s485_Uart_read(char *data, uint16_t size)
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
 	
-	memset( data, 0, size);
+//	memset( data, 0, size);
 	
 	if( S485_uart_ctl.rx_block)
 	{
@@ -231,23 +231,24 @@ void s485_Uart_ioctl(int cmd, ...)
 int s485_uart_test(char *buf, int size)
 {
 	char *pp = NULL;
-    
+    int len;
 	
 	
 	strcpy( buf, "Serial 485 test\n" );
-//	s485_Uart_ioctl( GPRS_UART_CMD_SET_TXWAITTIME, 0);
+	s485_Uart_ioctl( S485UART_SET_TXWAITTIME_MS, 0);
 	s485_Uart_ioctl( S485UART_SET_RXWAITTIME_MS, 0);
 	s485_Uart_write( buf, strlen(buf));
-	s485_Uart_read( buf, size);
 	
-	pp = strstr((const char*)buf,"OK");
-	buf[ strlen(buf) + 1 ] = '\n';
-	buf[ strlen(buf) + 2 ] = '\0';
-	s485_Uart_write( buf, strlen(buf));
-    if(pp)
-		return ERR_OK;
-	
-	return ERR_UNKOWN;
+	while(1)
+	{
+		len = s485_Uart_read( buf, size);
+		pp = strstr((const char*)buf,"OK");
+		if(pp)
+			return ERR_OK;
+		
+		if( len > 0)
+			s485_Uart_write( buf, len);
+	}
 	
 }
 
@@ -267,13 +268,13 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&SER485_USART->DR);// 外设地址
     DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)S485Uart_buf;        
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;                      // 从内存到外设
-    DMA_InitStructure.DMA_BufferSize = GPRS_UART_BUF_LEN;                    
+    DMA_InitStructure.DMA_BufferSize = S485_UART_BUF_LEN;                    
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        // 外设地址不增加
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 // 内存地址增加
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据宽度1B
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址宽度1B
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // 单次传输模式
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
+    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;                 // 优先级
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
     DMA_Init(DMA_s485_usart.dma_tx_base, &DMA_InitStructure);               // 
 
@@ -281,7 +282,7 @@ void DMA_s485Uart_Init(void)
 
 	DMA_Cmd(DMA_s485_usart.dma_tx_base, DISABLE); 												// 关闭DMA
 
-    DMA_ITConfig(DMA_s485_usart.dma_tx_base, DMA_IT_TC, ENABLE);            // 开启发送DMA中断
+    DMA_ITConfig(DMA_s485_usart.dma_tx_base, DMA_IT_TC, ENABLE);            // 允许传输完成中断
 
    
 
@@ -294,16 +295,18 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&SER485_USART->DR);
     DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)S485Uart_buf;         
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                     
-    DMA_InitStructure.DMA_BufferSize = GPRS_UART_BUF_LEN;                     
+    DMA_InitStructure.DMA_BufferSize = S485_UART_BUF_LEN;                     
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 
+    DMA_InitStructure.DMA_Priority = DMA_Priority_High;                 
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            
     DMA_Init(DMA_s485_usart.dma_rx_base, &DMA_InitStructure);               
-    DMA_ClearFlag( DMA_s485_usart.dma_rx_flag);                                
+    DMA_ClearFlag( DMA_s485_usart.dma_rx_flag);      
+	DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
+
     DMA_Cmd(DMA_s485_usart.dma_rx_base, ENABLE);                            
 
    
@@ -326,6 +329,21 @@ void DMA1_Channel7_IRQHandler(void)
     }
 }
 
+//
+void DMA1_Channel6_IRQHandler(void)
+{
+
+    if(DMA_GetITStatus(DMA1_FLAG_TC6))
+    {
+		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE); 
+        DMA_ClearFlag(DMA_s485_usart.dma_rx_flag);         // 清除标志
+//		S485_uart_ctl.recv_size = S485_UART_BUF_LEN;
+//		DMA_s485_usart.dma_rx_base->CNDTR = S485_UART_BUF_LEN;
+//		DMA_Cmd( DMA_s485_usart.dma_rx_base, ENABLE);
+//		osSemaphoreRelease( SemId_s485rxFrame);
+    }
+}
+
 void USART2_IRQHandler(void)
 {
 	uint8_t clear_idle = clear_idle;
@@ -335,8 +353,8 @@ void USART2_IRQHandler(void)
 		
 		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE);       // 关闭DMA
 		DMA_ClearFlag( DMA_s485_usart.dma_rx_flag );           // 清除DMA标志
-		S485_uart_ctl.recv_size = GPRS_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_s485_usart.dma_rx_base); //获得接收到的字节
-		DMA_s485_usart.dma_rx_base->CNDTR = GPRS_UART_BUF_LEN;
+		S485_uart_ctl.recv_size = S485_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_s485_usart.dma_rx_base); //获得接收到的字节
+		DMA_s485_usart.dma_rx_base->CNDTR = S485_UART_BUF_LEN;
 		DMA_Cmd( DMA_s485_usart.dma_rx_base, ENABLE);
 		
 		clear_idle = SER485_USART->SR;

@@ -145,9 +145,7 @@ int gprs_Uart_read(char *data, uint16_t size)
 	int len = size;
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
-	
-	memset( data, 0, size);
-	
+		
 	if( Gprs_uart_ctl.rx_block)
 	{
 		if( Gprs_uart_ctl.rx_waittime_ms == 0)
@@ -342,6 +340,7 @@ void DMA1_Channel2_IRQHandler(void)
 		osSemaphoreRelease( SemId_txFinish);
     }
 }
+
 
 void USART3_IRQHandler(void)
 {
