@@ -28,8 +28,8 @@ extern void sample_name (void const *argument);         // thread function
 osThreadId tid_sample_name;                             // thread id
 osThreadDef (sample_name, osPriorityNormal, 1, 0);      // thread object
 */
-
-
+int Init_ThrdDtu (void);
+extern osThreadId tid_ThrdDtu;
 // global 'semaphores' ----------------------------------------------------------
 /* 
 Example:

@@ -504,9 +504,11 @@ int delete_sms( gprs_t *self, int seq)
 				step += 2;
 				break;
 			case 2:
-				sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,1\x00D\x00A", cnnt_num);		//quick close
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
-				step ++;
+				sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,0\x00D\x00A", cnnt_num);		//quick close
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+				if( pp)
+					step ++;
 				break;
 			case 3:
 				sprintf( Gprs_cmd_buf, "AT+CIPSTART=%d,\"TCP\",\"%s\",\"%d\"\x00D\x00A", cnnt_num, addr, portnum);
@@ -642,10 +644,78 @@ int recvform_tcp( gprs_t *self, char *buf, int *lsize)
 	recv_seq = atoi( buf + tmp);
 	*lsize = atoi( buf + tmp + 1);
 	
-	memcpy( buf, buf + tmp + 3, *lsize);
+	while( *pp != '\x00A')
+		pp++;
+	memcpy( buf, pp, *lsize);
 	return recv_seq;
 }
 
+int deal_tcpclose_event( gprs_t *self, char *data, int len)
+{
+	char *pp;
+	short tmp, close_seq;
+	pp = strstr((const char*)data,"CLOSED");
+	if( pp)
+	{
+		tmp = strcspn( data, "0123456789");	
+		close_seq = atoi( data + tmp);
+		Ip_cnnState.cnn_state[ close_seq] = CNNT_DISCONNECT;
+		return close_seq;
+	}
+	return ERR_BAD_PARAMETER;
+}
+int deal_tcprecv_event( gprs_t *self, char *buf, int *lsize)
+{
+	char *pp;
+	int recv_seq = -1;
+	int tmp = 0;
+	
+	pp = strstr((const char*)buf,"RECEIVE");	
+	if( pp == NULL)
+		return ERR_FAIL;
+	
+	tmp = strcspn( pp, "0123456789");	
+	recv_seq = atoi( pp + tmp);
+	*lsize = atoi( pp + tmp + 2);
+	while( *pp != '\x00A')
+		pp++;
+	
+	memcpy( buf, pp + 1, *lsize);
+	return recv_seq;
+	
+}
+
+int	guard_serial( gprs_t *self, char *buf, int *lsize)
+{
+	int ret;
+	char *pp;
+	ret = UART_RECV( buf, *lsize);
+	if( ret < 1)
+	 return ERR_FAIL;
+	
+	*lsize = ret;
+	pp = strstr((const char*)buf,"CLOSED");
+	if( pp)
+	{
+		
+		return tcp_close;
+	}
+	pp = strstr((const char*)buf,"CMTI");
+	if( pp)
+	{
+		return sms_urc;
+		
+	}
+	
+	pp = strstr((const char*)buf,"RECEIVE");
+	if( pp)
+	{
+		return tcp_receive;
+	}
+	
+	return ERR_UNKOWN;
+	
+}
 
 int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 {
@@ -750,29 +820,61 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 				step ++;
 			case 2:
 				len = bufsize;
-				ret = self->recvform_tcp( self, buf, &len);
-				if( len >= 0)
+				ret = self->guard_serial( self, buf, &len);
+				if( ret == tcp_receive)
 				{
-					pp = strstr((const char*)buf,"finished");
-					if( pp)
+					ret = self->deal_tcprecv_event( self, buf, &len);
+					if( len >= 0)
 					{
-						finish[ ret] = 1;
-						sum = 0;
-						for( i = 0; i < IPMUX_NUM; i++)
+						pp = strstr((const char*)buf,"finished");
+						if( pp)
 						{
-							sum += finish[i];
+							finish[ ret] = 1;
+							sum = 0;
+							for( i = 0; i < IPMUX_NUM; i++)
+							{
+								sum += finish[i];
+								
+							}
+							if( sum == IPMUX_NUM)
+								return ERR_OK;
 							
 						}
-						if( sum == IPMUX_NUM)
-							return ERR_OK;
-						
+						DPRINTF(" recv : %s \n", buf);
+						self->sendto_tcp( self, ret, buf, len);
 					}
+				
 					
-					DPRINTF(" recv : %s \n", buf);
-					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
 				}
-				if( Ip_cnnState.cnn_state[ ret] != CNNT_ESTABLISHED)
-					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
+				if( ret == tcp_close)
+				{
+					ret = self->deal_tcpclose_event( self, buf, len);
+					if( ret >= 0)
+						self->tcp_cnnt( self, ret, tets_addr, portnum);
+				}
+//				ret = self->recvform_tcp( self, buf, &len);
+//				if( len >= 0)
+//				{
+//					pp = strstr((const char*)buf,"finished");
+//					if( pp)
+//					{
+//						finish[ ret] = 1;
+//						sum = 0;
+//						for( i = 0; i < IPMUX_NUM; i++)
+//						{
+//							sum += finish[i];
+//							
+//						}
+//						if( sum == IPMUX_NUM)
+//							return ERR_OK;
+//						
+//					}
+//					
+//					DPRINTF(" recv : %s \n", buf);
+//					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
+//				}
+//				if( Ip_cnnState.cnn_state[ ret] != CNNT_ESTABLISHED)
+//					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
 				break;
 			default:break;
 			
@@ -928,6 +1030,10 @@ FUNCTION_SETTING(send_text_sms, send_text_sms);
 FUNCTION_SETTING(read_phnNmbr_TextSMS, read_phnNmbr_TextSMS);
 FUNCTION_SETTING(delete_sms, delete_sms);
 FUNCTION_SETTING(sms_test, sms_test);
+
+FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
+FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
+FUNCTION_SETTING(guard_serial, guard_serial);
 
 
 FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);

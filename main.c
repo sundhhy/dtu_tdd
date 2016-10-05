@@ -46,18 +46,19 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-//#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
 #define TEST_BUF_SIZE 512
 char Test_buf[TEST_BUF_SIZE];
-//#endif
+#endif
 /*
  * main: initialize and start the system
  */
 int main (void) {
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
 	gprs_t *sim800 = gprs_t_new();
+#endif
 	int i = 0;
-//	char c;
-  osKernelInitialize ();                    // initialize CMSIS-RTOS
+	osKernelInitialize ();                    // initialize CMSIS-RTOS
 
 	
 	 
@@ -76,9 +77,9 @@ int main (void) {
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 
 	osKernelStart ();                         // start thread execution
-	
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 	
 	sim800->init(sim800);
-	
+#endif	
 #ifdef TDD_GPRS_ONOFF
 	while(1)
 	{
