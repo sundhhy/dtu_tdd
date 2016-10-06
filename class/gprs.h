@@ -31,6 +31,8 @@ CLASS(gprs_t)
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
 	int	(*guard_serial)( gprs_t *self, char *buf, int *lsize);
+	int	(*get_firstDiscnt_seq)( gprs_t *self);
+	int	(*get_firstCnt_seq)( gprs_t *self);
 	
 };
 

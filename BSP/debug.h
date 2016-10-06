@@ -47,7 +47,7 @@
 //#define TDD_GPRS_ONOFF
 //#define TDD_GPRS_USART
 //#define TDD_GPRS_SMS
-#define TDD_GPRS_TCP
+//#define TDD_GPRS_TCP
 
 #define PROTOTOCOL "TCP"
 #define IPADDR "chitic.zicp.net"

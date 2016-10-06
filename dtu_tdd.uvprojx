@@ -413,6 +413,11 @@
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
             </File>
+            <File>
+              <FileName>cdma_dtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\cdma_dtu.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -478,20 +483,22 @@
               <FileType>5</FileType>
               <FilePath>.\BSP\serial485_uart.h</FilePath>
             </File>
-            <File>
-              <FileName>spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\BSP\spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\BSP\spi.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>sdh_lib</GroupName>
+          <Files>
+            <File>
+              <FileName>hw_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\hw_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>hw_spi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sdh_lib\hw_spi.h</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

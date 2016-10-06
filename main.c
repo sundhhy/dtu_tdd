@@ -56,8 +56,9 @@ char Test_buf[TEST_BUF_SIZE];
 int main (void) {
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
 	gprs_t *sim800 = gprs_t_new();
-#endif
 	int i = 0;
+#endif
+	
 	osKernelInitialize ();                    // initialize CMSIS-RTOS
 
 	
@@ -72,7 +73,7 @@ int main (void) {
 //	
 	printf(" DTU TDD start ...\r\n");
 	
-
+	Init_ThrdDtu();
   // create 'thread' functions that start executing,
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 

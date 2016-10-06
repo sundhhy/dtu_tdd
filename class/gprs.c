@@ -49,6 +49,7 @@ static int prepare_ip(gprs_t *self);
 //ip connect state
 #define CNNT_DISCONNECT		0
 #define	CNNT_ESTABLISHED	1
+#define CNNT_SENDERROR		2
 
 
 static struct {
@@ -59,7 +60,7 @@ static struct {
 }Gprs_state;
 static struct {
 	
-	int8_t	cnn_num[IPMUX_NUM];
+//	int8_t	cnn_num[IPMUX_NUM];
 	
 	int8_t	cnn_state[IPMUX_NUM];
 }Ip_cnnState;
@@ -512,31 +513,36 @@ int delete_sms( gprs_t *self, int seq)
 				break;
 			case 3:
 				sprintf( Gprs_cmd_buf, "AT+CIPSTART=%d,\"TCP\",\"%s\",\"%d\"\x00D\x00A", cnnt_num, addr, portnum);
+				DPRINTF("  %s ", Gprs_cmd_buf);
 				UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
-				osDelay(1000);
+				osDelay(10);
 				step++;
 			case 4:
 				
 				ret = UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
 				if( ret > 0)
 				{
-					pp = strstr((const char*)Gprs_cmd_buf,"OK");		
+					pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+					if( pp)
+						return ERR_ADDR_ERROR;
+					pp = strstr((const char*)Gprs_cmd_buf,"CONNECT OK");	
 					if( pp)
 					{
-						osDelay(1000);
 						Ip_cnnState.cnn_state[ cnnt_num] = CNNT_ESTABLISHED;
 						return ERR_OK;
 					}
-					pp = strstr((const char*)Gprs_cmd_buf,"ERROR");		
+					pp = strstr((const char*)Gprs_cmd_buf,"CONNECT FAIL");
 					if( pp)
-					{
-						return ERR_ADDR_ERROR;
+					{	
+						return ERR_BAD_PARAMETER;
 					}
+					
+				
 				}
 				retry --;
 				if( retry == 0)
 					return ERR_DEV_TIMEOUT;
-				osDelay(1000);
+//				osDelay(1000);
 				
 				
 			default:break;
@@ -589,7 +595,10 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 			return ERR_FAIL;
 		pp = strstr((const char*)Gprs_cmd_buf,"ERROR");		
 		if( pp)
+		{
+			Ip_cnnState.cnn_state[ cnnt_num] = CNNT_SENDERROR;
 			return ERR_FAIL;
+		}
 		
 		retry --;
 		
@@ -617,6 +626,7 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
  */
 int recvform_tcp( gprs_t *self, char *buf, int *lsize)
 {
+	#if 0
 	int ret;
 	char *pp;
 	int recv_seq = -1;
@@ -647,9 +657,11 @@ int recvform_tcp( gprs_t *self, char *buf, int *lsize)
 	while( *pp != '\x00A')
 		pp++;
 	memcpy( buf, pp, *lsize);
-	return recv_seq;
-}
 
+	return recv_seq;
+	#endif
+	return 0;
+}
 int deal_tcpclose_event( gprs_t *self, char *data, int len)
 {
 	char *pp;
@@ -681,6 +693,7 @@ int deal_tcprecv_event( gprs_t *self, char *buf, int *lsize)
 		pp++;
 	
 	memcpy( buf, pp + 1, *lsize);
+	buf[ *lsize] = 0;
 	return recv_seq;
 	
 }
@@ -689,7 +702,10 @@ int	guard_serial( gprs_t *self, char *buf, int *lsize)
 {
 	int ret;
 	char *pp;
+	
+	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
 	ret = UART_RECV( buf, *lsize);
+	gprs_Uart_ioctl( GPRS_UART_CMD_SET_RXBLOCK);
 	if( ret < 1)
 	 return ERR_FAIL;
 	
@@ -717,6 +733,33 @@ int	guard_serial( gprs_t *self, char *buf, int *lsize)
 	
 }
 
+//返回第一个未处于连接状态的序号
+int	get_firstDiscnt_seq( gprs_t *self)
+{
+	int i = 0; 
+	for( i = 0 ; i < IPMUX_NUM; i ++)
+	{
+		if( Ip_cnnState.cnn_state[ i] != CNNT_ESTABLISHED)
+			return i;
+		
+	}
+	
+	return ERR_FAIL;
+	
+}
+int	get_firstCnt_seq( gprs_t *self)
+{
+	int i = 0; 
+	for( i = 0 ; i < IPMUX_NUM; i ++)
+	{
+		if( Ip_cnnState.cnn_state[ i] == CNNT_ESTABLISHED)
+			return i;
+		
+	}
+	
+	return ERR_FAIL;
+	
+}
 int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 {
 	int ret = 0;
@@ -1034,6 +1077,9 @@ FUNCTION_SETTING(sms_test, sms_test);
 FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
 FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
 FUNCTION_SETTING(guard_serial, guard_serial);
+FUNCTION_SETTING(get_firstDiscnt_seq, get_firstDiscnt_seq);
+FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
+
 
 
 FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);
