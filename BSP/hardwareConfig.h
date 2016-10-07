@@ -2,12 +2,13 @@
 #define __HARDWARECONFIG_H__
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_usart.h"
+#include "spi.h"
 
 
 #define	GPRS_COM			3			///< gprs模块使用的串口号	
 #define	DEBUG_COM			1
 #define	SERAIL_485_COM		2
-#define W25Q_SPI			SPI1_BASE
+#define W25Q_SPI			SPI1
 
 
 #if GPRS_COM == 3
@@ -51,7 +52,8 @@ typedef struct
 
 extern gpio_pins	Gprs_powerkey;
 
-
+extern gpio_pins	W25Q_csPin;
+extern SPI_instance W25Q_Spi ;
 
 
 

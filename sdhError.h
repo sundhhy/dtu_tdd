@@ -13,4 +13,6 @@
 #define ERR_DEV_TIMEOUT					-8					/* ??????			*/
 #define ERR_FAIL								-9					/* 操作失败		*/ 
 #define ERR_ADDR_ERROR						-10
+#define ERR_DRI_OPTFAIL							-11				/* 驱动执行某项动作失败			*/
+
 #endif

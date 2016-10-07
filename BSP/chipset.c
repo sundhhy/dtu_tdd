@@ -147,13 +147,19 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_rx_irq;   // 发送DMA配置
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+//	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_rx_irq;   // 发送DMA配置
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+
+    NVIC_InitStructure.NVIC_IRQChannel = W25Q_Spi.irq;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1 ;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 /*| RCC_APB1Periph_TIM3*/,ENABLE);
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 /*| RCC_APB1Periph_TIM3*/,ENABLE);
     NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
@@ -178,11 +184,7 @@ void GPIO_Configuration(void)
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);  //Enable UART4 clocks
 
-	//w25q cs
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
 	
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -289,6 +291,23 @@ void USART_Configuration(void)
 //    TIM_Cmd(TIM2, ENABLE);										//使能
 //}
 
+void w25q_init_cs(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
 
+	//w25q cs
+	GPIO_InitStructure.GPIO_Pin = W25Q_csPin.pin;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(W25Q_csPin.Port, &GPIO_InitStructure);
+}
 
-
+void w25q_init_spi(void)
+{
+	SPI_InitTypeDef spi_conf;
+	SPI_StructInit( &spi_conf);
+	W25Q_Spi.config = &spi_conf;
+	spi_init( &W25Q_Spi);
+	spi_ioctl( &W25Q_Spi, CMD_SET_RXBLOCK);
+	spi_ioctl( &W25Q_Spi, SET_RXWAITTIME_MS, 2000);
+}

@@ -483,20 +483,35 @@
               <FileType>5</FileType>
               <FilePath>.\BSP\serial485_uart.h</FilePath>
             </File>
+            <File>
+              <FileName>spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BSP\spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BSP\spi.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>sdh_lib</GroupName>
           <Files>
             <File>
-              <FileName>hw_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\sdh_lib\hw_spi.c</FilePath>
+              <FileName>hw_w25q.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sdh_lib\hw_w25q.h</FilePath>
             </File>
             <File>
-              <FileName>hw_spi.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\sdh_lib\hw_spi.h</FilePath>
+              <FileName>hw_w25q.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\hw_w25q.c</FilePath>
+            </File>
+            <File>
+              <FileName>CircularBuffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\CircularBuffer.c</FilePath>
             </File>
           </Files>
         </Group>

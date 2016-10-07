@@ -19,6 +19,11 @@ gpio_pins	Gprs_powerkey =  {
 	GPIO_Pin_0
 };
 
+gpio_pins	W25Q_csPin =  {
+	GPIOA,
+	GPIO_Pin_4
+};
+
 USART_InitTypeDef USART_InitStructure = {
 		9600,
 		USART_WordLength_8b,
@@ -78,8 +83,13 @@ Dma_source DMA_s485_usart = {
 	
 };
 
-
-
+SPI_instance W25Q_Spi = {
+	W25Q_SPI,
+	((void *)0),
+	SPI1_IRQn,
+	
+	
+};
 
 
 

@@ -330,15 +330,15 @@ void DMA1_Channel7_IRQHandler(void)
 }
 
 //dma将缓存填满以后，就不要去接收剩下的字节了
-void DMA1_Channel6_IRQHandler(void)
-{
+//void DMA1_Channel6_IRQHandler(void)
+//{
 
-    if(DMA_GetITStatus(DMA1_FLAG_TC6))
-    {
-		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE); 
-        DMA_ClearFlag(DMA_s485_usart.dma_rx_flag);         // 清除标志
-    }
-}
+//    if(DMA_GetITStatus(DMA1_FLAG_TC6))
+//    {
+//		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE); 
+//        DMA_ClearFlag(DMA_s485_usart.dma_rx_flag);         // 清除标志
+//    }
+//}
 
 void USART2_IRQHandler(void)
 {
