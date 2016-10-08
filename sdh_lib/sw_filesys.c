@@ -42,9 +42,6 @@ Modification:
 
 
 static List L_File_opened;
-static int Task_state = 0;
-static int Task_old_state = 0;
-static short WR_addr = 0, MEM_sector = FLASH_USEE_SECTOR1;
 uint8_t	Flash_buf[SECTOR_SIZE];
 uint8_t	*Ptr_Flash_buf;		//ÓÃÓÚ¶ÁÈ¡ÉÈÇø1»ò2µÄÄÚ´æÊ¹ÓÃÇé¿ö
 
@@ -53,8 +50,6 @@ static	uint8_t		Buf_chg_flag = 0;				//»º´æÄÚÈÝ±»ÐÞ¸ÄµÄ±êÖ¾,»º´æ±»Ð´ÈëflashÊ±±êÖ
 static uint16_t	Src_sector = INVALID_SECTOR;		//»º´æÖÐµÄÄÚÈÝµÄÉÈÇø
 static char Flash_err_flag = 0;
 
-static int Create_file_easy(char *name, file_Descriptor_t **fd);
-static int Create_file_hard(char *name, file_Descriptor_t **fd);
 static bool check_bit(uint8_t *data, int bit);
 static void clear_bit(uint8_t *data, int bit);
 static void set_bit(uint8_t *data, int bit);
@@ -209,7 +204,7 @@ int fs_open(char *name, file_Descriptor_t **fd)
 				}		//for
 				*fd = NULL;
 				SYS_ARCH_UNPROTECT;
-				return ERROR_T(ERR_OPEN_FILE_FAIL);
+				return (ERR_OPEN_FILE_FAIL);
 		}		//switch
 		
 	}		//while(1)
@@ -221,18 +216,17 @@ int fs_format(void)
 {
 	sup_sector_head_t	*sup_head;
 	int ret;
-	int count = 0;
-	WR_addr = 0;
+	int wr_addr = 0;
 	
 	//²Á³ýÕû¸öÎÄ¼þÏµÍ³
 	while(1)
 	{
-		ret = w25q_Erase_block(WR_addr);
+		ret = w25q_Erase_block(wr_addr);
 		if( ret == ERR_OK)
 		{
-			if( 	WR_addr < W25Q_flash.block_num - PAGE_REMIN_FOR_IMG/BLOCK_HAS_SECTORS/SECTOR_HAS_PAGES )
+			if( 	wr_addr < W25Q_flash.block_num - PAGE_REMIN_FOR_IMG/BLOCK_HAS_SECTORS/SECTOR_HAS_PAGES )
 			{
-				WR_addr ++;
+				wr_addr ++;
 				
 				
 			}
@@ -285,7 +279,7 @@ int fs_creator(char *name, file_Descriptor_t **fd, int len)
 	if( tmp_area == NULL)
 	{
 		ret = ERR_MEM_UNAVAILABLE;
-		return ERR_MEM_UNAVAILABLE;
+		goto err1;
 	}
 	ret = page_malloc( tmp_area, len);
 	if( ret < 0) {
@@ -435,12 +429,10 @@ int fs_write( file_Descriptor_t *fd, uint8_t *data, int len)
 	
 	int 			ret;
 	int 				i, limit;
-	int  				myid = get_current_task_pid();
+	int  				myid = SYS_GETTID;
 	area_t		*wr_area;
 	uint16_t	wr_page = 0, wr_sector = 0;
-	//´æ´¢Çø²»ÕýÈ·¾Í²»´¦ÀíÖ±½Ó·µ»Ø
-	if( Flash_err_flag )
-		return ERR_FLASH_UNAVAILABLE;
+
 	while( 1)
 	{
 		
@@ -499,14 +491,12 @@ int fs_write( file_Descriptor_t *fd, uint8_t *data, int len)
 int fs_read( file_Descriptor_t *fd, uint8_t *data, int len)
 {
 	
-		int 			ret;
-		int 				i, limit;
-		int  				myid = get_current_task_pid();
-		area_t			*rd_area;
-		uint16_t	rd_page = 0, rd_sector = 0;
-		//´æ´¢Çø²»ÕýÈ·¾Í²»´¦ÀíÖ±½Ó·µ»Ø
-	if( Flash_err_flag )
-		return ERR_FLASH_UNAVAILABLE;
+	int 			ret;
+	int 				i, limit;
+	int  				myid = SYS_GETTID;
+	area_t			*rd_area;
+	uint16_t	rd_page = 0, rd_sector = 0;
+
 	
 	while(1)
 	{
@@ -522,47 +512,44 @@ int fs_read( file_Descriptor_t *fd, uint8_t *data, int len)
 			return ret;
 		
 		//¶ÁÐ´µÄÊ±ºò£¬Òª¿¼ÂÇÎÄ¼þµÄ½áÎ²²»ÔÚ±¾ÉÈÇøµÄÇé¿ö
-			i = ( rd_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->rd_pstn[myid] % PAGE_SIZE;
-				
-			if( rd_area->start_pg +  rd_area->pg_number > ( rd_sector + 1) *  SECTOR_HAS_PAGES)	//½áÎ²Î»ÓÚ±¾ÉÈÇøÍâ
-				limit = SECTOR_SIZE;
-			else	//½áÎ²Î»ÓÚ±¾ÉÈÇøÄÚ
-				limit = ( rd_area->start_pg +  rd_area->pg_number - rd_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
-				
-			while( len)
+		i = ( rd_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->rd_pstn[myid] % PAGE_SIZE;
+			
+		if( rd_area->start_pg +  rd_area->pg_number > ( rd_sector + 1) *  SECTOR_HAS_PAGES)	//½áÎ²Î»ÓÚ±¾ÉÈÇøÍâ
+			limit = SECTOR_SIZE;
+		else	//½áÎ²Î»ÓÚ±¾ÉÈÇøÄÚ
+			limit = ( rd_area->start_pg +  rd_area->pg_number - rd_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
+			
+		while( len)
+		{
+			if( i >= SECTOR_SIZE || i > limit)		 //³¬³öÁËµ±Ç°µÄÉÈÇø»òÕßÇø¼ä·¶Î§
 			{
-				if( i >= SECTOR_SIZE || i > limit)		 //³¬³öÁËµ±Ç°µÄÉÈÇø»òÕßÇø¼ä·¶Î§
-				{
-					break;
-				}
-				*data++ = Flash_buf[i];
-				i ++;
-				fd->rd_pstn[myid] ++;
-				len --;
-					
-			}
-				
-			if( len == 0)			//»¹ÓÐÊý¾ÝÃ»¶ÁÍê
-			{
-				
 				break;
-				
 			}
+			*data++ = Flash_buf[i];
+			i ++;
+			fd->rd_pstn[myid] ++;
+			len --;
+				
+		}
+			
+		if( len == 0)			//»¹ÓÐÊý¾ÝÃ»¶ÁÍê
+		{
+			
+			break;
+			
+		}
 			
 	}
+	
+	return ERR_OK;
 		
 	
 }
 
 int fs_lseek( file_Descriptor_t *fd, int offset, int whence)
 {
-	int ret = 0;
-	char myid = get_current_task_pid();
-	uint16_t 	pos = 0;
-	uint8_t data[4];
-	//´æ´¢Çø²»ÕýÈ·¾Í²»´¦ÀíÖ±½Ó·µ»Ø
-	if( Flash_err_flag )
-		return ERR_FLASH_UNAVAILABLE;
+	char myid = SYS_GETTID;
+
 	switch( whence)
 	{
 		case WR_SEEK_SET:
@@ -598,22 +585,19 @@ int fs_lseek( file_Descriptor_t *fd, int offset, int whence)
 		
 	}
 	
-	
+	return ERR_OK;
 	
 	
 }
 
 int fs_close( file_Descriptor_t *fd)
 {
-	char myid = get_current_task_pid();
+	char myid = SYS_GETTID;
 	void 							*data = NULL;
 	ListElmt           *elmt;
 	int i, ret;
-	int os_ret;
 	file_info_t	*file_in_storage;
-	//´æ´¢Çø²»ÕýÈ·¾Í²»´¦ÀíÖ±½Ó·µ»Ø
-	if( Flash_err_flag )
-		return ERR_FLASH_UNAVAILABLE;
+
 	fd->reference_count --;			
 	fd->rd_pstn[ myid] = 0;
 	fd->wr_pstn[ myid] = 0;
@@ -644,506 +628,338 @@ int fs_close( file_Descriptor_t *fd)
 
 int fs_delete( file_Descriptor_t *fd)
 {
-	char myid = get_current_task_pid();
-	void 							*data = NULL;
 	int ret = 0;
 	file_info_t	*file_in_storage;
-	file_Descriptor_t *pfd;
-	storage_area_t	*src_area,*dest_area;
+	storage_area_t	*src_area;
 	sup_sector_head_t	*sup_head;
-	ListElmt			*ele;
 	short i, j, k;
-	static char step = 0;
-	//´æ´¢Çø²»ÕýÈ·¾Í²»´¦ÀíÖ±½Ó·µ»Ø
-	if( Flash_err_flag )
-		return ERR_FLASH_UNAVAILABLE;
-	switch(step)
+
+	
+	fd->reference_count --;
+	if( fd->reference_count > 0)
+		return ERR_FILE_OCCUPY;
+	ret = read_flash(FILE_INFO_SECTOR);
+	if( ret != ERR_OK)
+		return ret;
+	sup_head = ( sup_sector_head_t *)Flash_buf;
+	file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
+	k = 0;
+	
+	//´æ´¢Æ÷µÄ¹ÜÀíÇøÕÒµ½¸ÃÎÄ¼þµÄ¹ÜÀíÄÚÈÝÈ»ºóÉ¾³ýµô
+	for( i = 0; i < FILE_NUMBER_MAX; i ++)
 	{
-		case 0:
+		if( strcmp(file_in_storage->name, fd->name) == 0x00 )
+		{
 			
 			
-			fd->reference_count --;
-			if( fd->reference_count > 0)
-				goto err1;
-			
-			
-			ele = list_get_elmt( &L_File_opened,fd->name);		//ÏÈ´ÓÒÑ¾­´ò¿ªµÄÎÄ¼þÖÐ²éÕÒÊÇ·ñÒÑ¾­±»ÆäËûÈÎÎñ´ò¿ª¹ý
-			if(  ele!= NULL)
+			src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t) );
+			for( j = 0; j < STOREAGE_AREA_NUMBER_MAX; j ++)
 			{
-				list_rem_next( &L_File_opened, ele, &data);
-			}
-			
-			
-			step ++;
-			
-		case 1:
-			ret = read_flash(FILE_INFO_SECTOR);
-			if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return RET_PROCESSING;
-		case 2:
-			sup_head = ( sup_sector_head_t *)Flash_buf;
-			file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
-			k = 0;
-			for( i = 0; i < FILE_NUMBER_MAX; i ++)
-			{
-				if( strcmp(file_in_storage->name, fd->name) == 0x00 )
+				if( src_area[j].file_id == file_in_storage->file_id)
 				{
+					memset( &src_area[j], 0xff, sizeof(storage_area_t));
+					k ++;
 					
-					
-					src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t) );
-					for( j = 0; j < STOREAGE_AREA_NUMBER_MAX; j ++)
-					{
-						if( src_area[j].file_id == file_in_storage->file_id)
-						{
-							memset( &src_area[j], 0xff, sizeof(storage_area_t));
-							k ++;
-							
-						}
-						if( k == file_in_storage->area_total)
-							break;
-						
-						
-					}
-					
-					Buf_chg_flag = 1;
-					memset( file_in_storage, 0xff, sizeof(file_info_t));
-					break;
 				}
-				
-				file_in_storage ++;
+				if( k == file_in_storage->area_total)
+					break;
 				
 				
 			}
-			sup_head->file_count --;
-			if( fd->area != NULL)
-				step ++;
-			else 
-			{
-				free(fd);
-				fd = NULL;
-				step += 2;
-				goto erase_a_chip;
-			}
-		case 3:
-			ret = page_free( fd->area, fd->area_total);
-			if( ret > RET_SUCCEED)
-				return ret;
-			free( fd->area);
-			step ++;
-			free(fd);
-			fd = NULL;
+			
+			Buf_chg_flag = 1;
+			memset( file_in_storage, 0xff, sizeof(file_info_t));
+			break;
+		}
 		
-			
-erase_a_chip:			
-		case 4:
-			step = 0;
-			Os_MutexUnlock( FS_Mutex);
-			return RET_SUCCEED;
-			
+		file_in_storage ++;
 		
 		
 	}
+	sup_head->file_count --;
+	if( fd->area != NULL)
+	{
+		page_free( fd->area, fd->area_total);
+		free( fd->area);
+	}
 	
-	
-	err1:
-		step = 0;
-		Os_MutexUnlock( FS_Mutex);
-		return ERROR_T(ERR_FILE_OCCUPY);
+	free(fd);
+	fd = NULL;
+			
+	return ERR_OK;
 	
 }
 
 int fs_flush( void)
 {
 	int ret;
-	static char step = 0;
-	os_status_t os_ret;
 	//´æ´¢Çø²»ÕýÈ·¾Í²»´¦ÀíÖ±½Ó·µ»Ø
 	if( Flash_err_flag )
-		return RET_SUCCEED;
-	switch( step)
-	{
-		case 0:
-			if( Buf_chg_flag == 0)
-			{
-				
-				return RET_SUCCEED;
-				
-			}
-			else 
-				step ++;
-		case 1:
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
-			step ++;
-		case 2:
-			ret = flush_flash( Src_sector);
-			if( ret == RET_SUCCEED)
-			{
-				Buf_chg_flag = 0;
-				step = 0;
-				Os_MutexUnlock( FS_Mutex);
-				return RET_SUCCEED;
-				
-			}
-			else
-				return ret;
+		return ERR_FLASH_UNAVAILABLE;
+
 		
+	if( Buf_chg_flag == 0)
+		return ERR_OK;
+	ret = flush_flash( Src_sector);
+	if( ret == ERR_OK)
+	{
+		Buf_chg_flag = 0;
+		
+		return ERR_OK;
 		
 	}
+	return ret;
+		
 	
-//	if( Buf_chg_flag)
-//	{
-//		
-//		
-//		
-//	}
-//	else 
-//	{
-//		
-//		
-//		
-//		Os_MutexUnlock( FS_Mutex);
-//		return RET_SUCCEED;
-//		
-//	}
 	
 }
 
 
 
-int filesys_dev_check(void)
-{
-	
-}
 
 
 static int read_flash( uint16_t sector)
 {
-	static char step = 0;
-	error_t ret = 0;
+	int ret = 0;
 	if( Src_sector == sector )		
 	{
 		//±¾´Î¶ÁÈ¡µÄÉÈÇøÓëÉÏ´Î¶ÁÈ¡µÄÒ»ÖÂÊ±ºò£¬¿ÉÒÔ²»±ØÔÙÈ¥¶ÁÈ¡
 		//Èç¹û»º´æÐÞ¸Ä±êÖ¾ÖÃÆð£¬ËµÃ÷»º´æÖÐµÄÄÚÈÝ±ÈflashÖÐµÄÄÚÈÝ¸üÐÂ
 		
-		step = 0;
-		return RET_SUCCEED;
-		
-		
+		return ERR_OK;
 	}
 	
 	//¶ÁÈ¡ÁíÍâÒ»¸öÉÈÇø£¬Ôò¸ù¾Ý»º´æÐÞ¸Ä±êÖ¾À´¾ö¶¨ÊÇ·ñ½«»º´æÄÚÈÝÐ´ÈÕflash
-	switch( step)
+
+	if( Buf_chg_flag)
 	{
-		case 0:
-			if( Buf_chg_flag)
-			{
-				ret = flush_flash( Src_sector);
-				if( ret == RET_SUCCEED)
-				{
-					Src_sector = INVALID_SECTOR;
-					step ++;
-				}
-				else
-					return ret;
-				
-			}
-			else
-				step ++;
-		case 1:
-			ret = flash_read_sector(Flash_buf,sector);
-			if( ret == RET_SUCCEED)
-			{
-				Buf_chg_flag = 0;
-				Src_sector = sector;
-				step = 0;
-				return RET_SUCCEED;
-			}
-			else
-				return RET_PROCESSING;
-		
+		ret = flush_flash( Src_sector);
+		if( ret != ERR_OK)
+		{
+			return ret;
+			
+		}
+//		Src_sector = INVALID_SECTOR;
 	}
-	
-	
-	
+	SYS_ARCH_PROTECT;
+	ret = flash_read_sector(Flash_buf,sector);
+	SYS_ARCH_UNPROTECT;
+	if( ret == ERR_OK)
+	{
+		Buf_chg_flag = 0;
+		Src_sector = sector;
+		return ERR_OK;
+	}
+		
+	return ret;
+
 }
 
-static error_t flush_flash( uint16_t sector)
+static int flush_flash( uint16_t sector)
 {
-	static char step = 0;
-	error_t ret = 0;
-	switch( step)
+	int ret = 0;
+	
+	SYS_ARCH_PROTECT;
+	ret = flash_erase_sector(sector);
+	
+	if( ret != ERR_OK )
 	{
-		case 0:
-			ret = flash_erase_sector(sector);
-			if( ret == RET_SUCCEED )
-			{
-				step += 1;
-				
-				
-			}
-//			else if( ret < 0)
-//			{
-//				return RET_DELAY;
-//				
-//			}
-			else
-				return ret;
-		case 1:
-			ret = flash_write_sector( Flash_buf, sector);
-			
-			if( ret == RET_SUCCEED )
-			{
-					step = 0;			
-					
-					return RET_SUCCEED;
-			}
-//			else if( ret < 0)
-//			{
-//				return RET_DELAY;
-//				
-//			}
-			else
-				return ret;	
-		
-		
+		SYS_ARCH_UNPROTECT;
+		return ret;
 	}
-	
-	
-	
+
+	ret =  flash_write_sector( Flash_buf, sector);
+	SYS_ARCH_UNPROTECT;
+	return ret;
 }
 
 static int page_malloc( area_t *area, int len)
 {
-	static char step = 0;
 	static uint32_t i = 0;
-	uint16_t j = 0, page_num,k;
-	error_t ret = 0;
+	uint16_t 	j = 0, page_num,k;
+	uint16_t	mem_manger_sector = 0;
+	short		wr_addr = 0;
+	int ret = 0;
 	
 	
-	switch( step)
+	
+
+	Ptr_Flash_buf = Flash_buf;
+	i = 0;
+	mem_manger_sector = FLASH_USEE_SECTOR1;
+	while(1)
 	{
-		case 0:
-			Ptr_Flash_buf = Flash_buf;
-			i = 0;
-			MEM_sector = FLASH_USEE_SECTOR1;
-			step += 1;
-		case 1:
-			ret = read_flash(MEM_sector);
-			if( ret == RET_SUCCEED)
-				step += 1;
-			else
-				return RET_PROCESSING;	
-		case 2:
-			//ÏÈ²é¿´flashÊÇ·ñ¾ßÓÐ¿É±»·ÖÅäµÄÄÚ´æÒ³
-			//ÉÈÇø0 1 2ÓÃÓÚÎ¬»¤ÎÄ¼þÏµÍ³£¬²»ÄÜ×÷ÎªÆÕÍ¨ÄÚ´æÊ¹ÓÃ£¬ËùÒÔÒªÌø¹ý
-			i = get_available_page( Ptr_Flash_buf, PAGE_AVAILBALE_OFFSET, ( SECTOR_SIZE * 8 - 1), len);
-			if( i != FLASH_NULL_FLAG)	
-			{
-				step += 3;
-				goto update_page_used;
-				
-			}
-			else {
-				//²éÑ¯ÏÂ°ë¸öÄÚ´æÖÐÊÇ·ñÓÐ¿ÉÓÃÒ³
-				MEM_sector = FLASH_USEE_SECTOR2;
-				
-				step += 1;
-				
-				
-			}
-		case 3:
-			
-			ret = read_flash(MEM_sector);
-			if( ret == RET_SUCCEED)
-				step += 1;
-			else
-				return RET_PROCESSING;
-		case 4:
-			i = get_available_page( Ptr_Flash_buf, 0, ( SECTOR_SIZE * 8 - PAGE_REMIN_FOR_IMG), len);
-			if( i != FLASH_NULL_FLAG)				//
-			{
-				i += SECTOR_SIZE * 8;
-				step += 1;
-				goto update_page_used;
-				
-			}
-			else {
-				
-				step = 0;
-				return ERROR_T(ERR_NO_FLASH_SPACE);
-				
-			}
 		
-update_page_used:
-		//²Á³ýÊÇÎªÁË°Ñ0Ð´³É1£¬ÔÚ±ê¼ÇÒÑ¾­±»·ÖÅäµôµÄÒ³Ê±ÊÇÒª°Ñ¶ÔÓ¦µÄbit´Ó1->0
-		//Òò´Ë²»»á³öÏÖ0->1µÄ³¡¾°£¬ÎªÁË½ÚÊ¡²Ù×÷¾Í²»½øÐÐ²Á³ý²Ù×÷ÁË¡£
-		//Ö»ÐèÒª½«±»·ÖÅäµôµÄÒ³µÄ±êÖ¾Çå³ý¼´¿É
-		case 5:
-			area->start_pg = i;
-			area->pg_number = len/PAGE_SIZE + 1;
-			i %= SECTOR_SIZE * 8;  //Ïû³ýÉÈÇø2µÄÆ«ÒÆ
-			for( j = 0; j <= len/PAGE_SIZE; j ++)
-				clear_bit( Ptr_Flash_buf, i + j);
-			step ++;
-			WR_addr = 0;			//iËùÔÚµÄÒ³
-		case 6:
-			
-			//¼ÆËãiÕâ¸öÆðÊ¼Î»ÖÃÔÚÒ»¸öÒ³ÖÐµÄÆðÊ¼Î»ÖÃ
-			j = i/8%PAGE_SIZE;
-			k = len/PAGE_SIZE/8;  //¼ÆËãÒª·ÖÅäµÄ³¤¶ÈËùÕ¼ÓÃµÄ×Ö½Ú³¤¶È
-			
-			page_num = (i + k) / PAGE_SIZE + 1;
-			while(1)
-			{
-				ret = w25q_Write(Ptr_Flash_buf +( i/8/PAGE_SIZE + WR_addr)* PAGE_SIZE,  MEM_sector*SECTOR_SIZE + ( i/8/PAGE_SIZE + WR_addr) * PAGE_SIZE, PAGE_SIZE);
-				if( ret == RET_SUCCEED )
-				{
-					WR_addr ++;
-					if( WR_addr >= page_num) 
-					{
-						step = 0;	
-						return RET_SUCCEED;
-						
-					}
-					
-					
-					
-				}
-				else if( ret < 0)
-				{
-					return RET_DELAY;
-					
-				}
-				else
-					return ret;
-			}
+		ret = read_flash(mem_manger_sector);
+		if( ret != ERR_OK)
+			return ret;
+		//ÏÈ²é¿´flashÊÇ·ñ¾ßÓÐ¿É±»·ÖÅäµÄÄÚ´æÒ³
+		//ÉÈÇø0 1 2ÓÃÓÚÎ¬»¤ÎÄ¼þÏµÍ³£¬²»ÄÜ×÷ÎªÆÕÍ¨ÄÚ´æÊ¹ÓÃ£¬ËùÒÔÒªÌø¹ý
+		i = get_available_page( Ptr_Flash_buf, PAGE_AVAILBALE_OFFSET, ( SECTOR_SIZE * 8 - 1), len);
+		if( i != FLASH_NULL_FLAG)	
+		{
+			if( mem_manger_sector == FLASH_USEE_SECTOR2)
+				i += SECTOR_SIZE * 8;
+			break;
+		}
+		//ÔÚµÚ¶þ¸öÄÚ´æ¹ÜÀíÉÈÇøÒ²ÕÒ²»µ½¿ÉÓÃÄÚ´æÒ³£¬ËµÃ÷ÄÚ´æ±»ÓÃ¾¡
+		if( mem_manger_sector == FLASH_USEE_SECTOR2)
+			return ERR_NO_FLASH_SPACE;
+		
+		mem_manger_sector = FLASH_USEE_SECTOR2;
 		
 	}
+			
+		
+	//²Á³ýÊÇÎªÁË°Ñ0Ð´³É1£¬ÔÚ±ê¼ÇÒÑ¾­±»·ÖÅäµôµÄÒ³Ê±ÊÇÒª°Ñ¶ÔÓ¦µÄbit´Ó1->0
+	//Òò´Ë²»»á³öÏÖ0->1µÄ³¡¾°£¬ÎªÁË½ÚÊ¡²Ù×÷¾Í²»½øÐÐ²Á³ý²Ù×÷ÁË¡£
+	//Ö»ÐèÒª½«±»·ÖÅäµôµÄÒ³µÄ±êÖ¾Çå³ý¼´¿É
 	
+	area->start_pg = i;
+	area->pg_number = len/PAGE_SIZE + 1;
+	i %= SECTOR_SIZE * 8;  //Ïû³ýÉÈÇø2µÄÆ«ÒÆ
+	for( j = 0; j <= len/PAGE_SIZE; j ++)
+		clear_bit( Ptr_Flash_buf, i + j);
 	
+	//¼ÆËãiÕâ¸öÆðÊ¼Î»ÖÃÔÚÒ»¸öÒ³ÖÐµÄÆðÊ¼Î»ÖÃ
+	j = i/8%PAGE_SIZE;
+	k = len/PAGE_SIZE/8;  //¼ÆËãÒª·ÖÅäµÄ³¤¶ÈËùÕ¼ÓÃµÄ×Ö½Ú³¤¶È
 	
-	
+	page_num = (i + k) / PAGE_SIZE + 1;
+	while(1)
+	{
+		ret = flash_write(Ptr_Flash_buf + \
+		( i/8/PAGE_SIZE + wr_addr)* PAGE_SIZE,  mem_manger_sector*SECTOR_SIZE + ( i/8/PAGE_SIZE + wr_addr) * PAGE_SIZE, PAGE_SIZE);
+		if( ret == ERR_OK )
+		{
+			wr_addr ++;
+			if( wr_addr >= page_num) 
+			{
+				return wr_addr;
+				
+			}
+			
+			
+			
+		}
+		else
+			return ret;
+	}
 }
 
 
 //°ÑÊôÓÚÍ¬Ò»¸öÉÈÇøµÄbitÒ»´ÎÐÔÒ»ÆðÉèÖÃÆðÀ´£¬¼õÉÙ¶ÁÐ´ÉÈÇøµÄ´ÎÊý
 static int page_free( area_t *area, int area_num)
 {
-	static char step = 0, boundary = 0;
+	char  boundary = 0;
 	uint16_t i = 0;
 	uint16_t j = 0, k = 0;
-	error_t ret = 0;
+	uint16_t	mem_manger_sector = 0;
+
+	int ret = 0;
 	area_t	tmp_area ;
 	
 		
-	switch( step)
+
+	Ptr_Flash_buf = Flash_buf;
+
+
+	//ÕûÀí´æ´¢Çø¼ä£¬°´ËùÊôµÄÉÈÇøÀ´ÕûÀí
+	if( area_num > 1)
 	{
-		case 0:
-			Ptr_Flash_buf = Flash_buf;
-		
-		
-			//ÕûÀí´æ´¢Çø¼ä£¬°´ËùÊôµÄÉÈÇøÀ´ÕûÀí
-			if( area_num > 1)
+		for( i = 0; i < area_num; i ++)
+		{
+			if( area[i].start_pg + area[i].pg_number > W25Q_flash.page_num)
+				return -1;
+			
+			
+			//¼ÇÂ¼flashÄÚ´æÒ³·ÖÅäµÄÒ³ÓÐÁ½Ò³£¬Ò³1ºÍÒ³2
+			//ÎªÁË·½±ã²Ù×÷£¬°´ÕÕÒ³1£¬Ò³2µÄË³Ðò°ÑÊôÓÚÒ³1ÄÚµÄÇø¼ä·Åµ½Ç°Ãæ£¬Ò³2µÄÇø¼ä·Åµ½ºóÃæ
+			//×¢£ºÃ»ÓÐ¿¼ÂÇÇø¼ä¿çÔ½Ò³1ºÍÒ³2µÄÇé¿ö
+			if( area[i].start_pg > SECTOR_PAGE_BIT)			
 			{
-				for( i = 0; i < area_num; i ++)
+				tmp_area.pg_number =  area[i].pg_number;
+				tmp_area.start_pg =  area[i].start_pg;
+				for( j = i; j < area_num; j ++)
 				{
-					if( area[i].start_pg + area[i].pg_number > W25Q_flash.page_num)
-						return -1;
-					
-					
-					//¼ÇÂ¼flashÄÚ´æÒ³·ÖÅäµÄÒ³ÓÐÁ½Ò³£¬Ò³1ºÍÒ³2
-					//ÎªÁË·½±ã²Ù×÷£¬°´ÕÕÒ³1£¬Ò³2µÄË³Ðò°ÑÊôÓÚÒ³1ÄÚµÄÇø¼ä·Åµ½Ç°Ãæ£¬Ò³2µÄÇø¼ä·Åµ½ºóÃæ
-					//×¢£ºÃ»ÓÐ¿¼ÂÇÇø¼ä¿çÔ½Ò³1ºÍÒ³2µÄÇé¿ö
-					if( area[i].start_pg > SECTOR_PAGE_BIT)			
+					if( area[j].start_pg < SECTOR_PAGE_BIT)
 					{
-						tmp_area.pg_number =  area[i].pg_number;
-						tmp_area.start_pg =  area[i].start_pg;
-						for( j = i; j < area_num; j ++)
-						{
-							if( area[j].start_pg < SECTOR_PAGE_BIT)
-							{
-								area[i].pg_number = area[j].pg_number;
-								area[i].start_pg = area[j].start_pg;
-								area[j].pg_number = tmp_area.pg_number;
-								area[j].start_pg = tmp_area.start_pg;
-								boundary = i;
-								break;
-							}
-							
-						}
+						area[i].pg_number = area[j].pg_number;
+						area[i].start_pg = area[j].start_pg;
+						area[j].pg_number = tmp_area.pg_number;
+						area[j].start_pg = tmp_area.start_pg;
+						boundary = i;
+						break;
 					}
-				}
-				
-				if( boundary == 0)			//È«²¿µÄ´æ´¢Çø¼ä¶¼ÊÇÔÚÉÈÇø2ÖÐ
-					MEM_sector = FLASH_USEE_SECTOR2;
-				else
-					MEM_sector = FLASH_USEE_SECTOR1;
-				
-			}
-			else 
-			{
-				if( area->start_pg + area->pg_number > W25Q_flash.page_num)
-						return -1;
-				
-				if( area->start_pg > SECTOR_PAGE_BIT)
-					MEM_sector = FLASH_USEE_SECTOR2;
-				else
-					MEM_sector = FLASH_USEE_SECTOR1;
-			}
-			
-			step ++;
-		case 1:
-clear_bit_map:
-			ret = read_flash(MEM_sector);
-			if( ret == RET_SUCCEED)
-				step += 1;
-			else
-				return ret;	
-		case 2:
-			if( MEM_sector == FLASH_USEE_SECTOR1)
-			{
-				for( k = 0; k <= boundary; k ++)
-				{
-					i = area[k].start_pg;
-					for( j = 0; j < area[k].pg_number; j ++)
-						set_bit( Ptr_Flash_buf, i + j);
-					
 					
 				}
-				
 			}
-			else 
-			{
-				for( k = boundary  + 1; k < area_num; k ++)
-				{
-					i = area[k].start_pg % SECTOR_PAGE_BIT;
-					for( j = 0; j < area[k].pg_number; j ++)
-						set_bit( Ptr_Flash_buf, i + j);
-					
-					
-				}
-				
-			}
-			Buf_chg_flag = 1;
-			
-			
-			step ++;
-		case 3:		
-			if( MEM_sector == FLASH_USEE_SECTOR1 && boundary > 0 && boundary < ( area_num - 1))
-			{
-				step = 1;
-				MEM_sector = FLASH_USEE_SECTOR2;
-				goto clear_bit_map;
-			}
-			step = 0;	
-			return RET_SUCCEED;
+		}
+		
+		if( boundary == 0)			//È«²¿µÄ´æ´¢Çø¼ä¶¼ÊÇÔÚÉÈÇø2ÖÐ
+			mem_manger_sector = FLASH_USEE_SECTOR2;
+		else
+			mem_manger_sector = FLASH_USEE_SECTOR1;
+		
 	}
-	
-	
+	else 
+	{
+		if( area->start_pg + area->pg_number > W25Q_flash.page_num)
+				return -1;
+		
+		if( area->start_pg > SECTOR_PAGE_BIT)
+			mem_manger_sector = FLASH_USEE_SECTOR2;
+		else
+			mem_manger_sector = FLASH_USEE_SECTOR1;
+	}
+			
+	while(1)
+	{
+		ret = read_flash(mem_manger_sector);
+		if( ret != ERR_OK)
+			return ret;	
+		
+		if( mem_manger_sector == FLASH_USEE_SECTOR1)
+		{
+			for( k = 0; k <= boundary; k ++)
+			{
+				i = area[k].start_pg;
+				for( j = 0; j < area[k].pg_number; j ++)
+					set_bit( Ptr_Flash_buf, i + j);
+				
+				
+			}
+			
+		}
+		else 
+		{
+			for( k = boundary  + 1; k < area_num; k ++)
+			{
+				i = area[k].start_pg % SECTOR_PAGE_BIT;
+				for( j = 0; j < area[k].pg_number; j ++)
+					set_bit( Ptr_Flash_buf, i + j);
+				
+				
+			}
+			
+		}
+		Buf_chg_flag = 1;
+		
+		if( mem_manger_sector == FLASH_USEE_SECTOR1 && boundary > 0 && boundary < ( area_num - 1))
+		{
+			mem_manger_sector = FLASH_USEE_SECTOR2;
+		}
+		else
+		{
+			
+			return ERR_OK;
+		}
+	}
+			
+			
+			
+			
+			
 	
 	
 }

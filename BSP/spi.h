@@ -23,7 +23,7 @@ typedef struct {
 	void	*config;
 	int 	irq;
 	io_ctl	*pctl;
-	char	*rx_buf;
+	uint8_t	*rx_buf;
 	
 }SPI_instance;
 

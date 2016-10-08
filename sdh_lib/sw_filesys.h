@@ -23,7 +23,8 @@
 
 #define flash_erase_sector 			w25q_Erase_Sector
 #define	flash_write_sector			w25q_Write_Sector_Data
-#define	flash_read_sector				w25q_Read_Sector_Data
+#define	flash_read_sector			w25q_Read_Sector_Data
+#define	flash_write					w25q_Write
 #define STORAGE_INIT						w25q_init() 
 #define STORAGE_CLOSE						w25q_close()	
 #define	SYS_ARCH_INIT		

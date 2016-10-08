@@ -2,7 +2,7 @@
 #define _CIRCULARBUFFER_H__
 #include "stdint.h"
 
-typedef char tElement;	
+typedef uint8_t tElement;	
 typedef struct {
 	tElement	*buf;
 	uint16_t	size;		//±ØÐëÊÇ2µÄÃÝ
