@@ -310,4 +310,6 @@ void w25q_init_spi(void)
 	spi_init( &W25Q_Spi);
 	spi_ioctl( &W25Q_Spi, CMD_SET_RXBLOCK);
 	spi_ioctl( &W25Q_Spi, SET_RXWAITTIME_MS, 2000);
+	spi_ioctl( &W25Q_Spi, CMD_SET_TXBLOCK);
+	spi_ioctl( &W25Q_Spi, SET_TXWAITTIME_MS, 1000);
 }

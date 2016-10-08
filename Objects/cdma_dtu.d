@@ -1,0 +1,14 @@
+.\objects\cdma_dtu.o: cdma_dtu.c
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.1.0\CMSIS_RTX\INC\cmsis_os.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\bin\..\include\stdint.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\bin\..\include\stddef.h
+.\objects\cdma_dtu.o: osObjects.h
+.\objects\cdma_dtu.o: .\class\gprs.h
+.\objects\cdma_dtu.o: .\lw_oopc_v1.2\lw_oopc.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\bin\..\include\stdlib.h
+.\objects\cdma_dtu.o: .\BSP\serial485_uart.h
+.\objects\cdma_dtu.o: sdhError.h
+.\objects\cdma_dtu.o: dtuConfig.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\bin\..\include\string.h
+.\objects\cdma_dtu.o: .\BSP\debug.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\bin\..\include\stdio.h

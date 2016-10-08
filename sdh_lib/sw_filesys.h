@@ -1,9 +1,11 @@
 #ifndef __FILE_SYS_H__
 #define __FILE_SYS_H__
-#include "system_data.h"
-//#include "lw_oopc.h"
-#include "app.h"
+#include "hw_w25q.h"
+#include "osObjects.h"                      // RTOS object definitions
+
 #include "list.h"
+#define FILESYS_VER	"V1.1"
+#define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构
 
 #define FLASH_NULL_FLAG  0xffffffff
 #define FILE_NUMBER_MAX								20				//最多可以创建的文件数量
@@ -22,7 +24,12 @@
 #define flash_erase_sector 			w25q_Erase_Sector
 #define	flash_write_sector			w25q_Write_Sector_Data
 #define	flash_read_sector				w25q_Read_Sector_Data
-
+#define STORAGE_INIT						w25q_init() 
+#define STORAGE_CLOSE						w25q_close()	
+#define	SYS_ARCH_INIT		
+#define SYS_ARCH_PROTECT
+#define SYS_ARCH_UNPROTECT
+#define SYS_GETTID						0
 //CMD
 
 
@@ -46,24 +53,23 @@ typedef enum {
 	
 }task_flash_state;
 
-typedef enum {
-	ERROR_FILESYS_BEGIN = ERROR_BEGIN(MODULE_FILESYS),
-	ERR_FLASH_UNAVAILABLE,
-	ERR_FILE_UNAVAILABLE,
-	ERR_FILE_EMPTY,
-	ERR_FILE_FULL,
-	ERR_FILESYS_BUSY,
-	ERR_FILESYS_ERROR,
-	ERR_FILE_ERROR,
-	ERR_FILE_OCCUPY,
-	ERR_OPEN_FILE_FAIL,
-	ERR_CREATE_FILE_FAIL,
-	ERR_NO_SUPSECTOR_SPACE,
-	ERR_NO_FLASH_SPACE,
+
+#define 	ERR_FLASH_UNAVAILABLE -1
+#define 	ERR_FILE_EMPTY -2
+#define 	ERR_FILE_FULL -3
+#define 	ERR_FILESYS_BUSY -4
+#define 	ERR_FILESYS_ERROR -5
+#define 	ERR_FILE_ERROR -6
+#define 	ERR_FILE_OCCUPY -7
+#define 	ERR_OPEN_FILE_FAIL -8
+#define 	ERR_CREATE_FILE_FAIL -9
+#define 	ERR_NO_SUPSECTOR_SPACE -10
+#define 	ERR_NO_FLASH_SPACE -11
+#define 	ERR_FILESYS_OVER_FILENUM -12
+#define 	ERR_FILESYS_FILE_EXIST -12
+
 	
-	INCREASE_PAGE,
-	
-}filesys_err_t;
+
 
 typedef struct {
 	short				file_count;				//指向第一个未使用的地址
@@ -93,7 +99,6 @@ typedef struct {
 	char 												name[16];
 	uint8_t											file_id;					//文件id用来联系文件与它的存储区间信息.
 	uint8_t											area_total;
-//	uint32_t										wr_bytes;							//当前文件被写入的字节数
 }file_info_t;
 
 
@@ -104,8 +109,8 @@ typedef struct {
 typedef struct {
 	char name[16];
 	
-	uint32_t		rd_pstn[Prio_task_end];								//文件的读写位置，以字节为单位
-	uint32_t		wr_pstn[Prio_task_end];	
+	uint32_t		rd_pstn[TASK_NUM];								//文件的读写位置，以字节为单位
+	uint32_t		wr_pstn[TASK_NUM];	
 	
 	uint32_t		wr_size;													//保存当前文件已经被写入的最长长度
 	
@@ -121,21 +126,20 @@ typedef struct {
 
 
 
-
-
 int filesys_init(void);
 int filesys_close(void);
 int filesys_dev_check(void);
-error_t fs_open(char *name, file_Descriptor_t **fd);
-error_t fs_creator(char *name, file_Descriptor_t **fd, int len);
-error_t fs_expansion(file_Descriptor_t *fd, int len);			//增加文件的容量
-error_t fs_write( file_Descriptor_t *fd, uint8_t *data, int len);
-error_t fs_read( file_Descriptor_t *fd, uint8_t *data, int len);
-error_t fs_lseek( file_Descriptor_t *fd, int offset, int whence);
-error_t fs_delete( file_Descriptor_t *fd);
-error_t fs_close( file_Descriptor_t *fd);
-error_t fs_flush( void);
-error_t fs_format(void);
-error_t wait_fs(void);
+int fs_open(char *name, file_Descriptor_t **fd);
+int fs_creator(char *name, file_Descriptor_t **fd, int len);
+int fs_expansion(file_Descriptor_t *fd, int len);			//增加文件的容量
+int fs_write( file_Descriptor_t *fd, uint8_t *data, int len);
+int fs_read( file_Descriptor_t *fd, uint8_t *data, int len);
+int fs_lseek( file_Descriptor_t *fd, int offset, int whence);
+int fs_delete( file_Descriptor_t *fd);
+int fs_close( file_Descriptor_t *fd);
+int fs_flush( void);
+int fs_format(void);
 #endif
- 
+
+
+

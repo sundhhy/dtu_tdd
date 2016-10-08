@@ -32,34 +32,25 @@ Modification:
 在空间不够时，新分配空间后返回一个INCREASE_PAGE，来提示调用者
 2. ...
 *************************************************/
-#include "w25q.h"
 #include "list.h"
-#include "filesys.h"
+#include "sw_filesys.h"
 #include <stdio.h>
 #include <string.h>
-#include "fsl_debug_console.h"
-#include "power_manager.h"
-#include "OsTime.h"
-#include "DataProxy.h"
 #include <stdarg.h>
-
+#include "stdbool.h"
+#include "sdhError.h"
 
 
 static List L_File_opened;
 static int Task_state = 0;
 static int Task_old_state = 0;
-static Osmutex_t	*FS_Mutex;
-static task_block my_tb[F_State_Number] = {NULL};
 static short WR_addr = 0, MEM_sector = FLASH_USEE_SECTOR1;
 uint8_t	Flash_buf[SECTOR_SIZE];
 uint8_t	*Ptr_Flash_buf;		//用于读取扇区1或2的内存使用情况
-static area_t *The_area;
 
 
 static	uint8_t		Buf_chg_flag = 0;				//缓存内容被修改的标志,缓存被写入flash时标志清零
 static uint16_t	Src_sector = INVALID_SECTOR;		//缓存中的内容的扇区
-static uint16_t	The_sector = 0, The_page = 0;
-static int The_int = 0;
 static char Flash_err_flag = 0;
 
 static int Create_file_easy(char *name, file_Descriptor_t **fd);
@@ -70,211 +61,174 @@ static void set_bit(uint8_t *data, int bit);
 static int get_available_page( uint8_t *data, int start, int end, int len);
 static int page_malloc( area_t *area, int len);
 static int page_free( area_t *area, int area_num);
-static int modify_file_area( file_Descriptor_t *fd, area_t *area);
-static error_t read_flash( uint16_t sector);
-static error_t flush_flash( uint16_t sector);
+static int read_flash( uint16_t sector);
+static int flush_flash( uint16_t sector);
 
 static int mach_file(const void *key, const void *data)
 {
-	uint8_t *name = ( uint8_t*)key;
+	char *name = ( char *)key;
 	file_Descriptor_t	*fd = (file_Descriptor_t *)data;
-	return strcmp( key, fd->name);
+	return strcmp( name, fd->name);
 	
 	
 	
 }
 
-error_t filesys_init(void)
+int filesys_init(void)
 {
 	
-	if( w25q_init() != RET_SUCCEED)
+	if( STORAGE_INIT != ERR_OK)
 	{
 		
-		Task_state = F_State_Err;
 		Flash_err_flag = 1;
-		return ERROR_T(ERR_FLASH_UNAVAILABLE);
+		return ERR_FLASH_UNAVAILABLE;
 		
 	}
 	else
 		Flash_err_flag = 0;
-	FS_Mutex = malloc( sizeof(Osmutex_t));
-	if( FS_Mutex == NULL)
-		return ERROR_T(ERROR_MEM_UNAVAILABLE);
-	Os_MutexCreate( FS_Mutex);
+	SYS_ARCH_INIT;
 	
 	list_init( &L_File_opened, free, mach_file);
-	return RET_SUCCEED;
+	return ERR_OK;
 	
 }
 
-error_t filesys_close(void)
+int filesys_close(void)
 {
 	
-	if( w25q_close() != RET_SUCCEED)
-	{
-		
-		Task_state = F_State_Err;
-		return ERROR_T(ERR_FLASH_UNAVAILABLE);
-		
-	}
-	free( FS_Mutex);
-	return RET_SUCCEED;
+	STORAGE_CLOSE;
+	
+	return ERR_OK;
 	
 }
 
 //从文件记录扇区0中找到指定名字的文件记录信息
-error_t fs_open(char *name, file_Descriptor_t **fd)
+int fs_open(char *name, file_Descriptor_t **fd)
 {
-	error_t ret = 0;
+	int ret = 0;
 	file_info_t	*file_in_storage;
 	file_Descriptor_t *pfd;
-	os_status_t os_ret;
 	storage_area_t	*src_area;
 	area_t					*dest_area;	
 	sup_sector_head_t	*sup_head;
 	ListElmt			*ele;
 	short 				i,j, k;
-	static char step = 0;
+	short step = 0;
 	if( Flash_err_flag )
-		return ERROR_T(ERR_FLASH_UNAVAILABLE);
-	switch(step)
-	{
-		case 0:
-			//不能允许多个任务同时执行flash的读写操作，会引起混乱
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
-			
-			ele = list_get_elmt( &L_File_opened,name);		//先从已经打开的文件中查找是否已经被其他任务打开过
-			if(  ele!= NULL)
-			{
-				pfd = list_data(ele);
-				pfd->reference_count ++;
-				*fd = pfd;
-				pfd->rd_pstn[get_current_task_pid()] = 0;
-				pfd->wr_pstn[get_current_task_pid()] = 0;
-				Os_MutexUnlock( FS_Mutex);
-				return RET_SUCCEED;
-				
-			}
-			step = 1;			
-		case 1:
-			ret = read_flash(FILE_INFO_SECTOR);
-			if( ret == RET_SUCCEED)
-				step = 2;
-			else
-				return RET_PROCESSING;
-		case 2:
-			sup_head = ( sup_sector_head_t *)Flash_buf;
-			if( sup_head->ver[0] != 'V')			//第一次上电，擦除整块flash并写入头信息
-			{
-				Os_MutexUnlock( FS_Mutex);
-				return ERROR_T(ERR_FILESYS_ERROR);
-				
-			}	
-			file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));	
-			for( i = 0; i < FILE_NUMBER_MAX; i ++)
-			{
-				
-				if( strcmp(file_in_storage->name, name) == 0x00 )	
-				{
-					//找到了文件
-					pfd = (file_Descriptor_t *)malloc(sizeof( file_Descriptor_t));
-					dest_area = malloc( file_in_storage->area_total * sizeof( area_t));
-					
-					pfd->area = dest_area;
-					//把文件的存储区间赋值给文件描述符
-					src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));
-					k = 0;
-					for( j = 0; j < file_in_storage->area_total ;)
-					{
-						if( src_area->file_id == file_in_storage->file_id)		
-						{
-							
-							pfd->area[src_area->seq].start_pg = src_area->area.start_pg;
-							pfd->area[src_area->seq].pg_number = src_area->area.pg_number;
-							j ++;
-						}
-						k++;
-						if( k > STOREAGE_AREA_NUMBER_MAX)
-						{
-							if( j == 0)		//文件被损坏
-							{
-								free( dest_area);
-//								free( pfd);
-								pfd->reference_count = 1;
-								strcpy( pfd->name, name);
-								pfd->area = NULL;
-								*fd = pfd;
-								
-								step = 0;
-								Os_MutexUnlock( FS_Mutex);
-								return ERROR_T(ERR_FILE_ERROR);
-								
-							}
-							
-						}
-						src_area ++;						
-					}				
-//					pfd->wr_size = file_in_storage->wr_bytes;
-					pfd->area_total = j ;			//把实际找到的区间数量赋值给文件描述符
-					file_in_storage->area_total = j;			//更新实际的区间数量
-					strcpy( pfd->name, name);
-					pfd->reference_count = 1;
-					memset( pfd->rd_pstn, 0, sizeof( pfd->rd_pstn));
-					memset( pfd->wr_pstn, 0, sizeof( pfd->wr_pstn));
-					*fd = pfd;
-					step = 0;
-					list_ins_next( &L_File_opened, L_File_opened.tail, pfd);
-					Os_MutexUnlock( FS_Mutex);
-					return RET_SUCCEED;
-				}
-				
-				file_in_storage ++;
-				
-				
-				
-			}
-			*fd = NULL;
-			step = 0;
-			Os_MutexUnlock( FS_Mutex);
-			return ERROR_T(ERR_OPEN_FILE_FAIL);
-	}
-}
-error_t wait_fs(void)
-{
-	error_t ret;
-	int count = 0;
+		return (ERR_FLASH_UNAVAILABLE);
 	while(1)
 	{
-		ret = filesys_dev_check();
-		if( ret == RET_SUCCEED)
-			break;
-		count ++;
+		switch( step)
+		{
+			case 0:
+				SYS_ARCH_PROTECT;
+				ele = list_get_elmt( &L_File_opened,name);		//先从已经打开的文件中查找是否已经被其他任务打开过
+				if(  ele!= NULL)
+				{
+					pfd = list_data(ele);
+					pfd->reference_count ++;
+					*fd = pfd;
+					pfd->rd_pstn[SYS_GETTID] = 0;
+					pfd->wr_pstn[SYS_GETTID] = 0;
+					SYS_ARCH_UNPROTECT;
+					return ERR_OK;
+					
+				}
+				step ++;
+				break;
+			case 1:
+				ret = read_flash(FILE_INFO_SECTOR);
+				if( ret == ERR_OK)
+					step ++;
+				else
+					return ERR_DRI_OPTFAIL;
+			case 2:
+				sup_head = ( sup_sector_head_t *)Flash_buf;
+				if( sup_head->ver[0] != 'V')			//第一次上电，擦除整块flash并写入头信息
+				{
+					SYS_ARCH_UNPROTECT;
+					return (ERR_FILESYS_ERROR);
+					
+				}	
+				file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));	
+				for( i = 0; i < FILE_NUMBER_MAX; i ++)
+				{
+				
+					if( strcmp(file_in_storage->name, name) == 0x00 )	
+					{
+						//找到了文件
+						pfd = (file_Descriptor_t *)malloc(sizeof( file_Descriptor_t));
+						dest_area = malloc( file_in_storage->area_total * sizeof( area_t));
+					
+						pfd->area = dest_area;
+						//把文件的存储区间赋值给文件描述符
+						src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));
+						k = 0;
+						for( j = 0; j < file_in_storage->area_total ;)
+						{
+							if( src_area->file_id == file_in_storage->file_id)		
+							{
+								
+								pfd->area[src_area->seq].start_pg = src_area->area.start_pg;
+								pfd->area[src_area->seq].pg_number = src_area->area.pg_number;
+								j ++;
+							}
+							k++;
+							if( k > STOREAGE_AREA_NUMBER_MAX)
+							{
+								if( j == 0)		//文件被损坏
+								{
+									free( dest_area);
+									pfd->reference_count = 1;
+									strcpy( pfd->name, name);
+									pfd->area = NULL;
+									*fd = pfd;
+								
+									step = 0;
+									SYS_ARCH_UNPROTECT;
+									return (ERR_FILE_ERROR);
+								
+								}
+							
+							}
+							src_area ++;						
+						}				
+						pfd->area_total = j ;			//把实际找到的区间数量赋值给文件描述符
+						file_in_storage->area_total = j;			//更新实际的区间数量
+						strcpy( pfd->name, name);
+						pfd->reference_count = 1;
+						memset( pfd->rd_pstn, 0, sizeof( pfd->rd_pstn));
+						memset( pfd->wr_pstn, 0, sizeof( pfd->wr_pstn));
+						*fd = pfd;
+						step = 0;
+						list_ins_next( &L_File_opened, L_File_opened.tail, pfd);
+						SYS_ARCH_UNPROTECT;
+						return ERR_OK;
+					}
+					file_in_storage ++;
+				}		//for
+				*fd = NULL;
+				SYS_ARCH_UNPROTECT;
+				return ERROR_T(ERR_OPEN_FILE_FAIL);
+		}		//switch
 		
-		if( count >20000)
-			break;
-	}
-	
+	}		//while(1)
+
 }
 
 //格式化文件系统，删除所有的内容（保留区除外）
-error_t fs_format(void)
+int fs_format(void)
 {
 	sup_sector_head_t	*sup_head;
-	error_t ret;
-	os_status_t os_ret;
+	int ret;
 	int count = 0;
 	WR_addr = 0;
-	os_ret = Os_MutexLock( FS_Mutex, 0);
-	if( os_ret != kStatus_OS_Success)
-		return ERROR_T(ERR_FILESYS_BUSY);
 	
 	//擦除整个文件系统
 	while(1)
 	{
 		ret = w25q_Erase_block(WR_addr);
-		if( ret == RET_SUCCEED)
+		if( ret == ERR_OK)
 		{
 			if( 	WR_addr < W25Q_flash.block_num - PAGE_REMIN_FOR_IMG/BLOCK_HAS_SECTORS/SECTOR_HAS_PAGES )
 			{
@@ -286,6 +240,8 @@ error_t fs_format(void)
 				break;
 			
 		}
+		else
+			return ERR_DRI_OPTFAIL;
 		
 		
 	}
@@ -298,11 +254,10 @@ error_t fs_format(void)
 	sup_head = ( sup_sector_head_t *)Flash_buf;
 	
 	sup_head->file_count = 0;
-	memcpy( sup_head->ver, Ver, 6);
+	memcpy( sup_head->ver, FILESYS_VER, 6);
 	Buf_chg_flag = 1;
 	
-	Os_MutexUnlock( FS_Mutex);
-	return RET_SUCCEED;
+	return ERR_OK;
 	
 }
 
@@ -310,14 +265,11 @@ error_t fs_format(void)
 //文件的存储信息结构体都是4字节对齐的，所以不必考虑字节对齐问题
 //前置条件:在创建文件的时候,特殊块是不能够存在空洞的,所以在删除操作的时候,要去整理特殊扇区中的内存
 //长度是可选参数
-error_t fs_creator(char *name, file_Descriptor_t **fd, int len)
-{
-	static char step = 0;
-	
+int fs_creator(char *name, file_Descriptor_t **fd, int len)
+{	
 	int i = 0;
-	error_t ret = 0;
-	os_status_t os_ret;
-	
+	int ret = 0;
+	area_t		*tmp_area;
 	sup_sector_head_t	*sup_head;
 	file_info_t	*file_in_storage;
 	file_info_t	*creator_file;
@@ -326,165 +278,121 @@ error_t fs_creator(char *name, file_Descriptor_t **fd, int len)
 	
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
-		return RET_SUCCEED;
+		return ERR_FLASH_UNAVAILABLE;
 	if (len == 0)
 		len = 1;
-	switch( step)
+	tmp_area = malloc( sizeof( storage_area_t));
+	if( tmp_area == NULL)
 	{
-		case 0:
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
-			
-			step ++;
-			
-		case 1:
-			The_area = malloc( sizeof( storage_area_t));
-			if( The_area == NULL)
-				goto err1;
-			step ++;
-		case 2:
-	
-			ret = page_malloc( The_area, len);
-			if( ret < 0) {
-				free( The_area);
-				goto err1;
-			}
-			else if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return ret;
+		ret = ERR_MEM_UNAVAILABLE;
+		return ERR_MEM_UNAVAILABLE;
+	}
+	ret = page_malloc( tmp_area, len);
+	if( ret < 0) {
 		
-		case 3:
-			ret = read_flash(FILE_INFO_SECTOR);
-			if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return ret;
-		case 4:
-			sup_head = (sup_sector_head_t *)Flash_buf;
-			creator_file = ( file_info_t *)( Flash_buf+ sizeof( sup_sector_head_t));
-			
-			
-			
-			if( sup_head->file_count > FILE_NUMBER_MAX)
-				goto err2;
-			
-			
-			//检查文件是否已经存在
-			file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
-			
-			for( i = 0; i < FILE_NUMBER_MAX; i ++)
-			{
-				
-				if( strcmp(file_in_storage->name, name) == 0x00 )	
-				{
-					
-						
-						goto err2;
-						
-					
-					
-				}
-				
-				file_in_storage ++;
-				
-				
-				
-			}
-			
-			
-			//找到第一个没有被使用的文件信息存储区
-			i = 0;
-			for( i = 0; i < FILE_NUMBER_MAX; i ++)
-			{
-				if( creator_file->file_id == 0xff)
-					break;
-				creator_file ++;
-				
-			}
-			if ( i == 	FILE_NUMBER_MAX)
-				goto err2;
-			
-			
-			
-			
-			target_area = ( storage_area_t *)( Flash_buf+ sizeof( sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));
-			
-			for( i = 0; i < STOREAGE_AREA_NUMBER_MAX; i ++)
-			{
-				if( target_area[i].file_id == 0xff)
-				{
-					target_area[i].file_id = sup_head->file_count;
-					target_area[i].seq = 0;
-					target_area[i].area.start_pg = The_area->start_pg;
-					target_area[i].area.pg_number = The_area->pg_number;
-					break;
-				}
-				
-				
-			}
-			if( i == STOREAGE_AREA_NUMBER_MAX)
-				goto err2;
-			
-			
-			strcpy( creator_file->name, name);
-			creator_file->file_id = sup_head->file_count;
-			creator_file->area_total = 1;
-//			creator_file->wr_bytes = 0;
-			sup_head->file_count ++;
-			
-			Buf_chg_flag = 1;
-			
-			p_fd = malloc( sizeof( file_Descriptor_t));
-			if( p_fd == NULL) {
-				step = 0;
-				return ERROR_T(ERROR_MEM_UNAVAILABLE);
-			}
-			
-			strcpy( p_fd->name, name);
-			memset( p_fd->rd_pstn, 0 , sizeof( p_fd->rd_pstn));
-			memset( p_fd->wr_pstn, 0 , sizeof( p_fd->wr_pstn));
-			p_fd->wr_size = 0;
-			p_fd->reference_count = 1;
-			p_fd->area = malloc( sizeof( area_t));
-			
-			//装载存储区的地址区间到文件描述符中的存储区间链表中去
-			p_fd->area->start_pg = The_area->start_pg;
-			p_fd->area->pg_number = The_area->pg_number;
-			p_fd->area_total = 1;
-			*fd = p_fd;
-			step += 1;
-			
-			list_ins_next( &L_File_opened, L_File_opened.tail, p_fd);
-			
-			
-			
-		//保存信息到flash中
-		case 5:
-				step = 0;
-				free( The_area);
-				os_ret = Os_MutexUnlock( FS_Mutex);
-				return RET_SUCCEED;
+		ret =  ERR_NO_FLASH_SPACE;
+		goto err2;
 	}
-err1:
-	step = 0;
-	Os_MutexUnlock( FS_Mutex);
-	return ERROR_T(ERR_CREATE_FILE_FAIL);
-err2:
-	step = 8;
-	ret = page_free( The_area, 1);
-	if( ret == RET_SUCCEED )
+	
+	ret = read_flash(FILE_INFO_SECTOR);
+	if( ret != ERR_OK)
 	{
-			step = 0;		
-			Os_MutexUnlock( FS_Mutex);
-			return ERROR_T(ERR_NO_SUPSECTOR_SPACE);
+		goto err2;
 	}
-	else
-		return ret;
 	
+	sup_head = (sup_sector_head_t *)Flash_buf;
+	creator_file = ( file_info_t *)( Flash_buf+ sizeof( sup_sector_head_t));
+
+	if( sup_head->file_count > FILE_NUMBER_MAX)
+	{
+		ret =  ERR_FILESYS_OVER_FILENUM;
+		goto err2;
+	}
 	
+	//检查文件是否已经存在
+	file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
+	for( i = 0; i < FILE_NUMBER_MAX; i ++)
+	{
+		
+		if( strcmp(file_in_storage->name, name) == 0x00 )	
+		{	
+			ret =  ERR_FILESYS_FILE_EXIST;
+			goto err2;
+		}
+		file_in_storage ++;	
+	}
 	
+	//找到第一个没有被使用的文件信息存储区
+	i = 0;
+	for( i = 0; i < FILE_NUMBER_MAX; i ++)
+	{
+		if( creator_file->file_id == 0xff)
+			break;
+		creator_file ++;
+		
+	}
+	if ( i == 	FILE_NUMBER_MAX)
+	{
+		ret = ERR_NO_SUPSECTOR_SPACE;
+		goto err2;	
+	}
+	target_area = ( storage_area_t *)( Flash_buf+ sizeof( sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));
+		
+	for( i = 0; i < STOREAGE_AREA_NUMBER_MAX; i ++)
+	{
+		if( target_area[i].file_id == 0xff)
+		{
+			target_area[i].file_id = sup_head->file_count;
+			target_area[i].seq = 0;
+			target_area[i].area.start_pg = tmp_area->start_pg;
+			target_area[i].area.pg_number = tmp_area->pg_number;
+			break;
+		}
+		
+		
+	}
+	if( i == STOREAGE_AREA_NUMBER_MAX)
+	{
+		ret = ERR_NO_SUPSECTOR_SPACE;
+		goto err2;	
+	}
+			
+	strcpy( creator_file->name, name);
+	creator_file->file_id = sup_head->file_count;
+	creator_file->area_total = 1;
+	sup_head->file_count ++;
+		
+	Buf_chg_flag = 1;
+		
+	p_fd = malloc( sizeof( file_Descriptor_t));
+	if( p_fd == NULL) {
+		ret = ERR_MEM_UNAVAILABLE;
+		goto err2;	
+	}
+		
+	strcpy( p_fd->name, name);
+	memset( p_fd->rd_pstn, 0 , sizeof( p_fd->rd_pstn));
+	memset( p_fd->wr_pstn, 0 , sizeof( p_fd->wr_pstn));
+	p_fd->wr_size = 0;
+	p_fd->reference_count = 1;
+	p_fd->area = malloc( sizeof( area_t));
+		
+	//装载存储区的地址区间到文件描述符中的存储区间链表中去
+	p_fd->area->start_pg = tmp_area->start_pg;
+	p_fd->area->pg_number = tmp_area->pg_number;
+	p_fd->area_total = 1;
+	*fd = p_fd;			
+	list_ins_next( &L_File_opened, L_File_opened.tail, p_fd);
+	free( tmp_area);
+	return ERR_OK;
+	
+
+err2:
+	page_free( tmp_area, 1);
+err1:
+	free( tmp_area);
+	return ret;
+
 }
 
 //定位当前位置在存储区间的起始页,并返回区间
@@ -521,270 +429,140 @@ static area_t *locate_page( file_Descriptor_t *fd, uint32_t pstn, uint16_t *pg)
 
 //flash不够时要能够给文件新分配flash页
 //
-error_t fs_write( file_Descriptor_t *fd, uint8_t *data, int len)
+int fs_write( file_Descriptor_t *fd, uint8_t *data, int len)
 {
 	
 	
-//	ListElmt			*ele;
-	error_t 			ret;
-	static char step = 0;
-	os_status_t os_ret;
+	int 			ret;
 	int 				i, limit;
 	int  				myid = get_current_task_pid();
+	area_t		*wr_area;
+	uint16_t	wr_page = 0, wr_sector = 0;
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
-		return RET_SUCCEED;
-	switch( step)
+		return ERR_FLASH_UNAVAILABLE;
+	while( 1)
 	{
-		case 0:
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
-			The_int = len;
+		
+		wr_area = locate_page( fd, fd->wr_pstn[myid], &wr_page);
+		if( wr_area == NULL)
+		{
+			return (ERR_FILE_FULL);
+		}
+		wr_sector = 	wr_page/SECTOR_HAS_PAGES;
+		
+		if( wr_sector < SUP_SECTOR_NUM)
+		{
+			return (ERR_FILE_ERROR);
 			
-			
-find_location:		
-			The_area = locate_page( fd, fd->wr_pstn[myid], &The_page);
-			if( The_area == NULL)
+		}
+		ret = read_flash(wr_sector);
+		if( ret != ERR_OK)
+			return ret;
+		
+	
+		i = ( wr_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->wr_pstn[myid] % PAGE_SIZE;
+		if( wr_area->pg_number + wr_area->start_pg > ( wr_sector + 1 ) *  SECTOR_HAS_PAGES )				//文件的结束位置超出本扇区，以扇区的大小为上限
+				limit  = SECTOR_SIZE;
+		else		//文件的结束位置在本扇区内部，以文件结束位置在本扇区中的相对位置为上限
+				limit = ( wr_area->start_pg +  wr_area->pg_number - wr_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
+		while( len)
+		{
+			if( i >= SECTOR_SIZE || i > limit)		 //超出了当前的扇区或者区间范围
 			{
-				
-				step = 0;
-				Os_MutexUnlock( FS_Mutex);
-				return ERROR_T(ERR_FILE_FULL);
-				
-			}
-			else
-			{
-				The_sector = 	The_page/SECTOR_HAS_PAGES;
-				if( The_sector < SUP_SECTOR_NUM)
-				{
-					step = 0;
-					Os_MutexUnlock( FS_Mutex);
-					return ERROR_T(ERR_FILE_ERROR);
-					
-				}
-				step ++;	
-				
+				break;
 			}
 			
-		case 1:
-			ret = read_flash(The_sector);
-			if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return ret; 
-		case 2:
-			//计算在当前扇区中的偏移
-			i = ( The_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->wr_pstn[myid] % PAGE_SIZE;
-			if( The_area->pg_number + The_area->start_pg > ( The_sector + 1 ) *  SECTOR_HAS_PAGES )				//文件的结束位置超出本扇区，以扇区的大小为上限
-					limit  = SECTOR_SIZE;
-			else		//文件的结束位置在本扇区内部，以文件结束位置在本扇区中的相对位置为上限
-					limit = ( The_area->start_pg +  The_area->pg_number - The_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
-			while( The_int)
+
+			if( Flash_buf[i] != *data)
+			{
+				Flash_buf[i] = *data;
+				Buf_chg_flag = 1;	
+			}
+			i ++;
+			fd->wr_pstn[myid] ++;
+			len --;
+			data++;
+			
+		}
+		fd->wr_size =  fd->wr_pstn[myid];
+		if( len == 0)			
+		{
+			break;
+		}
+	}
+	
+	return ERR_OK;
+	
+}
+
+int fs_read( file_Descriptor_t *fd, uint8_t *data, int len)
+{
+	
+		int 			ret;
+		int 				i, limit;
+		int  				myid = get_current_task_pid();
+		area_t			*rd_area;
+		uint16_t	rd_page = 0, rd_sector = 0;
+		//存储区不正确就不处理直接返回
+	if( Flash_err_flag )
+		return ERR_FLASH_UNAVAILABLE;
+	
+	while(1)
+	{
+		rd_area = locate_page( fd, fd->rd_pstn[myid], &rd_page);
+		if( rd_area == NULL)
+		{
+			return (ERR_FILE_EMPTY);
+		}
+		
+		rd_sector = 	rd_page/SECTOR_HAS_PAGES;
+		ret = read_flash(rd_sector);
+		if( ret != ERR_OK)
+			return ret;
+		
+		//读写的时候，要考虑文件的结尾不在本扇区的情况
+			i = ( rd_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->rd_pstn[myid] % PAGE_SIZE;
+				
+			if( rd_area->start_pg +  rd_area->pg_number > ( rd_sector + 1) *  SECTOR_HAS_PAGES)	//结尾位于本扇区外
+				limit = SECTOR_SIZE;
+			else	//结尾位于本扇区内
+				limit = ( rd_area->start_pg +  rd_area->pg_number - rd_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
+				
+			while( len)
 			{
 				if( i >= SECTOR_SIZE || i > limit)		 //超出了当前的扇区或者区间范围
 				{
 					break;
 				}
-				
-
-				if( Flash_buf[i] != *data)
-				{
-					Flash_buf[i] = *data;
-					Buf_chg_flag = 1;	
-				}
+				*data++ = Flash_buf[i];
 				i ++;
-				fd->wr_pstn[myid] ++;
-				The_int --;
-				data++;
-				
+				fd->rd_pstn[myid] ++;
+				len --;
+					
 			}
-			
-			
-//			if( fd->wr_size < fd->wr_pstn[myid])
-			fd->wr_size =  fd->wr_pstn[myid];
-			
-			//将当前扇区的内容先写回flash
-			step++;
-		case 3:
-			step = 0;
-			if( The_int)			//还有数据没写完
+				
+			if( len == 0)			//还有数据没读完
 			{
 				
-				goto find_location;
+				break;
 				
 			}
-			else {
-				
-				Os_MutexUnlock( FS_Mutex);
-				return RET_SUCCEED;
-			}
+			
 	}
-	
-
-	
+		
 	
 }
 
-
-//文件增加flsh内存,未验证！
-error_t fs_expansion(file_Descriptor_t *fd, int len)
+int fs_lseek( file_Descriptor_t *fd, int offset, int whence)
 {
-	
-	error_t 			ret;
-	static char step = 0;
-	os_status_t os_ret;
-	int 				i, limit;
-	int  				myid = get_current_task_pid();
-	
-	switch( step)
-	{
-		case 0:
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
-			The_area = malloc( sizeof( area_t));
-			step ++;			
-		case 1:
-			ret = page_malloc( The_area, len );		
-			if( ret < 0) {
-				step += 2;
-				return RET_DELAY;
-			}
-			else if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return ret;
-		case 2:
-				ret = modify_file_area( fd, The_area);
-				if( ret < 0) {
-					step ++;
-					
-					
-				}
-				else if( ret == RET_SUCCEED) {
-					step = 0;
-					free(The_area);
-					Os_MutexUnlock( FS_Mutex);
-					return RET_SUCCEED;
-				}
-				else
-					return ret;
-		case 3:			//
-			ret = page_free( The_area, 1);
-			if( ret == RET_SUCCEED )
-			{
-					step = 0;		
-					Os_MutexUnlock( FS_Mutex);
-					free(The_area);
-					return ERROR_T(ERR_NO_FLASH_SPACE);	
-			}
-			else
-				return ret;
-		
-		
-		
-	}
-
-	
-	
-	
-	
-}
-
-
-int fs_read( file_Descriptor_t *fd, uint8_t *data, int len)
-{
-	
-		error_t 			ret;
-		static char step = 0;
-		os_status_t os_ret;
-		int 				i, limit;
-		int  				myid = get_current_task_pid();
-		//存储区不正确就不处理直接返回
-	if( Flash_err_flag )
-		return RET_SUCCEED;
-	
-		switch( step)
-		{
-			case 0:
-				os_ret = Os_MutexLock( FS_Mutex, 0);
-				if( os_ret != kStatus_OS_Success)
-					return ERROR_T(ERR_FILESYS_BUSY);
-				
-				The_int = len;
-	find_location:			
-				The_area = locate_page( fd, fd->rd_pstn[myid], &The_page);
-				if( The_area == NULL)
-				{
-					Os_MutexUnlock( FS_Mutex);
-					return ERROR_T(ERR_FILE_EMPTY);
-				}
-				else
-				{
-					The_sector = 	The_page/SECTOR_HAS_PAGES;
-					step += 1;	
-					
-				}
-			case 1:
-				ret = read_flash(The_sector);
-				if( ret == RET_SUCCEED)
-					step ++;
-				else
-					return ret; 
-			case 2:
-				//读写的时候，要考虑文件的结尾不在本扇区的情况
-				i = ( The_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->rd_pstn[myid] % PAGE_SIZE;
-				
-				if( The_area->start_pg +  The_area->pg_number > ( The_sector + 1) *  SECTOR_HAS_PAGES)	//结尾位于本扇区外
-					limit = SECTOR_SIZE;
-				else	//结尾位于本扇区内
-					limit = ( The_area->start_pg +  The_area->pg_number - The_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
-				
-				while( The_int)
-				{
-					if( i >= SECTOR_SIZE || i > limit)		 //超出了当前的扇区或者区间范围
-					{
-						break;
-					}
-					*data++ = Flash_buf[i];
-					i ++;
-					fd->rd_pstn[myid] ++;
-					The_int --;
-						
-					
-				}
-				
-				//将当前扇区的内容先写回flash
-				step ++;
-		case 3:
-			step = 0;
-			if( The_int)			//还有数据没读完
-			{
-				
-				goto find_location;
-				
-			}
-			else {
-				len -= The_int;
-				Os_MutexUnlock( FS_Mutex);
-				return RET_SUCCEED;
-			}	
-			
-			
-		}
-	
-}
-
-error_t fs_lseek( file_Descriptor_t *fd, int offset, int whence)
-{
-	error_t ret = 0;
+	int ret = 0;
 	char myid = get_current_task_pid();
 	uint16_t 	pos = 0;
 	uint8_t data[4];
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
-		return RET_SUCCEED;
+		return ERR_FLASH_UNAVAILABLE;
 	switch( whence)
 	{
 		case WR_SEEK_SET:
@@ -796,62 +574,7 @@ error_t fs_lseek( file_Descriptor_t *fd, int offset, int whence)
 		
 		
 		case WR_SEEK_END:			//连续5个0xff作为结尾
-			fd->rd_pstn[ myid] = 0;
-			while(1)
-			{
-				
-				while(1)
-				{
-					ret = fs_read( fd,data, 1);
-					if( ret == RET_SUCCEED)
-					{
-						if( data[0] == 0xff)
-						{
-							pos = fd->rd_pstn[ myid];
-							break;
-						}
-					}
-					else if( ret == RET_PROCESSING) 
-					{
-						wait_fs();
-					}	
-					else if( INVERSE_ERROR( ret) == ERR_FILE_EMPTY)
-					{
-						fd->wr_pstn[ myid] = 0;
-						return RET_SUCCEED;
-						
-					}
-				}
-				
-				while(1)
-				{
-					ret = fs_read( fd, data, 4);
-					if( ret == RET_SUCCEED)
-					{
-						if( data[0] == 0xff && data[1] == 0xff && data[2] == 0xff && data[3] == 0xff)
-						{
-							fd->wr_pstn[ myid] = pos;
-							return RET_SUCCEED;
-						}
-						break;
-					}
-					else if( ret == RET_PROCESSING) 
-					{
-						wait_fs();
-					}	
-					else if( INVERSE_ERROR( ret) == ERR_FILE_EMPTY)
-					{
-						fd->wr_pstn[ myid] = 0;
-						return RET_SUCCEED;
-						
-					}
-				}
-				
-				
-				
-			}
-			
-//			fd->wr_pstn[ myid] = offset + fd->wr_size;
+
 		
 			break;
 		
@@ -880,88 +603,52 @@ error_t fs_lseek( file_Descriptor_t *fd, int offset, int whence)
 	
 }
 
-error_t fs_close( file_Descriptor_t *fd)
+int fs_close( file_Descriptor_t *fd)
 {
 	char myid = get_current_task_pid();
 	void 							*data = NULL;
 	ListElmt           *elmt;
 	int i, ret;
-	os_status_t os_ret;
+	int os_ret;
 	file_info_t	*file_in_storage;
-	static char step = 0;
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
-		return RET_SUCCEED;
-	switch( step)
+		return ERR_FLASH_UNAVAILABLE;
+	fd->reference_count --;			
+	fd->rd_pstn[ myid] = 0;
+	fd->wr_pstn[ myid] = 0;
+	if( fd->reference_count > 0)
+		return ERR_OK;
+	ret = read_flash( FILE_INFO_SECTOR);
+	if( ret != ERR_OK)
+		return ret;
+	
+	file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
+	for( i = 0; i < FILE_NUMBER_MAX; i ++)
 	{
-		case 0:
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
-			fd->reference_count --;
-	
-	
-			//把写的最长的那个长度作为文件的长度
-//			for( i = 0; i < Prio_task_end; i ++)
-//			{
-//				if( fd->wr_pstn[ i] > fd->wr_size)
-//					fd->wr_size = fd->wr_pstn[ i];
-//				
-//			}
-			
-			fd->rd_pstn[ myid] = 0;
-			fd->wr_pstn[ myid] = 0;
-			
-			
-			
-			if( fd->reference_count == 0)
-			{
-				step ++;
-			}
-			else {
-				Os_MutexUnlock( FS_Mutex);
-				return RET_SUCCEED;
-			}
-		case 1:
-			ret = read_flash( FILE_INFO_SECTOR);
-			if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return ret; 
-		case 2:
-			file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
-			for( i = 0; i < FILE_NUMBER_MAX; i ++)
-			{
-				if( strcmp(file_in_storage->name, fd->name) == 0x00 )
-				{
-//					file_in_storage->wr_bytes = fd->wr_size;
-					Buf_chg_flag = 1;
-					break;
-				}
-				file_in_storage ++;	
-			}
-
-			step = 0;
-			elmt = list_get_elmt( &L_File_opened,fd->name);
-			list_rem_next( &L_File_opened, elmt, &data);
-			free( fd->area);
-			
-			free(fd);
-			Os_MutexUnlock( FS_Mutex);
-			return RET_SUCCEED;
+		if( strcmp(file_in_storage->name, fd->name) == 0x00 )
+		{
+			Buf_chg_flag = 1;
+			break;
+		}
+		file_in_storage ++;	
 	}
+	elmt = list_get_elmt( &L_File_opened,fd->name);
+	list_rem_next( &L_File_opened, elmt, &data);
+	free( fd->area);
 	
+	free(fd);
+	return ERR_OK;
 }
 
 
-error_t fs_delete( file_Descriptor_t *fd)
+int fs_delete( file_Descriptor_t *fd)
 {
 	char myid = get_current_task_pid();
 	void 							*data = NULL;
-	error_t ret = 0;
+	int ret = 0;
 	file_info_t	*file_in_storage;
 	file_Descriptor_t *pfd;
-	os_status_t os_ret;
 	storage_area_t	*src_area,*dest_area;
 	sup_sector_head_t	*sup_head;
 	ListElmt			*ele;
@@ -969,14 +656,11 @@ error_t fs_delete( file_Descriptor_t *fd)
 	static char step = 0;
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
-		return RET_SUCCEED;
+		return ERR_FLASH_UNAVAILABLE;
 	switch(step)
 	{
 		case 0:
-			//不能允许多个任务同时执行flash的读写操作，会引起混乱
-			os_ret = Os_MutexLock( FS_Mutex, 0);
-			if( os_ret != kStatus_OS_Success)
-				return ERROR_T(ERR_FILESYS_BUSY);
+			
 			
 			fd->reference_count --;
 			if( fd->reference_count > 0)
@@ -1070,9 +754,9 @@ erase_a_chip:
 	
 }
 
-error_t fs_flush( void)
+int fs_flush( void)
 {
-	error_t ret;
+	int ret;
 	static char step = 0;
 	os_status_t os_ret;
 	//存储区不正确就不处理直接返回
@@ -1132,143 +816,11 @@ error_t fs_flush( void)
 
 int filesys_dev_check(void)
 {
-	return w25q_TransferStatus();
-	
-}
-
-static int modify_file_area( file_Descriptor_t *fd, area_t *area)
-{
-	static char step = 0;
-	file_info_t	*file_in_storage;
-	storage_area_t	*src_area,*dest_area;
-	sup_sector_head_t	*sup_head;
-	error_t ret;
-	area_t		*tmp_area;
-	short i,j;
-	
-	switch(step)
-	{
-		case 0:
-			//文件描述符中的存储区间尾部加入新的存储区间
-			if( fd->area[ fd->area_total -1].start_pg + fd->area[ fd->area_total -1].pg_number == area->start_pg)  //新增加的内存是连续的
-			{
-				 fd->area[ fd->area_total -1].pg_number += area->pg_number;
-				
-			}
-			else 
-			{
-				fd->area_total ++;
-				tmp_area = fd->area;
-				fd->area = realloc( fd->area, file_in_storage->area_total * sizeof( area_t));
-				if( fd->area == NULL)		//重新分配内存失败
-				{
-					fd->area = tmp_area;
-					return ERROR_T(ERROR_MEM_UNAVAILABLE);
-				}
-				fd->area[ fd->area_total -1].start_pg = area->start_pg;
-				fd->area[ fd->area_total -1].pg_number = area->pg_number;
-			}
-			step ++;
-		case 1:
-			ret = read_flash( FILE_INFO_SECTOR);
-			if( ret == RET_SUCCEED)
-				step ++;
-			else
-				return ret; 
-		case 2:
-			sup_head = (sup_sector_head_t *)Flash_buf;
-			file_in_storage = ( file_info_t *)( Flash_buf + sizeof(sup_sector_head_t));
-			src_area	= ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));
-			for( i = 0 ; i < FILE_NUMBER_MAX; i++)
-			{
-				if( strcmp(file_in_storage->name, fd->name) == 0x00 )			
-				{
-					//如果新增的地址与上一个地址区间是连续的，那么在上一步就不会新增一个存储区间
-					//所以这里通过存储区间数量来判断地址是不是连续的。
-					if( file_in_storage->area_total < fd->area_total)   
-					{						
-						
-						//地址不连续的话就新分配一个存放区间的内存
-						for( j = 0; j < STOREAGE_AREA_NUMBER_MAX; j ++)
-						{
-							if( src_area[j].file_id == 0xff)		//未被使用
-							{
-								src_area[j].file_id = file_in_storage->file_id;
-								src_area[j].seq = file_in_storage->area_total;
-								file_in_storage->area_total ++;
-								src_area[j].area.start_pg = area->start_pg;
-								src_area[j].area.pg_number = area->pg_number;
-								Buf_chg_flag = 1;
-								break;
-							}
-						}
-					}
-					else 
-					{
-						//连续的地址只需要在前面的基础上增加数量就行了
-						for( j = 0; j < STOREAGE_AREA_NUMBER_MAX; j ++)
-						{
-							if( src_area[j].file_id == file_in_storage->file_id)	
-							{
-								if( src_area[j].area.pg_number + src_area[j].area.start_pg ==area->start_pg)
-								{
-									src_area[j].area.pg_number += area->pg_number;
-									Buf_chg_flag = 1;
-								}
-								
-							}
-							
-						}
-					}
-					
-					break;
-				}
-				
-				file_in_storage ++;
-			}
-			
-			step ++;
-		
-		
-		
-
-		
-		case 3:
-//			ret = w25q_Erase_Sector(FILE_INFO_SECTOR);
-//			if( ret == RET_SUCCEED )
-//			{
-//				step += 1;
-//				
-//				
-//			}
-//			else
-//				return ret;
-//		
-//		case 4:
-//			ret = w25q_Write_Sector_Data( Flash_buf, FILE_INFO_SECTOR);
-//			
-//			if( ret == RET_SUCCEED )
-//			{
-//					step += 1;			
-//			}
-//			else if( ret < 0)
-//			{
-//				return RET_DELAY;
-//				
-//			}
-//			else
-//				return ret;	
-//		case 5:
-			step = 0;
-			return RET_SUCCEED;
-		
-	}
-	
 	
 }
 
 
-static error_t read_flash( uint16_t sector)
+static int read_flash( uint16_t sector)
 {
 	static char step = 0;
 	error_t ret = 0;

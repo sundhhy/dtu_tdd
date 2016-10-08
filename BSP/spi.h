@@ -31,7 +31,8 @@ typedef struct {
 
 
 int	spi_init( SPI_instance	*spi);
-int spi_write( SPI_instance *spi, char *data, int len);
-int spi_read( SPI_instance *spi, char *data, int len);
+int	spi_close( SPI_instance	*spi);
+int spi_write( SPI_instance *spi, uint8_t *data, int len);
+int spi_read( SPI_instance *spi, uint8_t *data, int len);
 void spi_ioctl(SPI_instance *spi, int cmd, ...);
 #endif

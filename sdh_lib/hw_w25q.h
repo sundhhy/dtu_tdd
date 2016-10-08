@@ -2,6 +2,9 @@
 #define __W25Q_H
 #include "hardwareConfig.h"
 #include "spi.h"
+#include "osObjects.h"                      // RTOS object definitions
+
+
 #define SPI_MASTER_INSTANCE          (0)                 /*! User change define to choose SPI instance */
 #define TRANSFER_SIZE               (64)
 #define TRANSFER_BAUDRATE           (5000000U)           /*! Transfer baudrate - 1000k 这个波特率下，波形还算可以*/
@@ -43,7 +46,8 @@
 #define    W25Q_Disable_CS         	GPIO_SetBits(W25Q_csPin.Port, W25Q_csPin.pin);
 
 #define SPI_WRITE(data, len)		spi_write( &W25Q_Spi, data, len)
-#define SPI_READ(buf, len)			spi_write( &spi_read, buf, len)
+#define SPI_READ(buf, len)			spi_write( &W25Q_Spi, buf, len)
+#define W25Q_DELAY_MS(ms)				osDelay(ms)						
 
 typedef struct {
 	uint8_t		id[2];

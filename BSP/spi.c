@@ -15,8 +15,9 @@
 #include "sdhError.h"
 #include "stdlib.h"
 #include "stm32f10x_spi.h"
-#include "CircularBuffer.h"
 #include "osObjects.h"                      // RTOS object definitions
+#include "CircularBuffer.h"
+#include <stdarg.h>
 
 sCircularBuffer	Spi_rxCb;
 
@@ -51,7 +52,6 @@ int	spi_init( SPI_instance	*spi)
 	Spi_rxCb.write = 0;
 	Spi_rxCb.size = SPI_RXBUF_LEN;
 	
-	spi->recvAframe_flag = 0;
 	SPI_Init( spi->spi_base, spi->config);
 	SPI_I2S_ITConfig( spi->spi_base, SPI_I2S_IT_RXNE, ENABLE);
 	SPI_Cmd( spi->spi_base, ENABLE);
@@ -59,12 +59,31 @@ int	spi_init( SPI_instance	*spi)
 	return ERR_OK;
 }
 
-int spi_write( SPI_instance *spi, char *data, int len)
+int	spi_close( SPI_instance	*spi)
+{	
+	
+	
+	free( spi->pctl);
+	free( spi->rx_buf);
+	
+	
+	return ERR_OK;
+}
+
+int spi_write( SPI_instance *spi, uint8_t *data, int len)
 {
-	int i = 0;
+	short i = 0;
+	short count_ms = spi->pctl->tx_waittime_ms;
 	while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_BSY))
 	{
-		;
+		if( spi->pctl->tx_block == 0)
+			return ERR_DEV_BUSY;
+		
+		osDelay(1);
+		if( count_ms)
+			count_ms --;
+		else
+			return ERR_DEV_TIMEOUT;
 	}
 	for( i = 0; i < len; i++)
 	{
@@ -76,19 +95,31 @@ int spi_write( SPI_instance *spi, char *data, int len)
 		SPI_I2S_SendData( spi->spi_base, data[i]);
 		
 	}
+	count_ms = spi->pctl->tx_waittime_ms;
+	while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_BSY))
+	{
+		if( spi->pctl->tx_block == 0)
+			return ERR_DEV_BUSY;
+		
+		osDelay(1);
+		if( count_ms)
+			count_ms --;
+		else
+			return ERR_DEV_TIMEOUT;
+	}
 	
 	return ERR_OK;
 
 	
 }
 
-int spi_read( SPI_instance *spi, char *data, int len)
+int spi_read( SPI_instance *spi, uint8_t *data, int len)
 {
 	int i = 0;
 	int ret = 0;
 	for( i = 0; i < len; )
 	{
-		if( CBRead( Spi_rxCb, data) != ERR_OK)
+		if( CBRead( &Spi_rxCb, data) != ERR_OK)
 		{
 			if( spi->pctl->rx_block == 0)
 				return i;
@@ -155,7 +186,7 @@ void SPI1_IRQHandler(void)
 	if( SPI_I2S_GetFlagStatus( W25Q_SPI, SPI_I2S_FLAG_RXNE))
 	{
 		rdata = SPI_I2S_ReceiveData( W25Q_SPI);
-		if( CBWrite( Spi_rxCb, rdata) == ERR_OK)
+		if( CBWrite( &Spi_rxCb, rdata) == ERR_OK)
 			osSemaphoreRelease( SemId_spiRx);
 		
 	}
