@@ -39,6 +39,7 @@ Modification:
 #include <stdarg.h>
 #include "stdbool.h"
 #include "sdhError.h"
+#include "debug.h"
 
 
 static List L_File_opened;
@@ -62,7 +63,7 @@ static int flush_flash( uint16_t sector);
 static int mach_file(const void *key, const void *data)
 {
 	char *name = ( char *)key;
-	file_Descriptor_t	*fd = (file_Descriptor_t *)data;
+	sdhFile	*fd = (sdhFile *)data;
 	return strcmp( name, fd->name);
 	
 	
@@ -72,7 +73,7 @@ static int mach_file(const void *key, const void *data)
 int filesys_init(void)
 {
 	
-	if( STORAGE_INIT != ERR_OK)
+	if( STORAGE_INIT() != ERR_OK)
 	{
 		
 		Flash_err_flag = 1;
@@ -81,7 +82,7 @@ int filesys_init(void)
 	}
 	else
 		Flash_err_flag = 0;
-	SYS_ARCH_INIT;
+	SYS_ARCH_INIT();
 	
 	list_init( &L_File_opened, free, mach_file);
 	return ERR_OK;
@@ -91,18 +92,18 @@ int filesys_init(void)
 int filesys_close(void)
 {
 	
-	STORAGE_CLOSE;
+	STORAGE_CLOSE();
 	
 	return ERR_OK;
 	
 }
 
 //从文件记录扇区0中找到指定名字的文件记录信息
-int fs_open(char *name, file_Descriptor_t **fd)
+int fs_open(char *name, sdhFile **fd)
 {
 	int ret = 0;
 	file_info_t	*file_in_storage;
-	file_Descriptor_t *pfd;
+	sdhFile *pfd;
 	storage_area_t	*src_area;
 	area_t					*dest_area;	
 	sup_sector_head_t	*sup_head;
@@ -116,16 +117,14 @@ int fs_open(char *name, file_Descriptor_t **fd)
 		switch( step)
 		{
 			case 0:
-				SYS_ARCH_PROTECT;
 				ele = list_get_elmt( &L_File_opened,name);		//先从已经打开的文件中查找是否已经被其他任务打开过
 				if(  ele!= NULL)
 				{
 					pfd = list_data(ele);
 					pfd->reference_count ++;
 					*fd = pfd;
-					pfd->rd_pstn[SYS_GETTID] = 0;
-					pfd->wr_pstn[SYS_GETTID] = 0;
-					SYS_ARCH_UNPROTECT;
+					pfd->rd_pstn[SYS_GETTID()] = 0;
+					pfd->wr_pstn[SYS_GETTID()] = 0;
 					return ERR_OK;
 					
 				}
@@ -141,7 +140,6 @@ int fs_open(char *name, file_Descriptor_t **fd)
 				sup_head = ( sup_sector_head_t *)Flash_buf;
 				if( sup_head->ver[0] != 'V')			//第一次上电，擦除整块flash并写入头信息
 				{
-					SYS_ARCH_UNPROTECT;
 					return (ERR_FILESYS_ERROR);
 					
 				}	
@@ -152,7 +150,7 @@ int fs_open(char *name, file_Descriptor_t **fd)
 					if( strcmp(file_in_storage->name, name) == 0x00 )	
 					{
 						//找到了文件
-						pfd = (file_Descriptor_t *)malloc(sizeof( file_Descriptor_t));
+						pfd = (sdhFile *)malloc(sizeof( sdhFile));
 						dest_area = malloc( file_in_storage->area_total * sizeof( area_t));
 					
 						pfd->area = dest_area;
@@ -180,7 +178,6 @@ int fs_open(char *name, file_Descriptor_t **fd)
 									*fd = pfd;
 								
 									step = 0;
-									SYS_ARCH_UNPROTECT;
 									return (ERR_FILE_ERROR);
 								
 								}
@@ -197,13 +194,11 @@ int fs_open(char *name, file_Descriptor_t **fd)
 						*fd = pfd;
 						step = 0;
 						list_ins_next( &L_File_opened, L_File_opened.tail, pfd);
-						SYS_ARCH_UNPROTECT;
 						return ERR_OK;
 					}
 					file_in_storage ++;
 				}		//for
 				*fd = NULL;
-				SYS_ARCH_UNPROTECT;
 				return (ERR_OPEN_FILE_FAIL);
 		}		//switch
 		
@@ -259,7 +254,7 @@ int fs_format(void)
 //文件的存储信息结构体都是4字节对齐的，所以不必考虑字节对齐问题
 //前置条件:在创建文件的时候,特殊块是不能够存在空洞的,所以在删除操作的时候,要去整理特殊扇区中的内存
 //长度是可选参数
-int fs_creator(char *name, file_Descriptor_t **fd, int len)
+int fs_creator(char *name, sdhFile **fd, int len)
 {	
 	int i = 0;
 	int ret = 0;
@@ -268,7 +263,7 @@ int fs_creator(char *name, file_Descriptor_t **fd, int len)
 	file_info_t	*file_in_storage;
 	file_info_t	*creator_file;
 	storage_area_t	*target_area;
-	file_Descriptor_t *p_fd;
+	sdhFile *p_fd;
 	
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
@@ -358,7 +353,7 @@ int fs_creator(char *name, file_Descriptor_t **fd, int len)
 		
 	Buf_chg_flag = 1;
 		
-	p_fd = malloc( sizeof( file_Descriptor_t));
+	p_fd = malloc( sizeof( sdhFile));
 	if( p_fd == NULL) {
 		ret = ERR_MEM_UNAVAILABLE;
 		goto err2;	
@@ -390,7 +385,7 @@ err1:
 }
 
 //定位当前位置在存储区间的起始页,并返回区间
-static area_t *locate_page( file_Descriptor_t *fd, uint32_t pstn, uint16_t *pg)
+static area_t *locate_page( sdhFile *fd, uint32_t pstn, uint16_t *pg)
 {
 	short i = 0;
 	uint32_t offset = pstn;
@@ -423,13 +418,13 @@ static area_t *locate_page( file_Descriptor_t *fd, uint32_t pstn, uint16_t *pg)
 
 //flash不够时要能够给文件新分配flash页
 //
-int fs_write( file_Descriptor_t *fd, uint8_t *data, int len)
+int fs_write( sdhFile *fd, uint8_t *data, int len)
 {
 	
 	
 	int 			ret;
 	int 				i, limit;
-	int  				myid = SYS_GETTID;
+	int  				myid = SYS_GETTID();
 	area_t		*wr_area;
 	uint16_t	wr_page = 0, wr_sector = 0;
 
@@ -488,12 +483,12 @@ int fs_write( file_Descriptor_t *fd, uint8_t *data, int len)
 	
 }
 
-int fs_read( file_Descriptor_t *fd, uint8_t *data, int len)
+int fs_read( sdhFile *fd, uint8_t *data, int len)
 {
 	
 	int 			ret;
 	int 				i, limit;
-	int  				myid = SYS_GETTID;
+	int  				myid = SYS_GETTID();
 	area_t			*rd_area;
 	uint16_t	rd_page = 0, rd_sector = 0;
 
@@ -546,9 +541,9 @@ int fs_read( file_Descriptor_t *fd, uint8_t *data, int len)
 	
 }
 
-int fs_lseek( file_Descriptor_t *fd, int offset, int whence)
+int fs_lseek( sdhFile *fd, int offset, int whence)
 {
-	char myid = SYS_GETTID;
+	char myid = SYS_GETTID();
 
 	switch( whence)
 	{
@@ -590,9 +585,9 @@ int fs_lseek( file_Descriptor_t *fd, int offset, int whence)
 	
 }
 
-int fs_close( file_Descriptor_t *fd)
+int fs_close( sdhFile *fd)
 {
-	char myid = SYS_GETTID;
+	char myid = SYS_GETTID();
 	void 							*data = NULL;
 	ListElmt           *elmt;
 	int i, ret;
@@ -626,7 +621,7 @@ int fs_close( file_Descriptor_t *fd)
 }
 
 
-int fs_delete( file_Descriptor_t *fd)
+int fs_delete( sdhFile *fd)
 {
 	int ret = 0;
 	file_info_t	*file_in_storage;
@@ -718,6 +713,9 @@ int fs_flush( void)
 
 
 
+
+
+
 static int read_flash( uint16_t sector)
 {
 	int ret = 0;
@@ -741,9 +739,9 @@ static int read_flash( uint16_t sector)
 		}
 //		Src_sector = INVALID_SECTOR;
 	}
-	SYS_ARCH_PROTECT;
+	SYS_ARCH_PROTECT();
 	ret = flash_read_sector(Flash_buf,sector);
-	SYS_ARCH_UNPROTECT;
+	SYS_ARCH_UNPROTECT();
 	if( ret == ERR_OK)
 	{
 		Buf_chg_flag = 0;
@@ -759,17 +757,17 @@ static int flush_flash( uint16_t sector)
 {
 	int ret = 0;
 	
-	SYS_ARCH_PROTECT;
+	SYS_ARCH_PROTECT();
 	ret = flash_erase_sector(sector);
 	
 	if( ret != ERR_OK )
 	{
-		SYS_ARCH_UNPROTECT;
+		SYS_ARCH_UNPROTECT();
 		return ret;
 	}
 
 	ret =  flash_write_sector( Flash_buf, sector);
-	SYS_ARCH_UNPROTECT;
+	SYS_ARCH_UNPROTECT();
 	return ret;
 }
 
@@ -1027,8 +1025,42 @@ static int get_available_page( uint8_t *data, int start, int end, int len)
 	
 }
 
+/**
+ * @brief 文件系统的测试程序.
+ *
+ * @details 用尽可能的全覆盖代码路径的原则来编写这个测试程序.
+ * 
+ * @param[in]	inArgName input argument description.
+ * @param[out]	outArgName output argument description. 
+ * @retval	OK	??
+ * @retval	ERROR	?? 
+ */
+int fs_test(void)
+{
+	int ret = 0;
+	sdhFile	*ftest;
+	ret = filesys_init();
+	if( ret != ERR_OK)
+	{
+		DPRINTF(" init filesystem fail, return val %d \n", ret);
+		return ERR_FAIL;
+		
+	}
+	DPRINTF(" init filesystem successed! \n");
+	ret = fs_format();
+	if( ret != ERR_OK)
+	{
+		DPRINTF(" format filesystem fail, return val %d \n", ret);
+		return ERR_FAIL;
+		
+	}
+	DPRINTF(" format filesystem successed! \n");
 
-
+	
+	
+	return ERR_OK;
+	
+}
 
 
 

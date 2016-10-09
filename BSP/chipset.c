@@ -304,8 +304,35 @@ void w25q_init_cs(void)
 
 void w25q_init_spi(void)
 {
+	GPIO_InitTypeDef GPIO_InitStructure;
 	SPI_InitTypeDef spi_conf;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
+	
+	///spi gpio init
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;        //spi_sck
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;                   //spi_miso
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;                   //spi_mosi
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
 	SPI_StructInit( &spi_conf);
+	spi_conf.SPI_Mode = SPI_Mode_Master;
+	/* Initialize the SPI_CPOL member */
+	spi_conf.SPI_CPOL = SPI_CPOL_High;
+	/* Initialize the SPI_CPHA member */
+	spi_conf.SPI_CPHA = SPI_CPHA_2Edge;
+	/* Initialize the SPI_NSS member */
+	spi_conf.SPI_NSS = SPI_NSS_Soft;
+	
 	W25Q_Spi.config = &spi_conf;
 	spi_init( &W25Q_Spi);
 	spi_ioctl( &W25Q_Spi, CMD_SET_RXBLOCK);

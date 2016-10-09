@@ -31,3 +31,6 @@
 .\objects\main.o: .\BSP\serial485_uart.h
 .\objects\main.o: sdhError.h
 .\objects\main.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\main.o: .\sdh_lib\sw_filesys.h
+.\objects\main.o: .\sdh_lib\hw_w25q.h
+.\objects\main.o: .\sdh_lib\list.h

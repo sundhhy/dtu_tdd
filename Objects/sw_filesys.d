@@ -31,3 +31,4 @@
 .\objects\sw_filesys.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\sw_filesys.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\sw_filesys.o: ..\dtu_tdd\sdhError.h
+.\objects\sw_filesys.o: .\BSP\debug.h

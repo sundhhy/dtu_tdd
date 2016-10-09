@@ -25,12 +25,12 @@
 #define	flash_write_sector			w25q_Write_Sector_Data
 #define	flash_read_sector			w25q_Read_Sector_Data
 #define	flash_write					w25q_Write
-#define STORAGE_INIT						w25q_init() 
-#define STORAGE_CLOSE						w25q_close()	
-#define	SYS_ARCH_INIT		
-#define SYS_ARCH_PROTECT
-#define SYS_ARCH_UNPROTECT
-#define SYS_GETTID						0
+#define STORAGE_INIT()						w25q_init() 
+#define STORAGE_CLOSE()						w25q_close()	
+#define	SYS_ARCH_INIT()		
+#define SYS_ARCH_PROTECT()
+#define SYS_ARCH_UNPROTECT()
+#define SYS_GETTID()						0
 //CMD
 
 
@@ -120,7 +120,7 @@ typedef struct {
 	
 	area_t			*area;									//存储区间
 	
-}file_Descriptor_t;
+}sdhFile;
 
 
 
@@ -129,17 +129,16 @@ typedef struct {
 
 int filesys_init(void);
 int filesys_close(void);
-int filesys_dev_check(void);
-int fs_open(char *name, file_Descriptor_t **fd);
-int fs_creator(char *name, file_Descriptor_t **fd, int len);
-int fs_expansion(file_Descriptor_t *fd, int len);			//增加文件的容量
-int fs_write( file_Descriptor_t *fd, uint8_t *data, int len);
-int fs_read( file_Descriptor_t *fd, uint8_t *data, int len);
-int fs_lseek( file_Descriptor_t *fd, int offset, int whence);
-int fs_delete( file_Descriptor_t *fd);
-int fs_close( file_Descriptor_t *fd);
+int fs_open(char *name, sdhFile **fd);
+int fs_creator(char *name, sdhFile **fd, int len);
+int fs_write( sdhFile *fd, uint8_t *data, int len);
+int fs_read( sdhFile *fd, uint8_t *data, int len);
+int fs_lseek( sdhFile *fd, int offset, int whence);
+int fs_delete( sdhFile *fd);
+int fs_close( sdhFile *fd);
 int fs_flush( void);
 int fs_format(void);
+int fs_test(void);
 #endif
 
 

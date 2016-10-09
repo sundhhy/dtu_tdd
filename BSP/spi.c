@@ -88,7 +88,7 @@ int spi_write( SPI_instance *spi, uint8_t *data, int len)
 	for( i = 0; i < len; i++)
 	{
 		//等待spi的发送缓冲区为空闲的时候开始发送
-		while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_TXE) == RESET)
+		while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_TXE) != SET)
 		{
 			;
 		}

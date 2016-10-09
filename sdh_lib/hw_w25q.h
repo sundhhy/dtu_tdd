@@ -46,7 +46,7 @@
 #define    W25Q_Disable_CS         	GPIO_SetBits(W25Q_csPin.Port, W25Q_csPin.pin);
 
 #define SPI_WRITE(data, len)		spi_write( &W25Q_Spi, data, len)
-#define SPI_READ(buf, len)			spi_write( &W25Q_Spi, buf, len)
+#define SPI_READ(buf, len)			spi_read( &W25Q_Spi, buf, len)
 #define W25Q_DELAY_MS(ms)				osDelay(ms)						
 
 typedef struct {

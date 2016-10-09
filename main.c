@@ -16,7 +16,7 @@
 #include "sdhError.h"
 #include "string.h"
 #include "stm32f10x_usart.h"
-
+#include "sw_filesys.h"
 #include "stdio.h"
 
 #ifdef __GNUC__
@@ -72,6 +72,11 @@ int main (void) {
 	USART_Configuration();
 //	
 	printf(" DTU TDD start ...\r\n");
+#ifdef TDD_FILESYS_TEST	
+	if( fs_test() == ERR_OK)
+		printf(" file system test sccusseed \r\n");
+	while(1);
+#endif
 	
 	Init_ThrdDtu();
   // create 'thread' functions that start executing,
@@ -141,15 +146,6 @@ int main (void) {
 			printf(" sim800 sms test  %d fail \r\n", i);
 		
 		osDelay(1000);
-//		printf(" test again Y/N  ? \r\n");
-//		c = '\n';
-//		while(c == '\n')
-//		{
-//			c = getchar();
-//		}
-//		
-//		if( c == 'N' || c== 'n')
-//			break;
 	}
 
 

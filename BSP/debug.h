@@ -55,4 +55,5 @@
 
 
 //#define TDD_S485
+#define TDD_FILESYS_TEST
 #endif
