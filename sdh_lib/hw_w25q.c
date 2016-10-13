@@ -66,13 +66,25 @@ static int w25q_write_waitbusy(uint8_t *data, int len);
 
 int w25q_init(void)
 {
-	w25q_init_cs();
-	w25q_init_spi();
+	static char first = 1;
+	if( first)
+	{
+		w25q_init_cs();
+		w25q_init_spi();
+			
+			
+		W25Q_Disable_CS;
+		first = 0;
+	}
 		
-	W25Q_Disable_CS;
-		
-	
+	return w25q_read_id();
 
+
+}
+
+int w25q_read_id(void)
+{
+	
 	//read id
 	W25Q_tx_buf[0] = 0x90;
 	W25Q_tx_buf[1] = 0;

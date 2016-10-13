@@ -265,8 +265,8 @@ void USART_Configuration(void)
     USART_Init(USART3, &USART_InitStructure);
 
 //    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+//    USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+//    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 
     /* Enable USART1 */
     USART_Cmd(USART1, ENABLE);
@@ -310,19 +310,20 @@ void w25q_init_spi(void)
 	
 	///spi gpio init
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;        //spi_sck
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_7;        //spi_sck spi_mosi
+//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+//    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;                   //spi_miso
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;                   //spi_mosi
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5  | GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //GPIOA 5 7复用推挽输出 
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIOA	
+
 
 	SPI_StructInit( &spi_conf);
 	spi_conf.SPI_Mode = SPI_Mode_Master;
@@ -332,6 +333,10 @@ void w25q_init_spi(void)
 	spi_conf.SPI_CPHA = SPI_CPHA_2Edge;
 	/* Initialize the SPI_NSS member */
 	spi_conf.SPI_NSS = SPI_NSS_Soft;
+	
+	/* Initialize the SPI_BaudRatePrescaler member */
+	spi_conf.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+	
 	
 	W25Q_Spi.config = &spi_conf;
 	spi_init( &W25Q_Spi);

@@ -65,6 +65,7 @@ void w25q_init_cs(void);
 void w25q_init_spi(void);
 
 int w25q_init(void);
+int w25q_read_id(void);
 int w25q_Erase_Sector(uint16_t Sector_Number);
 int w25q_Erase_block(uint16_t block_Number);
 int w25q_Write_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);

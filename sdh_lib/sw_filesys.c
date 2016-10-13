@@ -1039,7 +1039,11 @@ int fs_test(void)
 {
 	int ret = 0;
 	sdhFile	*ftest;
-	ret = filesys_init();
+	while(1)
+	{
+		ret = filesys_init();
+		osDelay(1);
+	}
 	if( ret != ERR_OK)
 	{
 		DPRINTF(" init filesystem fail, return val %d \n", ret);
