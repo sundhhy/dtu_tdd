@@ -71,10 +71,10 @@ int main (void) {
 	GPIO_Configuration();	
 	USART_Configuration();
 //	
-	printf(" DTU TDD start ...\r\n");
+	printf(" DTU TDD start ...\n");
 #ifdef TDD_FILESYS_TEST	
 	if( fs_test() == ERR_OK)
-		printf(" file system test sccusseed \r\n");
+		printf(" file system test sccusseed \n");
 	while(1);
 #endif
 	

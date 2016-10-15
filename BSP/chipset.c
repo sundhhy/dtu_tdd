@@ -153,7 +153,7 @@ void NVIC_Configuration(void)
 //    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 //    NVIC_Init(&NVIC_InitStructure);
 
-    NVIC_InitStructure.NVIC_IRQChannel = W25Q_Spi.irq;
+    NVIC_InitStructure.NVIC_IRQChannel = W25Q_Spi.irq;			//spi中断
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1 ;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
@@ -307,35 +307,34 @@ void w25q_init_spi(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	SPI_InitTypeDef spi_conf;
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
-	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+
 	///spi gpio init
 	
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_7;        //spi_sck spi_mosi
-//    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;                   //spi_miso
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5   | GPIO_Pin_7 ;        //spi_sck spi_mosi
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5  | GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //GPIOA 5 7复用推挽输出 
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIOA	
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;                   //spi_miso
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+
 
 
 	SPI_StructInit( &spi_conf);
+	/* Initialize the SPI_Direction member */
 	spi_conf.SPI_Mode = SPI_Mode_Master;
 	/* Initialize the SPI_CPOL member */
-	spi_conf.SPI_CPOL = SPI_CPOL_High;
+	spi_conf.SPI_CPOL = SPI_CPOL_Low;
 	/* Initialize the SPI_CPHA member */
-	spi_conf.SPI_CPHA = SPI_CPHA_2Edge;
+	spi_conf.SPI_CPHA = SPI_CPHA_1Edge;
 	/* Initialize the SPI_NSS member */
 	spi_conf.SPI_NSS = SPI_NSS_Soft;
 	
 	/* Initialize the SPI_BaudRatePrescaler member */
-	spi_conf.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+	spi_conf.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_128;
 	
 	
 	W25Q_Spi.config = &spi_conf;

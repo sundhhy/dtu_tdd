@@ -5,22 +5,9 @@
 
 #include "list.h"
 #define FILESYS_VER	"V1.1"
+
+///需要在移植中修改的部分 ----------------------------------------------------------------
 #define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构
-
-#define FLASH_NULL_FLAG  0xffffffff
-#define FILE_NUMBER_MAX								20				//最多可以创建的文件数量
-#define STOREAGE_AREA_NUMBER_MAX			60				//
-#define SUP_SECTOR_NUM					3
-#define FILE_INFO_SECTOR				0
-#define FLASH_USEE_SECTOR1			1
-#define FLASH_USEE_SECTOR2			2
-#define PAGE_AVAILBALE_OFFSET		( SUP_SECTOR_NUM * SECTOR_SIZE / PAGE_SIZE)
-#define PAGE_REMIN_FOR_IMG			1024				//256k用于存储可执行镜像文件		
-#define SECTOR_PAGE_BIT					32768			//8 * 4096
-
-#define	INVALID_SECTOR					0xffff
-
-
 #define flash_erase_sector 			w25q_Erase_Sector
 #define	flash_write_sector			w25q_Write_Sector_Data
 #define	flash_read_sector			w25q_Read_Sector_Data
@@ -30,7 +17,28 @@
 #define	SYS_ARCH_INIT()		
 #define SYS_ARCH_PROTECT()
 #define SYS_ARCH_UNPROTECT()
-#define SYS_GETTID()						0
+#define SYS_GETTID()
+#define RESE_STOREAGE_SIZE_KB						0			//保留的存储空间
+#define FILE_NUMBER_MAX								20				//最多可以创建的文件数量
+
+//----------------------------------------------------------------------------------
+
+
+#define FLASH_NULL_FLAG  0xffffffff
+
+//#define STOREAGE_AREA_NUMBER_MAX			60				//
+//#define SUP_SECTOR_NUM					3
+//#define FILE_INFO_SECTOR				0
+//#define FLASH_USEE_SECTOR1			1
+//#define FLASH_USEE_SECTOR2			2
+//#define PAGE_AVAILBALE_OFFSET		( SUP_SECTOR_NUM * SECTOR_SIZE / PAGE_SIZE)
+//#define PAGE_REMIN_FOR_IMG			1024				//256k用于存储可执行镜像文件		
+//#define SECTOR_PAGE_BIT					32768			//8 * 4096
+
+#define	INVALID_SECTOR					0xffff
+
+
+						
 //CMD
 
 

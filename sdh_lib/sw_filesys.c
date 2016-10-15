@@ -1,37 +1,28 @@
-/*************************************************
-Copyright (C), 
-File name: filesys.c
-Author:		sundh
-Version:	v1.0
-Date: 		14-03-04
-Description: 
-在w25q上实现一个简易的文件系统。
-在访问文件系统的时候，使用了互斥锁，来避免对flash访问出现竞争
-为每个任务提供一个文件描述符，来避免多个任务访问同一个文件时产生混乱。
-不支持目录结构。所有存放在flash中的文件都是平级的。
-扇区0保存文件信息。称为特殊扇区
-扇区1,2保存每个页的使用情况，每一个bit代表一个页的情况，如果该页已经被使用，则对应的bit清0.
-特殊扇区的起始位置存放的一定是文件信息
-flash中最后512kB的内存要用于存储系统镜像，不能用于文件的存储。
-缓存一个扇区的大小，当本次对flash的访问扇区与上次不相同的时候，才去把缓存刷新到flash中去.
+/**
+* @file 		sdh_filesys.c
+* @brief		一个适用与裸机活rtos的简易文件系统，为了方便存储器的管理.
+* @details		存储器的被分成三部分： 管理区，存储区，保留区.管理区保存文件描述结构，以及内存页的使用情况。存储区存储数据，保留区是文件系统不会去访问的部分。
+*	不支持目录结构。所有存放在flash中的文件都是平级的。
+*	扇区0保存文件信息。称为特殊扇区
+*	紧挨着的扇区1，或者更多的扇区用来管理存储器的内存页的使用。一个Bit代表一个页，1表示该页可以被使用，0表示该页已经被分配掉了。
+*	扇区0的文件信息由3部分组成：
+*	1、扇区头信息：已经创建的文件数量及版本号
+*	2、文件信息存储区
+*	3、文件存储区间存储区
+*	提供缓存操作机制，降低存储器的操作次数.
+*	消耗资源：
+*	掉电存储器：2 + n个扇区,如果内存页过多无法用一个扇区来保存就怎讲内存管理扇区
+*	内存：		1个扇区的大小
+* @author		author
+* @date		date
+* @version	A001
+* @par Copyright (c): 
+* 		XXX公司
+* @par History:         
+*	version: author, date, desc
 
-扇区0的文件信息由3部分组成：
-1、扇区头信息：已经创建的文件数量及版本号
-2、文件信息存储区
-3、文件存储区间存储区
+*/
 
-
-Others: 
-Function List: 
-1. fs_write
-History: 
-1. Date:
-Author:
-Modification:
-16-03-16
-在空间不够时，新分配空间后返回一个INCREASE_PAGE，来提示调用者
-2. ...
-*************************************************/
 #include "list.h"
 #include "sw_filesys.h"
 #include <stdio.h>
@@ -50,6 +41,9 @@ uint8_t	*Ptr_Flash_buf;		//用于读取扇区1或2的内存使用情况
 static	uint8_t		Buf_chg_flag = 0;				//缓存内容被修改的标志,缓存被写入flash时标志清零
 static uint16_t	Src_sector = INVALID_SECTOR;		//缓存中的内容的扇区
 static char Flash_err_flag = 0;
+
+static int	PageMng_Sec_num = 1;					//页面管理扇区数量
+
 
 static bool check_bit(uint8_t *data, int bit);
 static void clear_bit(uint8_t *data, int bit);
@@ -82,6 +76,7 @@ int filesys_init(void)
 	}
 	else
 		Flash_err_flag = 0;
+	
 	SYS_ARCH_INIT();
 	
 	list_init( &L_File_opened, free, mach_file);
@@ -254,6 +249,23 @@ int fs_format(void)
 //文件的存储信息结构体都是4字节对齐的，所以不必考虑字节对齐问题
 //前置条件:在创建文件的时候,特殊块是不能够存在空洞的,所以在删除操作的时候,要去整理特殊扇区中的内存
 //长度是可选参数
+
+/**
+ * @brief 创建文件.
+ *
+ * @details 文件的大小的范围是4k - .
+ * 
+ * @param[in]	inArgName input argument description.
+ * @param[out]	outArgName output argument description. 
+ * @retval	OK	成功
+ * @retval	ERROR	错误 
+ * @par 标识符
+ * 		保留
+ * @par 其它
+ * 		无
+ * @par 修改日志
+ * 		XXX于201X-XX-XX创建
+ */
 int fs_creator(char *name, sdhFile **fd, int len)
 {	
 	int i = 0;
@@ -1039,11 +1051,9 @@ int fs_test(void)
 {
 	int ret = 0;
 	sdhFile	*ftest;
-	while(1)
-	{
-		ret = filesys_init();
-		osDelay(1);
-	}
+
+
+	ret = filesys_init();
 	if( ret != ERR_OK)
 	{
 		DPRINTF(" init filesystem fail, return val %d \n", ret);
@@ -1051,6 +1061,7 @@ int fs_test(void)
 		
 	}
 	DPRINTF(" init filesystem successed! \n");
+	
 	ret = fs_format();
 	if( ret != ERR_OK)
 	{
@@ -1060,8 +1071,8 @@ int fs_test(void)
 	}
 	DPRINTF(" format filesystem successed! \n");
 
-	
-	
+	DPRINTF(" create a max signal file, w25q64 max size is 8MB , so try \n");
+	ret = fs_creator("Max_file.test", ftest, 
 	return ERR_OK;
 	
 }

@@ -2,7 +2,6 @@
 #define __SPI_H_
 #include "stm32f10x_spi.h"
 
-#define SPI_RXBUF_LEN	64
 #define CMD_SET_TXBLOCK	1
 #define CMD_CLR_TXBLOCK	2
 #define CMD_SET_RXBLOCK	3
@@ -23,7 +22,7 @@ typedef struct {
 	void	*config;
 	int 	irq;
 	io_ctl	*pctl;
-	uint8_t	*rx_buf;
+	
 	
 }SPI_instance;
 

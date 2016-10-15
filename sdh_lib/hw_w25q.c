@@ -72,8 +72,12 @@ int w25q_init(void)
 		w25q_init_cs();
 		w25q_init_spi();
 			
-			
+		
 		W25Q_Disable_CS;
+		
+		W25Q_tx_buf[0] = 0xff;
+//		SPI_WRITE( W25Q_tx_buf, 1);
+//		SPI_READ( W25Q_rx_buf, 1);
 		first = 0;
 	}
 		
@@ -93,15 +97,22 @@ int w25q_read_id(void)
 	W25Q_Enable_CS;
 	
 	SPI_WRITE( W25Q_tx_buf, 4);
-	
 	SPI_READ( W25Q_rx_buf, 2);
-
+	
 	W25Q_Disable_CS;
 	W25Q_flash.id[0] =  W25Q_rx_buf[0];
 	W25Q_flash.id[1] =  W25Q_rx_buf[1];
 	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x17)		//w25Q128
 	{
 		W25Q_flash.page_num = 65536;
+		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
+		W25Q_flash.block_num = W25Q_flash.sector_num/BLOCK_HAS_SECTORS;
+		return ERR_OK;
+	}
+	
+	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x16)		//w25Q64
+	{
+		W25Q_flash.page_num = 32768;
 		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
 		W25Q_flash.block_num = W25Q_flash.sector_num/BLOCK_HAS_SECTORS;
 		return ERR_OK;
@@ -240,7 +251,7 @@ int w25q_Read_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num)
 	if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
 		return ERR_DRI_OPTFAIL;
 	
-	if( SPI_READ( pBuffer, SECTOR_SIZE) != SECTOR_SIZE)
+	if( SPI_READ( pBuffer, SECTOR_SIZE) != ERR_OK)
 		return ERR_DRI_OPTFAIL;
 	W25Q_Disable_CS;
 	return ERR_OK;
@@ -260,7 +271,7 @@ int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len)
 	
 	if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
 		return ERR_DRI_OPTFAIL;
-	if( SPI_READ( pBuffer, len) != SECTOR_SIZE)
+	if( SPI_READ( pBuffer, len) != ERR_OK)
 		return ERR_DRI_OPTFAIL;
 	W25Q_Disable_CS;
 	return ERR_OK;
@@ -297,7 +308,7 @@ static uint8_t w25q_ReadSR(void)
 		
 		if( SPI_WRITE( W25Q_tx_buf, 1) != ERR_OK)
 			return 0xff;
-		if( SPI_READ( &retValue, 1) != 1)
+		if( SPI_READ( &retValue, 1) != ERR_OK)
 			return 0xff;
     W25Q_Disable_CS;
     return retValue;
