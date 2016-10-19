@@ -2,11 +2,11 @@
 #define __FILE_SYS_H__
 #include "hw_w25q.h"
 #include "osObjects.h"                      // RTOS object definitions
-
+#include "stdint.h"
 #include "list.h"
 #define FILESYS_VER	"V1.1"
 
-///需要在移植中修改的部分 ----------------------------------------------------------------
+///对外接口 ----------------------------------------------------------------
 #define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构
 #define flash_erase_sector 			w25q_Erase_Sector
 #define	flash_write_sector			w25q_Write_Sector_Data
@@ -14,19 +14,42 @@
 #define	flash_write					w25q_Write
 #define STORAGE_INIT()						w25q_init() 
 #define STORAGE_CLOSE()						w25q_close()	
-#define	SYS_ARCH_INIT()		
+#define STORAGE_INFO(info)					w25q_info(info)
+#define	SYS_ARCH_INIT()						
 #define SYS_ARCH_PROTECT()
 #define SYS_ARCH_UNPROTECT()
-#define SYS_GETTID()
+#define SYS_GETTID()								0			//多任务时用于区别不同的进程
 #define RESE_STOREAGE_SIZE_KB						0			//保留的存储空间
-#define FILE_NUMBER_MAX								20				//最多可以创建的文件数量
+#define FILE_NUMBER_MAX								20				//最多可以创建的文件数量,一般情况下，一个文件需要24B来存储管理信息
 
+typedef struct {
+	int32_t		page_size;						///一页的长度
+	int32_t		total_pagenum;					///整个存储器的页数量
+	
+	uint16_t		sector_pagenum;
+	uint16_t		block_pagenum;
+	
+//privately
+	uint32_t	sector_size;
+	uint32_t	block_size;	
+	
+	uint16_t	sector_number;	
+	uint16_t	block_number;	
+}storageInfo_t;
 //----------------------------------------------------------------------------------
 
+typedef struct {
+	uint16_t		fileinfo_sector_begin;
+	uint16_t		fileinfo_sector_end;			///文件信息扇区
+	uint16_t		pguseinfo_sector_begin;
+	uint16_t		pguseinfo_sector_end;			///页面使用信息扇区
+	uint16_t		data_sector_begin;
+	uint16_t		data_sector_end;			//数据扇区
+}fs_area;
 
 #define FLASH_NULL_FLAG  0xffffffff
 
-//#define STOREAGE_AREA_NUMBER_MAX			60				//
+//#define STOREAGE_AREA_NUMBER_MAX			60				//一个文件的存储区间的数量
 //#define SUP_SECTOR_NUM					3
 //#define FILE_INFO_SECTOR				0
 //#define FLASH_USEE_SECTOR1			1
@@ -62,7 +85,7 @@ typedef enum {
 	
 }task_flash_state;
 
-
+ 
 #define 	ERR_FLASH_UNAVAILABLE -1
 #define 	ERR_FILE_EMPTY -2
 #define 	ERR_FILE_FULL -3
@@ -76,8 +99,8 @@ typedef enum {
 #define 	ERR_NO_FLASH_SPACE -11
 #define 	ERR_FILESYS_OVER_FILENUM -12
 #define 	ERR_FILESYS_FILE_EXIST -12
-
-	
+#define		ERR_STORAGE_FAIL		-13			//存储器操作失败
+#define 	ERR_NON_EXISTENT 	-14	
 
 
 typedef struct {
@@ -136,9 +159,10 @@ typedef struct {
 
 
 int filesys_init(void);
+int fs_get_error(void);
 int filesys_close(void);
-int fs_open(char *name, sdhFile **fd);
-int fs_creator(char *name, sdhFile **fd, int len);
+sdhFile * fs_open(char *name);
+sdhFile * fs_creator(char *name, int len);
 int fs_write( sdhFile *fd, uint8_t *data, int len);
 int fs_read( sdhFile *fd, uint8_t *data, int len);
 int fs_lseek( sdhFile *fd, int offset, int whence);

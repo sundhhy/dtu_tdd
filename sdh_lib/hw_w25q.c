@@ -60,6 +60,7 @@ static uint8_t	W25Q_rx_buf[16];
 static int w25q_wr_enable(void);
 static uint8_t w25q_ReadSR(void);
 static int w25q_write_waitbusy(uint8_t *data, int len);
+static int w25q_read_id(void);
 //static void w25q_Write_Data(uint8_t *pBuffer,uint16_t Block_Num,uint16_t Page_Num,uint32_t WriteBytesNum);
 
 //--------------------------------------------------------------
@@ -76,8 +77,6 @@ int w25q_init(void)
 		W25Q_Disable_CS;
 		
 		W25Q_tx_buf[0] = 0xff;
-//		SPI_WRITE( W25Q_tx_buf, 1);
-//		SPI_READ( W25Q_rx_buf, 1);
 		first = 0;
 	}
 		
@@ -86,43 +85,20 @@ int w25q_init(void)
 
 }
 
-int w25q_read_id(void)
+///这个函数要在w25q_init成功之后调用才有用
+void w25q_info(void *info)
 {
+	w25qInfo_t	*w25qinfo = ( w25qInfo_t *)info;
 	
-	//read id
-	W25Q_tx_buf[0] = 0x90;
-	W25Q_tx_buf[1] = 0;
-	W25Q_tx_buf[2] = 0;
-	W25Q_tx_buf[3] = 0;
-	W25Q_Enable_CS;
+	w25qinfo->page_size = PAGE_SIZE;
+	w25qinfo->total_pagenum = W25Q_flash.page_num;
+	w25qinfo->sector_pagenum = SECTOR_HAS_PAGES;
 	
-	SPI_WRITE( W25Q_tx_buf, 4);
-	SPI_READ( W25Q_rx_buf, 2);
-	
-	W25Q_Disable_CS;
-	W25Q_flash.id[0] =  W25Q_rx_buf[0];
-	W25Q_flash.id[1] =  W25Q_rx_buf[1];
-	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x17)		//w25Q128
-	{
-		W25Q_flash.page_num = 65536;
-		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
-		W25Q_flash.block_num = W25Q_flash.sector_num/BLOCK_HAS_SECTORS;
-		return ERR_OK;
-	}
-	
-	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x16)		//w25Q64
-	{
-		W25Q_flash.page_num = 32768;
-		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
-		W25Q_flash.block_num = W25Q_flash.sector_num/BLOCK_HAS_SECTORS;
-		return ERR_OK;
-	}
-	
+	w25qinfo->block_pagenum = BLOCK_HAS_SECTORS * SECTOR_HAS_PAGES;
 
-	return ERR_FAIL;
-	
-	
 }
+
+
 
 int w25q_close(void)
 {
@@ -353,7 +329,43 @@ static int w25q_write_waitbusy(uint8_t *data, int len)
 }
 
 
+static int w25q_read_id(void)
+{
+	
+	//read id
+	W25Q_tx_buf[0] = 0x90;
+	W25Q_tx_buf[1] = 0;
+	W25Q_tx_buf[2] = 0;
+	W25Q_tx_buf[3] = 0;
+	W25Q_Enable_CS;
+	
+	SPI_WRITE( W25Q_tx_buf, 4);
+	SPI_READ( W25Q_rx_buf, 2);
+	
+	W25Q_Disable_CS;
+	W25Q_flash.id[0] =  W25Q_rx_buf[0];
+	W25Q_flash.id[1] =  W25Q_rx_buf[1];
+	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x17)		//w25Q128
+	{
+		W25Q_flash.page_num = 65536;
+		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
+		W25Q_flash.block_num = W25Q_flash.sector_num/BLOCK_HAS_SECTORS;
+		return ERR_OK;
+	}
+	
+	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x16)		//w25Q64
+	{
+		W25Q_flash.page_num = 32768;
+		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
+		W25Q_flash.block_num = W25Q_flash.sector_num/BLOCK_HAS_SECTORS;
+		return ERR_OK;
+	}
+	
 
+	return ERR_FAIL;
+	
+	
+}
 
 
 

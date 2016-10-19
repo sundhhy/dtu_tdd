@@ -63,13 +63,19 @@ typedef struct {
 	
 	
 }w25q_instance_t;
-
+typedef struct {
+	int32_t		page_size;						///一页的长度
+	int32_t		total_pagenum;					///整个存储器的页数量
+	
+	uint16_t		sector_pagenum;
+	uint16_t		block_pagenum;
+}w25qInfo_t;
 
 void w25q_init_cs(void);
 void w25q_init_spi(void);
 
 int w25q_init(void);
-int w25q_read_id(void);
+void w25q_info(void *info);
 int w25q_Erase_Sector(uint16_t Sector_Number);
 int w25q_Erase_block(uint16_t block_Number);
 int w25q_Write_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
