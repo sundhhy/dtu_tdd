@@ -34,7 +34,7 @@
 #define W25Q_INSTR_WR_DISABLE								0x04
 #define W25Q_INSTR_RD_Status_Reg1						0x05
 #define W25Q_INSTR_RD_Status_Reg2						0x35
-#define W25Q_INSTR_WR_Status_Reg						0x05
+#define W25Q_INSTR_WR_Status_Reg						0x01
 #define W25Q_INSTR_Page_Program							0x02
 #define W25Q_INSTR_Sector_Erase_4K					0x20
 #define W25Q_INSTR_BLOCK_Erase_32K					0x52
@@ -50,7 +50,7 @@
 
 
 #define W25Q_WRITE_BUSYBIT									1
-
+#define W25Q_STATUS_WEL									2
 					
 
 typedef struct {
@@ -82,8 +82,10 @@ int w25q_Write_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
 int w25q_Write(uint8_t *pBuffer, uint32_t WriteAddr, uint32_t WriteBytesNum);
 int w25q_Read_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
 int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len);
-extern int w25q_close(void);
-extern w25q_instance_t  W25Q_flash;
+int w25q_close(void);
+int w25q_Erase_chip_c7(void);
+int w25q_Erase_chip_60(void);
+
 
 #endif
 

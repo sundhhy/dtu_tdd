@@ -7,6 +7,8 @@
 #include "dtuConfig.h"
 #include "string.h"
 #include "debug.h"
+#include "sw_filesys.h"
+
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
  *---------------------------------------------------------------------------*/
@@ -15,10 +17,12 @@ void thrd_dtu (void const *argument);                             // thread func
 osThreadId tid_ThrdDtu;                                          // thread id
 osThreadDef (thrd_dtu, osPriorityNormal, 1, 0);                   // thread object
 
+
 static int get_dtuCfg(DtuCfg_t *conf);
 
 gprs_t *SIM800 ;
 DtuCfg_t	Dtu_config;
+sdhFile *DtuCfg_file;
 
 char	DTU_Buf[DTU_BUF_LEN];
 int Init_ThrdDtu (void) {
@@ -116,6 +120,16 @@ void thrd_dtu (void const *argument) {
 					SIM800->sendto_tcp( SIM800, 2, DTU_Buf, ret);
 					SIM800->sendto_tcp( SIM800, 3, DTU_Buf, ret);
 					
+					if( Dtu_config.Sms_mode)
+					{
+						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[0], DTU_Buf);
+						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[1], DTU_Buf);
+						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[2], DTU_Buf);
+						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[3], DTU_Buf);
+						
+						
+					}
+					
 				}
 				step++;
 			case 3:
@@ -151,6 +165,28 @@ void thrd_dtu (void const *argument) {
 static int get_dtuCfg(DtuCfg_t *conf)
 {
 	int i = 0;
+	
+	DtuCfg_file	= fs_open( DTUCONF_filename);
+	if( DtuCfg_file)
+	{
+		fs_read( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
+		if( conf->ver[0] != 0xff || conf->ver[1] != 0xff)
+		{
+			
+			return ERR_OK;
+		}
+	}
+	else
+	{
+		DtuCfg_file	= fs_creator( DTUCONF_filename, sizeof( DtuCfg_t));
+		
+			
+	}
+	
+	
+	//Ä¬ÈÏµÄÅäÖÃ
+	conf->ver[0] = DTU_CONFGILE_MAIN_VER;
+	conf->ver[1] = DTU_CONFGILE_SUB_VER;
 	conf->Activestandby_mode = 1;
 	conf->Sms_mode = 0;
 	for( i = 0; i < IPMUX_NUM; i++)
@@ -158,8 +194,12 @@ static int get_dtuCfg(DtuCfg_t *conf)
 		strcpy( conf->DateCenter_ip[i], DEF_IPADDR);
 		strcpy( conf->protocol[i], DEF_PROTOTOCOL);
 		conf->DateCenter_port[i] = DEF_PORTNUM;
-		if( i > 1)
-			conf->DateCenter_port[i] = 10647;
+		
+	}
+	
+	if( DtuCfg_file)
+	{
+		fs_write( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
 	}
 	
 	return ERR_OK;

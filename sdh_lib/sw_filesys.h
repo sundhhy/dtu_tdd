@@ -105,7 +105,7 @@ typedef enum {
 
 typedef struct {
 	short				file_count;				//指向第一个未使用的地址
-	uint8_t				ver[6];
+	char				ver[6];
 	
 	
 }sup_sector_head_t;
@@ -161,13 +161,19 @@ typedef struct {
 int filesys_init(void);
 int fs_get_error(void);
 int filesys_close(void);
+
+
 sdhFile * fs_open(char *name);
 sdhFile * fs_creator(char *name, int len);
 int fs_write( sdhFile *fd, uint8_t *data, int len);
 int fs_read( sdhFile *fd, uint8_t *data, int len);
 int fs_lseek( sdhFile *fd, int offset, int whence);
 int fs_delete( sdhFile *fd);
+int fs_du( sdhFile *fd);
 int fs_close( sdhFile *fd);
+
+
+
 int fs_flush( void);
 int fs_format(void);
 int fs_test(void);
