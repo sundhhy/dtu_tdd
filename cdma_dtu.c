@@ -2,12 +2,13 @@
 #include "cmsis_os.h"                                           // CMSIS RTOS header file
 #include "osObjects.h"                      // RTOS object definitions
 #include "gprs.h"
-#include "serial485_uart.h"
 #include "sdhError.h"
 #include "dtuConfig.h"
 #include "string.h"
 #include "debug.h"
 #include "sw_filesys.h"
+#include "TTextConfProt.h"
+#include "times.h"
 
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
@@ -19,7 +20,7 @@ osThreadDef (thrd_dtu, osPriorityNormal, 1, 0);                   // thread obje
 
 
 static int get_dtuCfg(DtuCfg_t *conf);
-
+static void dtu_conf(void);
 gprs_t *SIM800 ;
 DtuCfg_t	Dtu_config;
 sdhFile *DtuCfg_file;
@@ -33,7 +34,7 @@ int Init_ThrdDtu (void) {
 	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 2000);
 	s485_Uart_ioctl(S485_UART_CMD_CLR_RXBLOCK);
 	get_dtuCfg( &Dtu_config);
-	
+	clean_time2_flags();
 	
 	
 	while(1)
@@ -107,30 +108,54 @@ void thrd_dtu (void const *argument) {
 				}
 				if( ret == sms_urc)
 				{
+//					ret = SIM800->deal_smsrecv_event( SIM800, DTU_Buf,  &lszie);
+//					if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
+//					{
+//						dtu_conf();
+//						decodeTTCP_finish();
+//						
+//					}
+//					else
+//					{
+//						s485_Uart_write(DTU_Buf, lszie);
+//						
+//					}
+					
 					
 				}
 				step ++;
 				break;
 			case 2:
 				ret = s485_Uart_read( DTU_Buf, DTU_BUF_LEN);
-				if( ret > 0)
+				if( ret <= 0)
+				{
+					step++;
+					break;
+				}
+				if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
+				{
+					dtu_conf();
+					decodeTTCP_finish();
+					
+				}
+				else
 				{
 					SIM800->sendto_tcp( SIM800, 0, DTU_Buf, ret);
 					SIM800->sendto_tcp( SIM800, 1, DTU_Buf, ret);
 					SIM800->sendto_tcp( SIM800, 2, DTU_Buf, ret);
 					SIM800->sendto_tcp( SIM800, 3, DTU_Buf, ret);
 					
-					if( Dtu_config.Sms_mode)
-					{
-						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[0], DTU_Buf);
-						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[1], DTU_Buf);
-						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[2], DTU_Buf);
-						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[3], DTU_Buf);
-						
-						
-					}
-					
+//					if( Dtu_config.Sms_mode)
+//					{
+//						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[0], DTU_Buf);
+//						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[1], DTU_Buf);
+//						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[2], DTU_Buf);
+//						SIM800->send_text_sms( SIM800, Dtu_config.DC_Phone[3], DTU_Buf);
+//						
+//						
+//					}
 				}
+				
 				step++;
 			case 3:
 				if( Dtu_config.Activestandby_mode )
@@ -167,6 +192,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	int i = 0;
 	
 	DtuCfg_file	= fs_open( DTUCONF_filename);
+
 	if( DtuCfg_file)
 	{
 		fs_read( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
@@ -203,5 +229,80 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	}
 	
 	return ERR_OK;
+	
+}
+
+
+static void dtu_conf(void)
+{
+	char *pcmd;
+	
+	if( get_cmdtype() != CONFCMD_TYPE_ATC)
+		return;
+	
+	pcmd = get_cmd();
+	
+	if( pcmd == NULL)
+		return;
+	
+	if( strcmp(pcmd ,"SVDM") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"SVIP") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"DNIP") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"ATBT") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"PRNT") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"SCOM ") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"REGT ") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"HEAT  ") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"VAPN ") == 0)
+	{
+		
+		return;
+	}
+	
+	if( strcmp(pcmd ,"CNUM ") == 0)
+	{
+		
+		return;
+	}
 	
 }

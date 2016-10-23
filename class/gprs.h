@@ -23,6 +23,7 @@ CLASS(gprs_t)
 	int (*tcp_cnnt)( gprs_t *self, int cnnt_num, char *addr, int portnum);
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
+	int (*deal_smsrecv_event)( gprs_t *self, char *buf, int *lsize);
 	int (*deal_tcpclose_event)( gprs_t *self, char *data, int len);
 	int (*deal_tcprecv_event)( gprs_t *self, char *buf, int *lsize);
 	

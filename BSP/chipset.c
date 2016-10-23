@@ -274,22 +274,24 @@ void USART_Configuration(void)
     USART_Cmd(USART3, ENABLE);
 }
 
-//void Init_TIM2(void)
-//{
-//    TIM_TimeBaseInitTypeDef TIM_TimeBaseSturcture;			 //定义TIM结构体变量
-//    TIM_DeInit(TIM2);										 //复位时钟TIM2
 
-//    TIM_TimeBaseSturcture.TIM_Period = 16000;				  //定时器周期
-//    TIM_TimeBaseSturcture.TIM_Prescaler = 0x36;				  //72000000/55=1309090
-//    TIM_TimeBaseSturcture.TIM_ClockDivision = 0x00;				//TIM_CKD_DIV1    TIM2时钟分频
-//    TIM_TimeBaseSturcture.TIM_CounterMode = TIM_CounterMode_Up; //計數方式	   
+//设置10ms产生一次中断
+void Init_TIM2(void)
+{
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseSturcture;			 //定义TIM结构体变量
+    TIM_DeInit(TIM2);										 //复位时钟TIM2
 
-//    TIM_TimeBaseInit(TIM2,&TIM_TimeBaseSturcture);
-//																//初始化
-//    TIM_ClearFlag(TIM2,TIM_FLAG_Update);						//清除標誌
-//    TIM_ITConfig(TIM2, TIM_IT_Update,ENABLE);
-//    TIM_Cmd(TIM2, ENABLE);										//使能
-//}
+    TIM_TimeBaseSturcture.TIM_Period = 10000;				  //定时器周期
+    TIM_TimeBaseSturcture.TIM_Prescaler = 71;				  //72000000/72=1000000
+    TIM_TimeBaseSturcture.TIM_ClockDivision = 0x00;				//TIM_CKD_DIV1    TIM2时钟分频
+    TIM_TimeBaseSturcture.TIM_CounterMode = TIM_CounterMode_Up; //計數方式	   
+
+    TIM_TimeBaseInit(TIM2,&TIM_TimeBaseSturcture);
+																//初始化
+    TIM_ClearFlag(TIM2,TIM_FLAG_Update);						//清除標誌
+    TIM_ITConfig(TIM2, TIM_IT_Update,ENABLE);
+    TIM_Cmd(TIM2, ENABLE);										//使能
+}
 
 void w25q_init_cs(void)
 {
@@ -334,7 +336,7 @@ void w25q_init_spi(void)
 	spi_conf.SPI_NSS = SPI_NSS_Soft;
 	
 	/* Initialize the SPI_BaudRatePrescaler member */
-	spi_conf.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+	spi_conf.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_64;
 	
 	
 	W25Q_Spi.config = &spi_conf;

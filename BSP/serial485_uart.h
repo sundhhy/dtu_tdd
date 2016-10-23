@@ -1,7 +1,9 @@
 #ifndef __SERAIL_485_UART_H__
 #define __SERAIL_485_UART_H__
 #include "stdint.h"
+#include "stm32f10x_usart.h"
 
+typedef USART_InitTypeDef	ser_485Cfg;
 /**
  * @brief 485´®¿Ú³õÊ¼»¯
  * 

@@ -43,8 +43,8 @@ USART_InitTypeDef Conf_GprsUsart = {
 	
 };
 
-USART_InitTypeDef Conf_S485Usart = {
-		1200,
+USART_InitTypeDef Conf_S485Usart_default = {
+		115200,
 		USART_WordLength_8b,
 		USART_StopBits_1,
 		USART_Parity_No,

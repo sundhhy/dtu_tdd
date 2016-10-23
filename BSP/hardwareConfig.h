@@ -59,7 +59,7 @@ extern SPI_instance W25Q_Spi ;
 
 extern USART_InitTypeDef USART_InitStructure;
 extern USART_InitTypeDef Conf_GprsUsart;
-extern USART_InitTypeDef Conf_S485Usart;
+extern USART_InitTypeDef Conf_S485Usart_default;
 
 extern Dma_source DMA_gprs_usart;
 extern Dma_source DMA_s485_usart;

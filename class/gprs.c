@@ -676,6 +676,15 @@ int deal_tcpclose_event( gprs_t *self, char *data, int len)
 	}
 	return ERR_BAD_PARAMETER;
 }
+
+int deal_smsrecv_event( gprs_t *self, char *buf, int *lsize)
+{
+	
+	
+	
+	
+	return ERR_OK;
+}
 int deal_tcprecv_event( gprs_t *self, char *buf, int *lsize)
 {
 	char *pp;
@@ -1084,6 +1093,7 @@ FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
 
 FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);
 FUNCTION_SETTING(sendto_tcp, sendto_tcp);
+FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(tcp_test, tcp_test);
 

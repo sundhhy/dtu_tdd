@@ -117,7 +117,9 @@ int w25q_Erase_Sector(uint16_t Sector_Number)
 {
 
 	uint8_t Block_Num = Sector_Number / BLOCK_HAS_SECTORS;
-	
+	uint8_t step  = 0;
+	uint8_t	count = 100;
+	int ret = 0;
 	if( Sector_Number > W25Q_flash.sector_num)
 			return ERR_BAD_PARAMETER;
 	
@@ -127,7 +129,59 @@ int w25q_Erase_Sector(uint16_t Sector_Number)
 	W25Q_tx_buf[2] = Sector_Number<<4;
 	W25Q_tx_buf[3] = 0;
 	
-	return w25q_write_waitbusy( W25Q_tx_buf, 4);
+	
+	
+	while(1)
+	{
+		switch( step)
+		{	
+			case 0:
+				
+				if( w25q_wr_enable() != ERR_OK)
+				{
+					ret =  ERR_DRI_OPTFAIL;
+					goto exit;
+				}
+				
+				W25Q_Enable_CS;
+				if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
+				{
+					ret =  ERR_DRI_OPTFAIL;
+					goto exit;
+				}
+				step ++;
+				W25Q_Enable_CS;
+
+				W25Q_DELAY_MS(40);
+				break;
+			case 1:
+				if( w25q_ReadSR() & W25Q_STATUS1_WEL)
+				{
+					W25Q_DELAY_MS(1);
+//					if( count)
+//						count --;
+//					else
+//					{
+//						ret =  ERR_DEV_TIMEOUT;
+//						goto exit;
+//					}
+					break;
+				}
+				
+				ret =  ERR_OK;
+				goto exit;
+			default:
+				step = 0;
+				break;
+		}
+	}
+		
+	exit:
+	W25Q_Enable_CS;
+	return ret;
+	
+	
+//	return w25q_write_waitbusy( W25Q_tx_buf, 4);
 	
 }
 
@@ -203,7 +257,7 @@ int w25q_Write(uint8_t *pBuffer, uint32_t WriteAddr, uint32_t WriteBytesNum)
 					step++;
 					break;
 				case 1:
-					if( w25q_ReadSR() & W25Q_WRITE_BUSYBIT)
+					if( w25q_ReadSR() & W25Q_STATUS1_BUSYBIT)
 					{
 						W25Q_DELAY_MS(1);
 						if( count)
@@ -302,33 +356,47 @@ int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len)
 //-------------------------------------------------------------------
 //±¾µØº¯Êý
 //--------------------------------------------------------------------
+static void w25q_WriteSR(uint8_t data)
+{
+    uint8_t d[2] ;
+    W25Q_Enable_CS;
+	
+	
+	d[0] = W25Q_INSTR_WR_Status_Reg;
+	d[1] = data;
+	SPI_WRITE( d, 2) ;
+	
+}
 
 static int w25q_wr_enable(void)
 {
 	int ret;
 	int count = 50;
-	uint8_t data = W25Q_INSTR_WR_ENABLE;
+	uint8_t cmd = W25Q_INSTR_WR_ENABLE;
 	
 	
 	
-//	W25Q_Enable_CS;
-//	ret = SPI_WRITE( &data,1);
-//	W25Q_Disable_CS;
-//	return ret;
-	
-	while(count)
+	W25Q_Enable_CS;
+	ret = SPI_WRITE( &cmd,1);
+	W25Q_Disable_CS;
+	if( ret != ERR_OK)
+		return ret;
+//	w25q_WriteSR(0);
+//	return ERR_OK;
+	while(1)
 	{
-		W25Q_Enable_CS;
-		ret = SPI_WRITE( &data,1);
-		W25Q_Disable_CS;
-		if( w25q_ReadSR() & W25Q_STATUS_WEL)
+//		W25Q_Enable_CS;
+//		ret = SPI_WRITE( &cmd,1);
+//		W25Q_Disable_CS;
+		cmd = w25q_ReadSR();
+		if( ( cmd & W25Q_STATUS1_WEL)) 
 		{
 			return ERR_OK;
 		}
 		count --;
 	}
-//	
-	return ERR_DRI_OPTFAIL;
+	
+	return ERR_DEV_TIMEOUT;
 	
 	
 }
@@ -336,19 +404,19 @@ static int w25q_wr_enable(void)
 
 static uint8_t w25q_ReadSR(void)
 {
-    uint8_t retValue = 0;
-	
+    uint8_t cmd = 0;
+	uint8_t	status;
     W25Q_Enable_CS;
 	
 	
-	retValue = W25Q_INSTR_RD_Status_Reg1;
+	cmd = W25Q_INSTR_RD_Status_Reg1;
 	
-	if( SPI_WRITE( &retValue, 1) != ERR_OK)
+	if( SPI_WRITE( &cmd, 1) != ERR_OK)
 		return 0xff;
-	if( SPI_READ( &retValue, 1) != ERR_OK)
+	if( SPI_READ( &status, 1) != ERR_OK)
 		return 0xff;
     W25Q_Disable_CS;
-    return retValue;
+    return status;
 }
 
 static uint8_t w25q_ReadSR2(void)
@@ -386,9 +454,7 @@ static int w25q_write_waitbusy(uint8_t *data, int len)
 					ret =  ERR_DRI_OPTFAIL;
 					goto exit;
 				}
-//				w25q_ReadSR2();
 				
-				while( w25q_ReadSR() & W25Q_WRITE_BUSYBIT);
 				W25Q_Enable_CS;
 				if( SPI_WRITE( data, len) != ERR_OK)
 				{
@@ -398,10 +464,10 @@ static int w25q_write_waitbusy(uint8_t *data, int len)
 				step ++;
 				W25Q_Enable_CS;
 
-//				W25Q_DELAY_MS(1);
+				W25Q_DELAY_MS(1);
 				break;
 			case 1:
-				if( w25q_ReadSR() & W25Q_WRITE_BUSYBIT)
+				if( w25q_ReadSR() & W25Q_STATUS1_BUSYBIT)
 				{
 					W25Q_DELAY_MS(1);
 					if( count)

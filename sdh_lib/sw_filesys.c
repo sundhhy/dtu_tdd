@@ -257,7 +257,7 @@ int fs_format(void)
 		ret = flash_erase_sector(sector);
 		if( ret == ERR_OK)
 		{
-			if( 	sector < Page_Zone.data_sector_end )
+			if( 	sector < Page_Zone.pguseinfo_sector_end )
 			{
 				sector ++;
 				
@@ -269,7 +269,7 @@ int fs_format(void)
 		}
 		else
 			return ERR_DRI_OPTFAIL;
-//		ret = w25q_Erase_chip_60();
+//		ret = w25q_Erase_chip_c7();
 //		if( ret == ERR_OK)
 //			break;
 
@@ -865,16 +865,14 @@ static file_info_t	*searchfile( uint8_t	*flash_data, char *name)
 //返回的空间时当前能够找到的最合适的空间，不一定能够满足请求的空间，调用者来检查结果并决定是否再次调用来补足剩余的空间
 static int page_malloc( area_t *area, int size)
 {
-	uint16_t 	j = 0, page_end,k;
 	uint16_t	mem_manger_sector = 0;
-	short		wr_addr = 0;
-	uint16_t	offset ;
+	uint16_t	offset_page ;
+	int j = 0;
 	int ret = 0;
-	int		begin_pg = 0;
 	
 	
 	mem_manger_sector = Page_Zone.pguseinfo_sector_begin;
-	offset = Page_Zone.data_sector_begin * StrgInfo.sector_pagenum;
+	offset_page = Page_Zone.data_sector_begin * StrgInfo.sector_pagenum;
 	while(1)
 	{
 		
@@ -882,17 +880,32 @@ static int page_malloc( area_t *area, int size)
 		if( ret != ERR_OK)
 			return ret;
 		//从数据存储区的空闲页中找到能够符合长度要求的起始页地址
-		//todo : 这里有个bug，内存页管理扇区管理的内存页时互相独立的，不能组合成一个总体。类似于window的D盘不足时无法从E盘借用内存页
-		//这个bug决定了一个文件最大的长度是一个扇区管理的内存页的总大小。超过它就无法分配内存页了。
-		get_area( offset, size, area);
+		
+		get_area( offset_page, size, area);
 		if( area->start_pg > 0)	
 		{
-			area->start_pg += ( mem_manger_sector - Page_Zone.pguseinfo_sector_begin) * StrgInfo.sector_size * 8;	
-			break;
+			
+			
+			
+			
+			for( j = area->start_pg; j <= area->pg_number; j ++)
+				clear_bit( Flash_buf, j);
+			Buf_chg_flag = 1;
+			
+			//todo:一次分配无法满足足够的大小的处理
+			if( area->pg_number * 	StrgInfo.page_size < size)
+			{
+				;
+			}
+			area->start_pg += ( mem_manger_sector - Page_Zone.pguseinfo_sector_begin) * StrgInfo.sector_size * 8;
+			return area->pg_number;
+			
 		}
 		
+		
+		
 		mem_manger_sector ++;
-		offset = 0;
+		offset_page = 0;
 		if( mem_manger_sector == Page_Zone.pguseinfo_sector_end)
 			return ERR_NO_FLASH_SPACE;
 		
@@ -900,40 +913,6 @@ static int page_malloc( area_t *area, int size)
 	}
 			
 		
-	//擦除是为了把0写成1，在标记已经被分配掉的页时是要把对应的bit从1->0
-	//因此不会出现0->1的场景，为了节省操作就不进行擦除操作了。
-	//只需要将被分配掉的页的标志清除即可
-	
-	
-	begin_pg = area->start_pg & ( StrgInfo.sector_size * 8 - 1);  
-	for( j = begin_pg; j <= area->pg_number; j ++)
-		clear_bit( Flash_buf, j);
-	
-	//计算begin_pg这个起始位置在一个页中的起始位置
-	j = begin_pg / 8 % StrgInfo.page_size;
-	k = area->pg_number/8 + 1;  //计算要分配的长度所占用的字节长度
-	
-	page_end = (begin_pg + k) / StrgInfo.page_size + 1;
-	wr_addr = 0;
-	while(1)
-	{
-		offset = ( begin_pg/8/StrgInfo.page_size + wr_addr)* StrgInfo.page_size;
-		ret = flash_write(Flash_buf + offset,  mem_manger_sector*SECTOR_SIZE + offset, PAGE_SIZE);
-		if( ret == ERR_OK )
-		{
-			wr_addr ++;
-			if( wr_addr >= page_end) 
-			{
-				return wr_addr;
-				
-			}
-			
-			
-			
-		}
-		else
-			return ret;
-	}
 }
 
 
@@ -1035,6 +1014,10 @@ static void get_area( int pg_offset, int size, area_t *out_area)
 		size --;
 	pages = size / PAGE_SIZE + 1;
 	
+	out_area->start_pg = pg_offset;
+	out_area->pg_number = pages;
+	
+	
 	for( i = pg_offset; i < StrgInfo.sector_size * 8; i++)
 	{
 		
@@ -1082,23 +1065,18 @@ static void get_area( int pg_offset, int size, area_t *out_area)
  * @retval	OK	??
  * @retval	ERROR	?? 
  */
+#define TEST_FILENAME "Max_file2.test"
 int fs_test(void)
 {
 	int ret = 0;
-	uint32_t	fsmax = 0;
+	uint32_t	filesize = 4096;
 	sdhFile	*ftest;
 	uint8_t data;
 	int i = 0;
-	ret = filesys_init();
-	if( ret != ERR_OK)
-	{
-		DPRINTF(" init filesystem fail, return val %d \n", ret);
-		return ERR_FAIL;
-		
-	}
+	
 	DPRINTF(" init filesystem successed! \n");
-	fsmax = StrgInfo.sector_size *(Page_Zone.data_sector_end - Page_Zone.data_sector_begin);
-	ftest = fs_open("Max_file.test");
+//	fsmax = StrgInfo.sector_size *(Page_Zone.data_sector_end - Page_Zone.data_sector_begin);
+	ftest = fs_open(TEST_FILENAME);
 	if( fs_get_error() == ERR_FILESYS_ERROR)
 	{
 		ret = fs_format();
@@ -1113,17 +1091,18 @@ int fs_test(void)
 
 	if( fs_get_error() != ERR_OK)
 	{
-		DPRINTF("try create a max signal file, size %d KB  ", fsmax/1024);
-		ftest = fs_creator("Max_file.test",  fsmax);
+		DPRINTF("try create a max file, size %d KB,  ", filesize/1024);
+		ftest = fs_creator(TEST_FILENAME,  filesize);
 		if( ftest == NULL)
 		{
 			DPRINTF(" failed !\n");
 			return ERR_FAIL;
 			
 		}
-		DPRINTF(" succeed! \n");
+		filesize = fs_du(ftest);
+		DPRINTF("created %dkB succeed! \n", filesize );
 	}
-	for( i = 0; i < fsmax; i ++)
+	for( i = 0; i < filesize; i ++)
 	{
 		data = i;
 		if( fs_write( ftest, &data, 1) != ERR_OK)
@@ -1135,7 +1114,7 @@ int fs_test(void)
 	}
 	DPRINTF(" fs_write %d data succeed\n", i);
 	
-	for( i = 0; i < fsmax; i ++)
+	for( i = 0; i < filesize; i ++)
 	{
 		data = i;
 		if( fs_read( ftest, &data, 1) != ERR_OK)

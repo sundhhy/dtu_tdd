@@ -15,7 +15,6 @@
 #include "stdint.h"
 #include "serial485_uart.h"
 #include "hardwareConfig.h"
-#include "stm32f10x_usart.h"
 #include "sdhError.h"
 #include "osObjects.h"                      // RTOS object definitions
 #include <stdarg.h>
@@ -70,7 +69,7 @@ int s485_uart_init(void)
 	
 	DMA_s485Uart_Init();
 
-	USART_Init( SER485_USART, &Conf_S485Usart);
+	USART_Init( SER485_USART, &Conf_S485Usart_default);
 	
 	
 	USART_ITConfig( SER485_USART, USART_IT_RXNE, ENABLE);

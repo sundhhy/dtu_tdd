@@ -68,13 +68,22 @@ int main (void) {
 	
 	NVIC_Configuration();
 	
-	GPIO_Configuration();	
+	GPIO_Configuration();
+	Init_TIM2();
 	USART_Configuration();
 //	
 	printf(" DTU TDD start ...\n");
+	if( filesys_init() != ERR_OK)
+	{
+		printf(" init filesystem fail \n");
+		return ERR_FAIL;
+		
+	}
 #ifdef TDD_FILESYS_TEST	
 	if( fs_test() == ERR_OK)
 		printf(" file system test sccusseed \n");
+	else
+		printf(" file system test failed \n");
 	while(1);
 #endif
 	

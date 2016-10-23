@@ -49,8 +49,24 @@
 #define W25Q_INSTR_READ_DATA								0x03
 
 
-#define W25Q_WRITE_BUSYBIT									1
-#define W25Q_STATUS_WEL									2
+#define W25Q_STATUS1_BUSYBIT								0x01
+#define W25Q_STATUS1_WEL									0x02
+#define W25Q_STATUS1_BP0									0x04
+#define W25Q_STATUS1_BP1									0x08
+#define W25Q_STATUS1_BP2									0x10
+#define W25Q_STATUS1_TB										0x20
+#define W25Q_STATUS1_SEC									0x40
+#define W25Q_STATUS1_SRP0									0x80
+
+
+#define W25Q_STATUS2_SPR1								0x01
+#define W25Q_STATUS2_QE									0x02
+#define W25Q_STATUS2_RESERVED									0x04
+#define W25Q_STATUS2_LB1									0x08
+#define W25Q_STATUS2_LB2									0x10
+#define W25Q_STATUS2_LB3									0x20
+#define W25Q_STATUS2_CMP									0x40
+#define W25Q_STATUS2_SUS									0x80
 					
 
 typedef struct {

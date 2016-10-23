@@ -4,7 +4,7 @@
 #include "osObjects.h"                      // RTOS object definitions
 #include "stdint.h"
 #include "list.h"
-#define FILESYS_VER	"V1.1"
+#define FILESYS_VER	"V2.1"
 
 ///对外接口 ----------------------------------------------------------------
 #define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构

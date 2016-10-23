@@ -493,6 +493,11 @@
               <FileType>5</FileType>
               <FilePath>.\BSP\spi.h</FilePath>
             </File>
+            <File>
+              <FileName>times.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BSP\times.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -527,6 +532,11 @@
               <FileName>list.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\sdh_lib\list.c</FilePath>
+            </File>
+            <File>
+              <FileName>TTextConfProt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\TTextConfProt.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -605,6 +615,12 @@
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="SPI" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH RCC">
+        <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.1.0"/>
+        <targetInfos>
+          <targetInfo name="Target 1"/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="TIM" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH RCC">
         <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.1.0"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
