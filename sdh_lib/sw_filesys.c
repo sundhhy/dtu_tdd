@@ -330,8 +330,13 @@ sdhFile * fs_creator(char *name,  int len)
 	//存储区不正确就不处理直接返回
 	if( Flash_err_flag )
 		return NULL;
-	if (len == 0)
-		len = 1;
+	
+	if( len <= 0)
+	{
+		FsErr = ERR_BAD_PARAMETER;
+		goto err1;
+	}
+	
 	tmp_area = malloc( sizeof( storage_area_t));
 	if( tmp_area == NULL)
 	{
@@ -346,6 +351,7 @@ sdhFile * fs_creator(char *name,  int len)
 	}
 	
 	ret = read_flash( Page_Zone.fileinfo_sector_begin);
+
 	if( ret != ERR_OK)
 	{
 		FsErr = ERR_STORAGE_FAIL;
@@ -459,15 +465,15 @@ static area_t *locate_page( sdhFile *fd, uint32_t pstn, uint16_t *pg)
 	for( i = 0; i < fd->area_total; i ++)
 	{
 		//位置位于本区间内部
-		if( fd->area[i].pg_number *PAGE_SIZE > offset)
+		if( fd->area[i].pg_number *StrgInfo.page_size > offset)
 		{
 			
-			lct_page = fd->area[i].start_pg + offset/PAGE_SIZE ;
+			lct_page = fd->area[i].start_pg + offset/StrgInfo.page_size ;
 			*pg = lct_page;
 			return &fd->area[i];
 		}
 		//不知本区间范围内，去下一个区间查找
-		offset -= fd->area[i].pg_number * PAGE_SIZE;
+		offset -= fd->area[i].pg_number * StrgInfo.page_size;
 		
 		
 	}
@@ -498,7 +504,7 @@ int fs_write( sdhFile *fd, uint8_t *data, int len)
 		{
 			return (ERR_FILE_FULL);
 		}
-		wr_sector = 	wr_page/SECTOR_HAS_PAGES;
+		wr_sector = 	wr_page/StrgInfo.sector_pagenum;
 		
 		if( wr_sector < Page_Zone.data_sector_begin)
 		{
@@ -510,14 +516,14 @@ int fs_write( sdhFile *fd, uint8_t *data, int len)
 			return ret;
 		
 	
-		i = ( wr_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->wr_pstn[myid] % PAGE_SIZE;
-		if( wr_area->pg_number + wr_area->start_pg > ( wr_sector + 1 ) *  SECTOR_HAS_PAGES )				//文件的结束位置超出本扇区，以扇区的大小为上限
-				limit  = SECTOR_SIZE;
+		i = ( wr_page % StrgInfo.sector_pagenum)*StrgInfo.page_size + fd->wr_pstn[myid] % StrgInfo.page_size;
+		if( wr_area->pg_number + wr_area->start_pg > ( wr_sector + 1 ) *  StrgInfo.sector_pagenum )				//文件的结束位置超出本扇区，以扇区的大小为上限
+				limit  = StrgInfo.sector_size;
 		else		//文件的结束位置在本扇区内部，以文件结束位置在本扇区中的相对位置为上限
-				limit = ( wr_area->start_pg +  wr_area->pg_number - wr_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
+				limit = ( wr_area->start_pg +  wr_area->pg_number - wr_sector *  StrgInfo.sector_pagenum) * StrgInfo.page_size;
 		while( len)
 		{
-			if( i >= SECTOR_SIZE || i > limit)		 //超出了当前的扇区或者区间范围
+			if( i >= StrgInfo.sector_size || i > limit)		 //超出了当前的扇区或者区间范围
 			{
 				break;
 			}
@@ -563,22 +569,22 @@ int fs_read( sdhFile *fd, uint8_t *data, int len)
 			return (ERR_FILE_EMPTY);
 		}
 		
-		rd_sector = 	rd_page/SECTOR_HAS_PAGES;
+		rd_sector = 	rd_page/StrgInfo.sector_pagenum;
 		ret = read_flash(rd_sector);
 		if( ret != ERR_OK)
 			return ret;
 		
 		//读写的时候，要考虑文件的结尾不在本扇区的情况
-		i = ( rd_page % SECTOR_HAS_PAGES)*PAGE_SIZE + fd->rd_pstn[myid] % PAGE_SIZE;
+		i = ( rd_page % StrgInfo.sector_pagenum)*StrgInfo.page_size + fd->rd_pstn[myid] % StrgInfo.page_size;
 			
-		if( rd_area->start_pg +  rd_area->pg_number > ( rd_sector + 1) *  SECTOR_HAS_PAGES)	//结尾位于本扇区外
-			limit = SECTOR_SIZE;
+		if( rd_area->start_pg +  rd_area->pg_number > ( rd_sector + 1) *  StrgInfo.sector_pagenum)	//结尾位于本扇区外
+			limit = StrgInfo.sector_size;
 		else	//结尾位于本扇区内
-			limit = ( rd_area->start_pg +  rd_area->pg_number - rd_sector *  SECTOR_HAS_PAGES) * PAGE_SIZE;
+			limit = ( rd_area->start_pg +  rd_area->pg_number - rd_sector *  StrgInfo.sector_pagenum) * StrgInfo.page_size;
 			
 		while( len)
 		{
-			if( i >= SECTOR_SIZE || i > limit)		 //超出了当前的扇区或者区间范围
+			if( i >= StrgInfo.sector_size || i > limit)		 //超出了当前的扇区或者区间范围
 			{
 				break;
 			}
@@ -868,7 +874,8 @@ static int page_malloc( area_t *area, int size)
 {
 	uint16_t	mem_manger_sector = 0;
 	uint16_t	offset_page ;
-	int j = 0;
+	uint16_t	end_page = 0;
+	uint16_t j = 0;
 	int ret = 0;
 	
 	
@@ -888,8 +895,8 @@ static int page_malloc( area_t *area, int size)
 			
 			
 			
-			
-			for( j = area->start_pg; j <= area->pg_number; j ++)
+			end_page = area->start_pg + area->pg_number;
+			for( j = area->start_pg; j < end_page; j ++)
 				clear_bit( Flash_buf, j);
 			Buf_chg_flag = 1;
 			
@@ -1011,13 +1018,9 @@ static void get_area( int pg_offset, int size, area_t *out_area)
 	int pages = 0;
 	area_t	max_area = {0,0};
 	
-	if( size > 0)
-		size --;
-	pages = size / PAGE_SIZE + 1;
-	
-	out_area->start_pg = pg_offset;
-	out_area->pg_number = pages;
-	
+	size --;
+	pages = size / StrgInfo.page_size + 1;
+
 	
 	for( i = pg_offset; i < StrgInfo.sector_size * 8; i++)
 	{
@@ -1066,7 +1069,7 @@ static void get_area( int pg_offset, int size, area_t *out_area)
  * @retval	OK	??
  * @retval	ERROR	?? 
  */
-#define TEST_FILENAME "Max_file2.test"
+#define TEST_FILENAME "Max_file1.test"
 int fs_test(void)
 {
 	int ret = 0;
@@ -1076,7 +1079,7 @@ int fs_test(void)
 	int i = 0;
 	
 	DPRINTF(" init filesystem successed! \n");
-//	fsmax = StrgInfo.sector_size *(Page_Zone.data_sector_end - Page_Zone.data_sector_begin);
+//	filesize = StrgInfo.sector_size *(Page_Zone.data_sector_end - Page_Zone.data_sector_begin);
 	ftest = fs_open(TEST_FILENAME);
 	if( fs_get_error() == ERR_FILESYS_ERROR)
 	{
@@ -1103,6 +1106,7 @@ int fs_test(void)
 		filesize = fs_du(ftest);
 		DPRINTF("created %dkB succeed! \n", filesize );
 	}
+	filesize = fs_du(ftest);
 	for( i = 0; i < filesize; i ++)
 	{
 		data = i;
@@ -1113,11 +1117,10 @@ int fs_test(void)
 		}
 		
 	}
-	DPRINTF(" fs_write %d data succeed\n", i);
+	DPRINTF(" fs_write %dKB data succeed\n", i/1024);
 	
 	for( i = 0; i < filesize; i ++)
 	{
-		data = i;
 		if( fs_read( ftest, &data, 1) != ERR_OK)
 		{
 			DPRINTF(" fs_read failed at the %d times\n", i);
@@ -1130,7 +1133,7 @@ int fs_test(void)
 		}
 		
 	}
-	DPRINTF(" fs_read %d data succeed\n", i);
+	DPRINTF(" fs_read %d data succeed\n", i/1024);
 	return ERR_OK;
 	
 }
