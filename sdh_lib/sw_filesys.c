@@ -249,33 +249,34 @@ int fs_format(void)
 {
 	sup_sector_head_t	*sup_head;
 	int ret;
-	int sector = 0;
+	int erase_start = Page_Zone.fileinfo_sector_begin * StrgInfo.sector_size;
+	int	erase_len = ( Page_Zone.pguseinfo_sector_end) * StrgInfo.sector_size;
+//	int sector = 0;
 	
 	//擦除整个文件系统
-	while(1)
-	{
-		ret = flash_erase_sector(sector);
-		if( ret == ERR_OK)
-		{
-			if( 	sector < Page_Zone.pguseinfo_sector_end )
-			{
-				sector ++;
-				
-				
-			}
-			else
-				break;
-			
-		}
-		else
-			return ERR_DRI_OPTFAIL;
-//		ret = w25q_Erase_chip_c7();
+//	while(1)
+//	{
+//		ret = flash_erase_sector(sector);
 //		if( ret == ERR_OK)
-//			break;
+//		{
+//			if( 	sector < Page_Zone.pguseinfo_sector_end )
+//			{
+//				sector ++;
+//				
+//				
+//			}
+//			else
+//				break;
+//			
+//		}
+//		else
+//			return ERR_DRI_OPTFAIL;
+//	}
 
-		
-		
-	}
+	//擦除文件管理区和内存页使用信息扇区
+	ret = flash_erase( erase_start, erase_len);
+	if( ret != ERR_OK)
+		return ERR_DRI_OPTFAIL;
 	//读取扇区Page_Zone.fileinfo_sector_begin
 	//因为刚擦除过，所有的flash内容都是0xff，也就不必去真的读取了
 	memset( Flash_buf, 0xff, SECTOR_SIZE);		

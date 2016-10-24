@@ -92,11 +92,14 @@ void w25q_init_spi(void);
 
 int w25q_init(void);
 void w25q_info(void *info);
-int w25q_Erase_Sector(uint16_t Sector_Number);
-int w25q_Erase_block(uint16_t block_Number);
+int w25q_erase(uint32_t offset, uint32_t len);
 int w25q_Write_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
-int w25q_Write(uint8_t *pBuffer, uint32_t WriteAddr, uint32_t WriteBytesNum);
 int w25q_Read_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
+
+
+
+int w25q_Erase_Sector(uint16_t Sector_Number);
+int w25q_Write(uint8_t *pBuffer, uint32_t WriteAddr, uint32_t WriteBytesNum);
 int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len);
 int w25q_close(void);
 int w25q_Erase_chip_c7(void);

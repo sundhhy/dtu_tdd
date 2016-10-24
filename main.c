@@ -197,7 +197,7 @@ int main (void) {
 	
 	
 #ifdef TDD_S485
-	s485_uart_init();
+	s485_uart_init( &Conf_S485Usart_default);
 	while(1)
 	{
 		i ++;

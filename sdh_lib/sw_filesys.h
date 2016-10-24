@@ -9,9 +9,9 @@
 ///对外接口 ----------------------------------------------------------------
 #define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构
 #define flash_erase_sector 			w25q_Erase_Sector
+#define flash_erase 						w25q_erase
 #define	flash_write_sector			w25q_Write_Sector_Data
-#define	flash_read_sector			w25q_Read_Sector_Data
-#define	flash_write					w25q_Write
+#define	flash_read_sector				w25q_Read_Sector_Data
 #define STORAGE_INIT()						w25q_init() 
 #define STORAGE_CLOSE()						w25q_close()	
 #define STORAGE_INFO(info)					w25q_info(info)

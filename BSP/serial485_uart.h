@@ -10,7 +10,9 @@ typedef USART_InitTypeDef	ser_485Cfg;
  * @return ERR_OK 成功
  * @return 
  */
-int s485_uart_init(void);
+int s485_uart_init(ser_485Cfg *cfg);
+
+
 
 /**
  * @brief 485串口发送功能

@@ -55,11 +55,11 @@ static w25q_instance_t  W25Q_flash;
 
 //--------------本地私有数据--------------------------------
 static uint8_t	W25Q_tx_buf[16];
-static uint8_t	W25Q_rx_buf[16];
+//static uint8_t	W25Q_rx_buf[16];
 //------------本地私有函数------------------------------
 static int w25q_wr_enable(void);
 static uint8_t w25q_ReadSR(void);
-static uint8_t w25q_ReadSR2(void);
+//static uint8_t w25q_ReadSR2(void);
 static int w25q_write_waitbusy(uint8_t *data, int len);
 static int w25q_read_id(void);
 //static void w25q_Write_Data(uint8_t *pBuffer,uint16_t Block_Num,uint16_t Page_Num,uint32_t WriteBytesNum);
@@ -110,6 +110,36 @@ int w25q_close(void)
 
 
 
+int w25q_erase(uint32_t offset, uint32_t len)
+{
+	uint32_t start, end, erase_size;
+	int ret = 0;
+	
+	erase_size = SECTOR_SIZE;
+	W25Q_tx_buf[0] = W25Q_INSTR_Sector_Erase_4K;
+	
+	
+	start = offset;
+	end = start + len;
+	
+	while (offset < end) {
+		W25Q_tx_buf[1] = offset >> 16;
+		W25Q_tx_buf[2] = offset >> 8;
+		W25Q_tx_buf[3] = offset >> 0;
+		offset += erase_size;
+
+		ret = w25q_write_waitbusy( W25Q_tx_buf, 4);
+		if( ret != ERR_OK)
+			goto exit;
+		
+		
+	}
+	return ERR_OK;
+	exit:
+	W25Q_Disable_CS;
+	return ret;	
+	
+}
 
 //将提供的扇区进行擦除操作。扇区号的范围是0 - 4096 （w25q128）
 
@@ -117,9 +147,6 @@ int w25q_Erase_Sector(uint16_t Sector_Number)
 {
 
 	uint8_t Block_Num = Sector_Number / BLOCK_HAS_SECTORS;
-	uint8_t step  = 0;
-	uint8_t	count = 100;
-	int ret = 0;
 	if( Sector_Number > W25Q_flash.sector_num)
 			return ERR_BAD_PARAMETER;
 	
@@ -128,60 +155,7 @@ int w25q_Erase_Sector(uint16_t Sector_Number)
 	W25Q_tx_buf[1] = Block_Num;
 	W25Q_tx_buf[2] = Sector_Number<<4;
 	W25Q_tx_buf[3] = 0;
-	
-	
-	
-	while(1)
-	{
-		switch( step)
-		{	
-			case 0:
-				
-				if( w25q_wr_enable() != ERR_OK)
-				{
-					ret =  ERR_DRI_OPTFAIL;
-					goto exit;
-				}
-				
-				W25Q_Enable_CS;
-				if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
-				{
-					ret =  ERR_DRI_OPTFAIL;
-					goto exit;
-				}
-				step ++;
-				W25Q_Enable_CS;
-
-				W25Q_DELAY_MS(40);
-				break;
-			case 1:
-				if( w25q_ReadSR() & W25Q_STATUS1_WEL)
-				{
-					W25Q_DELAY_MS(1);
-//					if( count)
-//						count --;
-//					else
-//					{
-//						ret =  ERR_DEV_TIMEOUT;
-//						goto exit;
-//					}
-					break;
-				}
-				
-				ret =  ERR_OK;
-				goto exit;
-			default:
-				step = 0;
-				break;
-		}
-	}
-		
-	exit:
-	W25Q_Enable_CS;
-	return ret;
-	
-	
-//	return w25q_write_waitbusy( W25Q_tx_buf, 4);
+	return w25q_write_waitbusy( W25Q_tx_buf, 4);
 	
 }
 
@@ -356,22 +330,22 @@ int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len)
 //-------------------------------------------------------------------
 //本地函数
 //--------------------------------------------------------------------
-static void w25q_WriteSR(uint8_t data)
-{
-    uint8_t d[2] ;
-    W25Q_Enable_CS;
-	
-	
-	d[0] = W25Q_INSTR_WR_Status_Reg;
-	d[1] = data;
-	SPI_WRITE( d, 2) ;
-	
-}
+//static void w25q_WriteSR(uint8_t data)
+//{
+//    uint8_t d[2] ;
+//    W25Q_Enable_CS;
+//	
+//	
+//	d[0] = W25Q_INSTR_WR_Status_Reg;
+//	d[1] = data;
+//	SPI_WRITE( d, 2) ;
+//	
+//}
 
 static int w25q_wr_enable(void)
 {
 	int ret;
-	int count = 50;
+//	int count = 50;
 	uint8_t cmd = W25Q_INSTR_WR_ENABLE;
 	
 	
@@ -379,24 +353,22 @@ static int w25q_wr_enable(void)
 	W25Q_Enable_CS;
 	ret = SPI_WRITE( &cmd,1);
 	W25Q_Disable_CS;
-	if( ret != ERR_OK)
-		return ret;
-//	w25q_WriteSR(0);
-//	return ERR_OK;
-	while(1)
-	{
-//		W25Q_Enable_CS;
-//		ret = SPI_WRITE( &cmd,1);
-//		W25Q_Disable_CS;
-		cmd = w25q_ReadSR();
-		if( ( cmd & W25Q_STATUS1_WEL)) 
-		{
-			return ERR_OK;
-		}
-		count --;
-	}
-	
-	return ERR_DEV_TIMEOUT;
+	return ret;
+//	if( ret != ERR_OK)
+//		return ret;
+
+//	while(1)
+//	{
+
+//		cmd = w25q_ReadSR();
+//		if( ( cmd & W25Q_STATUS1_WEL)) 
+//		{
+//			return ERR_OK;
+//		}
+//		count --;
+//	}
+//	
+//	return ERR_DEV_TIMEOUT;
 	
 	
 }
@@ -419,22 +391,22 @@ static uint8_t w25q_ReadSR(void)
     return status;
 }
 
-static uint8_t w25q_ReadSR2(void)
-{
-    uint8_t retValue = 0;
-	
-    W25Q_Enable_CS;
-	
-	
-	retValue = W25Q_INSTR_RD_Status_Reg2;
-	
-	if( SPI_WRITE( &retValue, 1) != ERR_OK)
-		return 0xff;
-	if( SPI_READ( &retValue, 1) != ERR_OK)
-		return 0xff;
-    W25Q_Disable_CS;
-    return retValue;
-}
+//static uint8_t w25q_ReadSR2(void)
+//{
+//    uint8_t retValue = 0;
+//	
+//    W25Q_Enable_CS;
+//	
+//	
+//	retValue = W25Q_INSTR_RD_Status_Reg2;
+//	
+//	if( SPI_WRITE( &retValue, 1) != ERR_OK)
+//		return 0xff;
+//	if( SPI_READ( &retValue, 1) != ERR_OK)
+//		return 0xff;
+//    W25Q_Disable_CS;
+//    return retValue;
+//}
 
 static int w25q_write_waitbusy(uint8_t *data, int len)
 {
@@ -462,9 +434,9 @@ static int w25q_write_waitbusy(uint8_t *data, int len)
 					goto exit;
 				}
 				step ++;
-				W25Q_Enable_CS;
+				W25Q_Disable_CS;
 
-				W25Q_DELAY_MS(1);
+//				W25Q_DELAY_MS(1);
 				break;
 			case 1:
 				if( w25q_ReadSR() & W25Q_STATUS1_BUSYBIT)
@@ -489,7 +461,7 @@ static int w25q_write_waitbusy(uint8_t *data, int len)
 	}
 		
 	exit:
-	W25Q_Enable_CS;
+	W25Q_Disable_CS;
 	return ret;
 
 }
@@ -497,7 +469,7 @@ static int w25q_write_waitbusy(uint8_t *data, int len)
 
 static int w25q_read_id(void)
 {
-	
+	uint8_t id[2];
 	//read id
 	W25Q_tx_buf[0] = 0x90;
 	W25Q_tx_buf[1] = 0;
@@ -506,12 +478,12 @@ static int w25q_read_id(void)
 	W25Q_Enable_CS;
 	
 	SPI_WRITE( W25Q_tx_buf, 4);
-	SPI_READ( W25Q_rx_buf, 2);
+	SPI_READ( id, 2);
 	
 	W25Q_Disable_CS;
-	W25Q_flash.id[0] =  W25Q_rx_buf[0];
-	W25Q_flash.id[1] =  W25Q_rx_buf[1];
-	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x17)		//w25Q128
+	W25Q_flash.id[0] =  id[0];
+	W25Q_flash.id[1] =  id[1];
+	if( id[0] == 0xEF && id[1] == 0x17)		//w25Q128
 	{
 		W25Q_flash.page_num = 65536;
 		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;
@@ -519,7 +491,7 @@ static int w25q_read_id(void)
 		return ERR_OK;
 	}
 	
-	if( W25Q_rx_buf[0] == 0xEF && W25Q_rx_buf[1] == 0x16)		//w25Q64
+	if( id[0] == 0xEF && id[1] == 0x16)		//w25Q64
 	{
 		W25Q_flash.page_num = 32768;
 		W25Q_flash.sector_num = W25Q_flash.page_num/SECTOR_HAS_PAGES;

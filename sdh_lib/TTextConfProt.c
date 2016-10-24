@@ -17,10 +17,39 @@
 static Atcmd_t	Decode_Atcmd;
 
 
+int enter_TTCP(char *cmd)
+{
+	
+	int i = 0;
+		//进入配置模式
+	while( cmd[i] != '\0')
+	{
+		if( cmd[i] == ' ')
+		{
+			
+			if( i > 9)
+			{
+				return ERR_OK;
+			}
+			
+		}
+		else
+			break;
+		
+		i++;
+		
+		
+	}
+	
+	return ERR_FAIL;
+	
+}
+
 int decodeTTCP_begin (char *cmd)
 {
 	int	local = 0;
 	int cmd_len = strlen( cmd);
+	
 	char *pdeal = cmd;
 	char* ptmp = NULL;
 	

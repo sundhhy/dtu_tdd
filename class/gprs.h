@@ -17,15 +17,15 @@ CLASS(gprs_t)
 	int	(*check_simCard)( gprs_t *self);
 	
 	int	(*send_text_sms)(  gprs_t *self, char *phnNmbr, char *sms);
-	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *buf, int *len);
+	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *in_buf, char *out_buf, int *len);
 	int (*delete_sms)( gprs_t *self, int seq);
 	
 	int (*tcp_cnnt)( gprs_t *self, int cnnt_num, char *addr, int portnum);
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
-	int (*deal_smsrecv_event)( gprs_t *self, char *buf, int *lsize);
+	int (*deal_smsrecv_event)( gprs_t *self, char *in_buf, char *out_buf, int *lsize, char *phno);
 	int (*deal_tcpclose_event)( gprs_t *self, char *data, int len);
-	int (*deal_tcprecv_event)( gprs_t *self, char *buf, int *lsize);
+	int (*deal_tcprecv_event)( gprs_t *self, char *in_buf, char *out_buf, int *len);
 	
 	
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
@@ -34,6 +34,12 @@ CLASS(gprs_t)
 	int	(*guard_serial)( gprs_t *self, char *buf, int *lsize);
 	int	(*get_firstDiscnt_seq)( gprs_t *self);
 	int	(*get_firstCnt_seq)( gprs_t *self);
+	
+	//电话簿操作接口
+	
+	int	( *create_newContact)( gprs_t *self, char *name, char *phonenum);
+	int	( *modify_contact)( gprs_t *self, char *name, char *phonenum);
+	int	( *delete_contact)( gprs_t *self, char *name);
 	
 };
 

@@ -23,7 +23,7 @@ typedef struct
 	
 	
 }Atcmd_t;
-
+int enter_TTCP(char *cmd);
 int decodeTTCP_begin (char *cmd);
 int get_cmdtype(void);
 char	*get_cmd(void);

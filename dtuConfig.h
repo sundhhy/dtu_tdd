@@ -14,6 +14,8 @@
 #define DEF_PORTNUM 18897
 #define	DTUCONF_filename	"dtu.cfg"
 
+#define ADMIN_PHNOE_NUM			4
+
 typedef struct {
 	
 	char	Activestandby_mode;			//主备模式
@@ -24,10 +26,10 @@ typedef struct {
 	int		DateCenter_port[IPMUX_NUM];
 	char	protocol[IPMUX_NUM][4];
 	
-	char	DC_Phone[4][12];
+	char	admin_Phone[ADMIN_PHNOE_NUM][12];
 	
 	short	hartbeat_timespan_s;
-	
+	uint32_t		dtu_id;
 	ser_485Cfg	the_485cfg;
 	
 	

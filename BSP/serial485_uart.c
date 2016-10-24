@@ -58,7 +58,7 @@ static void DMA_s485Uart_Init(void);
 ** @param rxbuf Ω” ‹ª∫¥Êµÿ÷∑
 ** @return
 **/
-int s485_uart_init(void)
+int s485_uart_init(ser_485Cfg *cfg)
 {
 	SemId_s485txFinish = osSemaphoreCreate(osSemaphore(Sem_s485txFinish), 1);
 	SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), 1);
@@ -69,7 +69,7 @@ int s485_uart_init(void)
 	
 	DMA_s485Uart_Init();
 
-	USART_Init( SER485_USART, &Conf_S485Usart_default);
+	USART_Init( SER485_USART, cfg);
 	
 	
 	USART_ITConfig( SER485_USART, USART_IT_RXNE, ENABLE);

@@ -29,7 +29,7 @@ static int set_sms2TextMode(gprs_t *self);
 static int serial_cmmn( char *buf, int bufsize, int delay_ms);
 
 static int prepare_ip(gprs_t *self);
-
+static void get_sms_phNO(char *databuf, char *phbuf);
 
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
@@ -304,34 +304,41 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 /**
  * @brief 从SIM卡中读取指定的号码的TEXT格式的信息
  *
- * @details 返回SIM卡中指定号码的未读信息，如果指定的号码为空，就返回SIM卡中第一条未读信息.
+ * @details 返回SIM卡中指定号码的未读信息，如果输入的号码内存为空或者号码不合法就返回第一条短信
+ *					如果号码非法，将读取的短信的发送方号码放入短信内存
  * 
  * @param[in]	self.
  * @param[in]	phnNmbr 指定的号码，可以为空.
  * @param[in]	bufsize 缓存的大小.
  * @param[out]	buf 读取的短信存放在此内存中. 
+ * @param[out] phnNmbr	当没有指定一个合法的号码的时候，将读取的短信的号码放入其中
  * @retval	> 0,短信编号
  * @retval  = 0 无短信
  * @retval	ERROR	< 0
  */
-int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
+
+int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_buf, int *len)
 {
 	char step = 0;
 	char i = 0;
 	short retry = RETRY_TIMES;
 	
 	char *pp = NULL;
-	char	*ptarget = buf;
+	char	*ptarget = out_buf;
 	
 	short number = 0;
 	char  text_begin = 0, text_end = 0;
 			
-	int tmp = 0;
+	short tmp = 0;
+	short correct = 1;
 	
 	for( i = 0; i < strlen( phnNmbr); i ++)
 	{
 		if( phnNmbr[i] >'9' || phnNmbr[i] < '0')
-			return ERR_BAD_PARAMETER;	
+		{
+			correct = 0;
+			break;
+		}
 	}
 	
 	
@@ -366,12 +373,23 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *buf, int *len)
 				break;
 				
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
-				sprintf( buf, "AT+CMGR=%d\x00D\x00A", i);
-				serial_cmmn( buf, *len, 1);
+				sprintf( in_buf, "AT+CMGR=%d\x00D\x00A", i);
+				serial_cmmn( in_buf, *len, 1);
 			
-				pp = buf;			///假定pp的值是正常的
-				if( phnNmbr)
-					pp = strstr((const char*)buf,phnNmbr);
+				pp = in_buf;			///假定pp的值是正常的
+				if( phnNmbr && correct)
+				{
+					pp = strstr((const char*)in_buf,phnNmbr);
+				}
+				else	//没有指定要接收短信的发送方号码时，把发送方号码放入传入的号码中去
+				{
+					if( phnNmbr)
+					{
+						get_sms_phNO( in_buf, phnNmbr);
+						
+					}
+					
+				}
 				
 				
 				if( pp)
@@ -677,32 +695,52 @@ int deal_tcpclose_event( gprs_t *self, char *data, int len)
 	return ERR_BAD_PARAMETER;
 }
 
-int deal_smsrecv_event( gprs_t *self, char *buf, int *lsize)
+
+int	create_newContact( gprs_t *self, char *name, char *phonenum)
 {
-	
-	
-	
 	
 	return ERR_OK;
 }
-int deal_tcprecv_event( gprs_t *self, char *buf, int *lsize)
+
+int	modify_contact( gprs_t *self, char *name, char *phonenum)
+{
+	
+	return ERR_OK;
+}
+
+int	delete_contact( gprs_t *self, char *name)
+{
+	
+	return ERR_OK;
+}
+	
+
+int deal_smsrecv_event( gprs_t *self, char *in_buf, char *out_buf, int *lsize, char *phno)
+{
+	
+	
+	read_phnNmbr_TextSMS( self, phno, in_buf, out_buf, lsize);
+	
+	return ERR_OK;
+}
+int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
 {
 	char *pp;
 	int recv_seq = -1;
 	int tmp = 0;
 	
-	pp = strstr((const char*)buf,"RECEIVE");	
+	pp = strstr((const char*)in_buf,"RECEIVE");	
 	if( pp == NULL)
 		return ERR_FAIL;
 	
 	tmp = strcspn( pp, "0123456789");	
 	recv_seq = atoi( pp + tmp);
-	*lsize = atoi( pp + tmp + 2);
+	*len = atoi( pp + tmp + 2);
 	while( *pp != '\x00A')
 		pp++;
 	
-	memcpy( buf, pp + 1, *lsize);
-	buf[ *lsize] = 0;
+	memcpy( out_buf, pp + 1, *len);
+	out_buf[ *len] = 0;
 	return recv_seq;
 	
 }
@@ -794,7 +832,7 @@ int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 	while(1)
 	{
 		
-		ret = self->read_phnNmbr_TextSMS( self, phnNmbr, buf, &len);
+		ret = self->read_phnNmbr_TextSMS( self, phnNmbr, buf,  buf, &len);
 		if( ret> 0)
 			break;
 		
@@ -875,7 +913,7 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 				ret = self->guard_serial( self, buf, &len);
 				if( ret == tcp_receive)
 				{
-					ret = self->deal_tcprecv_event( self, buf, &len);
+					ret = self->deal_tcprecv_event( self, buf,  buf, &len);
 					if( len >= 0)
 					{
 						pp = strstr((const char*)buf,"finished");
@@ -904,29 +942,6 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 					if( ret >= 0)
 						self->tcp_cnnt( self, ret, tets_addr, portnum);
 				}
-//				ret = self->recvform_tcp( self, buf, &len);
-//				if( len >= 0)
-//				{
-//					pp = strstr((const char*)buf,"finished");
-//					if( pp)
-//					{
-//						finish[ ret] = 1;
-//						sum = 0;
-//						for( i = 0; i < IPMUX_NUM; i++)
-//						{
-//							sum += finish[i];
-//							
-//						}
-//						if( sum == IPMUX_NUM)
-//							return ERR_OK;
-//						
-//					}
-//					
-//					DPRINTF(" recv : %s \n", buf);
-//					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
-//				}
-//				if( Ip_cnnState.cnn_state[ ret] != CNNT_ESTABLISHED)
-//					self->sendto_tcp( self, ret, buf, strlen( buf) + 1);
 				break;
 			default:break;
 			
@@ -1073,6 +1088,27 @@ static int prepare_ip(gprs_t *self)
 	
 }
 
+//接收的短信的格式是：
+//+CMGR: "REC UNREAD","+8613918186089", "","02/01/30,20:40:31+00",This is a test
+//
+//OK
+static void get_sms_phNO(char *databuf, char *phbuf)
+{
+	
+	char *pp;
+	int tmp;
+	
+	tmp = strcspn( databuf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
+	pp = databuf + tmp;	///第一个数字就是号码开始的地方
+	while( *pp != '"')
+	{
+		*phbuf = *pp;
+		phbuf ++;
+		pp ++;
+	}
+}
+
+
 CTOR(gprs_t)
 FUNCTION_SETTING(init, init);
 FUNCTION_SETTING(startup, startup);
@@ -1097,4 +1133,8 @@ FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(tcp_test, tcp_test);
 
+
+FUNCTION_SETTING(create_newContact, create_newContact);
+FUNCTION_SETTING(modify_contact, modify_contact);
+FUNCTION_SETTING(delete_contact, delete_contact);
 END_CTOR
