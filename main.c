@@ -46,7 +46,7 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) 
 #define TEST_BUF_SIZE 512
 char Test_buf[TEST_BUF_SIZE];
 #endif
@@ -54,7 +54,7 @@ char Test_buf[TEST_BUF_SIZE];
  * main: initialize and start the system
  */
 int main (void) {
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) 
 	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
 #endif
@@ -79,6 +79,14 @@ int main (void) {
 		return ERR_FAIL;
 		
 	}
+	if( filesys_mount() != ERR_OK)
+	{
+		printf(" mount filesystem fail \n");
+		return ERR_FAIL;
+		
+	}
+	
+	
 #ifdef TDD_FILESYS_TEST	
 	if( fs_test() == ERR_OK)
 		printf(" file system test sccusseed \n");
@@ -87,11 +95,7 @@ int main (void) {
 	while(1);
 #endif
 	
-	Init_ThrdDtu();
-  // create 'thread' functions that start executing,
-  // example: tid_name = osThreadCreate (osThread(name), NULL);
-
-	osKernelStart ();                         // start thread execution
+                        // start thread execution
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) 	
 	sim800->init(sim800);
 #endif	
@@ -211,5 +215,14 @@ int main (void) {
 		
 	}
 #endif	
+	
+	
+	
+	
+	Init_ThrdDtu();
+  // create 'thread' functions that start executing,
+  // example: tid_name = osThreadCreate (osThread(name), NULL);
+
+	osKernelStart (); 
 	
 }

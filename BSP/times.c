@@ -38,6 +38,7 @@ void set_alarmclock_s(int alarm_id, int sec)
 		
 		Alarmtims_s[alarm_id] = sec;
 		AlarmStart_s[alarm_id] = g_time2.time_s;
+		Set_AlarmClock_S[alarm_id] = 1;
 	}
 	
 }

@@ -119,6 +119,26 @@ int filesys_init(void)
 	
 }
 
+int filesys_mount(void)
+{
+	int ret = 0;
+	sup_sector_head_t	*sup_head;
+	
+	ret = read_flash( Page_Zone.fileinfo_sector_begin);
+	if( ret != ERR_OK)
+		return ERR_DRI_OPTFAIL;
+	
+	sup_head = ( sup_sector_head_t *)Flash_buf;
+	if( strcmp( sup_head->ver, FILESYS_VER) != 0x00 )	//文件系统版本号不一致
+	{
+		return fs_format();
+
+	}	
+
+	return	ERR_OK;
+	
+}
+
 int filesys_close(void)
 {
 	
@@ -224,6 +244,7 @@ sdhFile * fs_open(char *name)
 					
 					strcpy( pfd->name, name);
 					pfd->reference_count = 1;
+					pfd->area_total = j;
 					memset( pfd->rd_pstn, 0, sizeof( pfd->rd_pstn));
 					memset( pfd->wr_pstn, 0, sizeof( pfd->wr_pstn));
 					step = 0;

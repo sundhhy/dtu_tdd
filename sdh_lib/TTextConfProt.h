@@ -9,6 +9,7 @@
 #define TTCP_MUTEX_LOCK
 #define TTCP_MUTEX_UNLOCK
 
+#define TTCP_VER	"GPRS DTU CONFIG TOOLS V1.0"
 #define OFS_CMD_ARG			'='		
 #define OFS_ARG_ARG			','
 #define CMD_LETTER_SET		"AaTtCc"	//命令可能的起始字符集
@@ -23,6 +24,7 @@ typedef struct
 	
 	
 }Atcmd_t;
+void get_TTCPVer(char *buf);
 int enter_TTCP(char *cmd);
 int decodeTTCP_begin (char *cmd);
 int get_cmdtype(void);

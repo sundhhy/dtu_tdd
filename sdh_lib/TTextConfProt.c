@@ -14,9 +14,15 @@
 #include "TTextConfProt.h"
 #include "string.h"
 #include "sdhError.h"
+#include "string.h"
 static Atcmd_t	Decode_Atcmd;
 
-
+void get_TTCPVer(char *buf)
+{
+	
+	strcpy( buf, TTCP_VER);
+}
+ 
 int enter_TTCP(char *cmd)
 {
 	
@@ -89,17 +95,19 @@ int decodeTTCP_begin (char *cmd)
 	while( *pdeal)
 	{
 		if( *pdeal == OFS_CMD_ARG)
+		{
 			*pdeal = '\0';
-		else
 			pdeal ++;
+			Decode_Atcmd.arg = pdeal;
+			return ERR_OK;
+		}
+		
+		pdeal ++;
 		
 	}
-	pdeal ++;
-	if( *pdeal != '\0')
-		Decode_Atcmd.arg = pdeal;
-	else
-		Decode_Atcmd.arg = NULL;
 	
+		
+	Decode_Atcmd.arg = NULL;
 	return ERR_OK;
 	
 	exit_fail:

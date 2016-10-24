@@ -7,7 +7,7 @@
 
 
 #define DTU_CONFGILE_MAIN_VER		01
-#define DTU_CONFGILE_SUB_VER		01
+#define DTU_CONFGILE_SUB_VER		03
 
 #define DEF_PROTOTOCOL "TCP"
 #define DEF_IPADDR "chitic.zicp.net"

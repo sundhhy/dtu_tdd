@@ -4,7 +4,7 @@
 #include "osObjects.h"                      // RTOS object definitions
 #include "stdint.h"
 #include "list.h"
-#define FILESYS_VER	"V2.1"
+#define FILESYS_VER	"V2.2"
 
 ///对外接口 ----------------------------------------------------------------
 #define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构
@@ -147,8 +147,8 @@ typedef struct {
 	uint32_t		wr_size;													//保存当前文件已经被写入的最长长度
 	
 	uint16_t		reference_count;	
-	uint16_t		area_total;		
-	
+	uint8_t			area_total;		
+	uint8_t			res;
 	area_t			*area;									//存储区间
 	
 }sdhFile;
@@ -161,6 +161,7 @@ typedef struct {
 int filesys_init(void);
 int fs_get_error(void);
 int filesys_close(void);
+int filesys_mount(void);
 
 
 sdhFile * fs_open(char *name);

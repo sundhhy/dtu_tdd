@@ -99,8 +99,9 @@ void thrd_dtu (void const *argument) {
 		{
 			if( enter_TTCP( DTU_Buf) == ERR_OK)
 			{
-				
+				get_TTCPVer( DTU_Buf);
 				ser_confmode = 1;
+				s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
 			}
 			
 		}
@@ -271,7 +272,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	if( DtuCfg_file)
 	{
 		fs_read( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
-		if( conf->ver[0] != 0xff || conf->ver[1] != 0xff)
+		if( conf->ver[0] == DTU_CONFGILE_MAIN_VER &&  conf->ver[1] == DTU_CONFGILE_SUB_VER)
 		{
 			
 			return ERR_OK;
@@ -289,7 +290,10 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	conf->ver[0] = DTU_CONFGILE_MAIN_VER;
 	conf->ver[1] = DTU_CONFGILE_SUB_VER;
 	conf->Activestandby_mode = 1;
+	conf->hartbeat_timespan_s = 5;
 	conf->Sms_mode = 0;
+	
+	memcpy( &conf->the_485cfg, &Conf_S485Usart_default, sizeof( Conf_S485Usart_default));
 	for( i = 0; i < IPMUX_NUM; i++)
 	{
 		strcpy( conf->DateCenter_ip[i], DEF_IPADDR);
@@ -301,6 +305,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	if( DtuCfg_file)
 	{
 		fs_write( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
+		fs_flush();
 	}
 	
 	return ERR_OK;
