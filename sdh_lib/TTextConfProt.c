@@ -15,6 +15,8 @@
 #include "string.h"
 #include "sdhError.h"
 #include "string.h"
+static char *Eliminate_the_space( char *str);
+
 static Atcmd_t	Decode_Atcmd;
 
 void get_TTCPVer(char *buf)
@@ -98,7 +100,7 @@ int decodeTTCP_begin (char *cmd)
 		{
 			*pdeal = '\0';
 			pdeal ++;
-			Decode_Atcmd.arg = pdeal;
+			Decode_Atcmd.arg = Eliminate_the_space(pdeal);
 			return ERR_OK;
 		}
 		
@@ -150,16 +152,19 @@ char *get_firstarg(void)
 	while( *pdeal)
 	{
 		if( *pdeal == OFS_ARG_ARG)
-			*pdeal = '\0';
+		{
+			*pdeal = '\0';		//给前一个参数的结尾加上0
+			pdeal ++;
+			Decode_Atcmd.arg = Eliminate_the_space(pdeal);
+			break;
+		}
 		else
 			pdeal ++;
 		
 	}
 	
-	pdeal ++;
-	if( *pdeal != '\0')
-		Decode_Atcmd.arg = pdeal;		//
-	else
+
+	if( *pdeal == '\0')
 		Decode_Atcmd.arg = NULL;
 	
 	return parg;
@@ -174,4 +179,12 @@ void decodeTTCP_finish(void)
 	Decode_Atcmd.cmd = NULL;
 }
 
+static char *Eliminate_the_space( char *str)
+{
+	while( *str == ' ' && *str != '\0')
+		str ++;
+	
+	return str;
+	
+}
 

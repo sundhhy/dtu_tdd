@@ -695,7 +695,11 @@ int deal_tcpclose_event( gprs_t *self, char *data, int len)
 	return ERR_BAD_PARAMETER;
 }
 
-
+int	read_simPhonenum( gprs_t *self, char *phonenum)
+{
+	
+	return ERR_OK;
+}
 int	create_newContact( gprs_t *self, char *name, char *phonenum)
 {
 	
@@ -806,6 +810,13 @@ int	get_firstCnt_seq( gprs_t *self)
 	
 	return ERR_FAIL;
 	
+}
+
+int set_dns_ip( gprs_t *self, char *dns_ip)
+{
+	
+	
+	return ERR_OK;
 }
 int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 {
@@ -1126,14 +1137,14 @@ FUNCTION_SETTING(get_firstDiscnt_seq, get_firstDiscnt_seq);
 FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
 
 
-
+FUNCTION_SETTING(set_dns_ip, set_dns_ip);
 FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);
 FUNCTION_SETTING(sendto_tcp, sendto_tcp);
 FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(tcp_test, tcp_test);
 
-
+FUNCTION_SETTING(read_simPhonenum, read_simPhonenum);
 FUNCTION_SETTING(create_newContact, create_newContact);
 FUNCTION_SETTING(modify_contact, modify_contact);
 FUNCTION_SETTING(delete_contact, delete_contact);
