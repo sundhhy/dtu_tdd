@@ -18,8 +18,9 @@
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\system_stm32f10x.h
 .\objects\cdma_dtu.o: E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8\stm32f10x_conf.h
 .\objects\cdma_dtu.o: E:\DTU\mycode\dtu_tdd\RTE\RTE_Components.h
-.\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_dma.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_adc.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\stm32f10x.h
+.\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_dma.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_flash.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_rcc.h

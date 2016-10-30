@@ -12,7 +12,7 @@
 #include "gprs_uart.h"
 #endif
 #include "serial485_uart.h"
-
+#include "adc.h"
 #include "sdhError.h"
 #include "string.h"
 #include "stm32f10x_usart.h"
@@ -46,7 +46,18 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) 
+int fgetc(FILE *f /*stream*/)
+{
+	 /* Loop until rx not empty */
+    while (USART_GetFlagStatus( DEBUG_USART, USART_FLAG_RXNE) == RESET)
+    {
+    }
+	
+	return USART_ReceiveData( DEBUG_USART);
+}
+
+
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485) || defined(TDD_ADC) 
 #define TEST_BUF_SIZE 512
 char Test_buf[TEST_BUF_SIZE];
 #endif
@@ -57,6 +68,7 @@ int main (void) {
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) 
 	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
+	char c = 0;
 #endif
 	
 	osKernelInitialize ();                    // initialize CMSIS-RTOS
@@ -73,18 +85,29 @@ int main (void) {
 	USART_Configuration();
 //	
 	printf(" DTU TDD start ...\n");
-	if( filesys_init() != ERR_OK)
+
+#ifdef TDD_ADC
+	printf("enter ADC test ?Y/N \n");
+	
+	c = getchar();
+	while(c != 'Y' && c != 'N')
 	{
-		printf(" init filesystem fail \n");
-		return ERR_FAIL;
+		c = getchar();
 		
 	}
-	if( filesys_mount() != ERR_OK)
+	if( c == 'Y')
 	{
-		printf(" mount filesystem fail \n");
-		return ERR_FAIL;
-		
+		printf("select Yes, enter adc test \n");
+		adc_test(Test_buf, TEST_BUF_SIZE);
 	}
+	else 
+	{
+		printf("select No, enter idle loop\n");
+	}
+	printf("idle loop \n");
+	while(1);
+
+#endif
 	
 	
 #ifdef TDD_FILESYS_TEST	
@@ -217,7 +240,18 @@ int main (void) {
 #endif	
 	
 	
-	
+	if( filesys_init() != ERR_OK)
+	{
+		printf(" init filesystem fail \n");
+		return ERR_FAIL;
+		
+	}
+	if( filesys_mount() != ERR_OK)
+	{
+		printf(" mount filesystem fail \n");
+		return ERR_FAIL;
+		
+	}
 	
 	Init_ThrdDtu();
   // create 'thread' functions that start executing,

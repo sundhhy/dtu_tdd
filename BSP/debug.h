@@ -47,13 +47,15 @@
 //#define TDD_GPRS_ONOFF
 //#define TDD_GPRS_USART
 //#define TDD_GPRS_SMS
-//#define TDD_GPRS_TCP
+#define TDD_GPRS_TCP
 
 #define PROTOTOCOL "TCP"
 #define IPADDR "chitic.zicp.net"
-#define PORTNUM 12571
+#define PORTNUM 19350
 
 
 //#define TDD_S485
 //#define TDD_FILESYS_TEST
+
+#define TDD_ADC
 #endif

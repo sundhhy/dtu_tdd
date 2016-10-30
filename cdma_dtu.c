@@ -38,7 +38,7 @@ int Init_ThrdDtu (void) {
 	s485_uart_init( &Conf_S485Usart_default);
 	
 	
-	
+	//todo  :如果只是工作在本地模式并且没有焊SIM900或者没有插入SIM卡的时候，这里就会导致一直死循环，需要处理掉这个问题
 	while(1)
 	{
 		if( SIM800->startup(SIM800) != ERR_OK)
@@ -424,7 +424,19 @@ static void dtu_conf(void)
 			goto exit;
 		}
 		
-		else if( strcmp(pcmd ,"SVDM") == 0 || strcmp(pcmd ,"SVIP") == 0)
+		else if( strcmp(pcmd ,"SVDM") == 0 )
+		{
+			switch( i)
+			{
+				case 0:
+					i_data = atoi(parg);
+					if( i_data < 0 || i_data > 
+				
+				
+			}
+			goto exit;
+		}
+		else if( strcmp(pcmd ,"SVIP") == 0)
 		{
 			
 			goto exit;

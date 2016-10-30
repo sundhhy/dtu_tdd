@@ -91,6 +91,28 @@ SPI_instance W25Q_Spi = {
 	
 };
 
+/** ADC DMA通道配置
+ *
+ */
+Dma_source DMA_adc ={
+	
+	((void *)0),
+	-1,
+	-1,
+	
+	DMA1_Channel1,
+	DMA1_FLAG_GL1,
+	DMA1_Channel1_IRQn,
+	
+};
+
+gpio_pins ADC_pins = {
+	GPIOA,
+	GPIO_Pin_1
+	
+};
+
+int32_t ADC_chn = ADC_Channel_1;		//ADC的通道和ADC的引脚是有对应关系的，PA_1对应的通道是ADC1
 
 
 

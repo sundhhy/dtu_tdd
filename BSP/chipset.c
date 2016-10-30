@@ -147,11 +147,11 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-//	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_rx_irq;   // 发送DMA配置
-//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
-//    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
-//    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-//    NVIC_Init(&NVIC_InitStructure);
+	NVIC_InitStructure.NVIC_IRQChannel = DMA_adc.dma_rx_irq;   // ADC接收
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 
     NVIC_InitStructure.NVIC_IRQChannel = W25Q_Spi.irq;			//spi中断
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1 ;
@@ -292,6 +292,9 @@ void Init_TIM2(void)
     TIM_ITConfig(TIM2, TIM_IT_Update,ENABLE);
     TIM_Cmd(TIM2, ENABLE);										//使能
 }
+
+
+
 
 void w25q_init_cs(void)
 {
