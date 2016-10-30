@@ -6,6 +6,9 @@
 
 #define IPMUX_NUM	4		//支持4路连接
 
+//SIM900 ATCMD
+#define AT_SET_DNSIP  "AT+CDNSCFG=" 
+
 CLASS(gprs_t)
 {
 	// public
@@ -20,6 +23,9 @@ CLASS(gprs_t)
 	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *in_buf, char *out_buf, int *len);
 	int (*delete_sms)( gprs_t *self, int seq);
 	
+	int (*read_smscAddr)(gprs_t *self, char *addr);
+	int (*set_smscAddr)(gprs_t *self, char *addr);
+	int (*get_apn)( gprs_t *self, char *buf);
 	int (*set_dns_ip)( gprs_t *self, char *dns_ip);
 	int (*tcp_cnnt)( gprs_t *self, int cnnt_num, char *addr, int portnum);
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
@@ -36,8 +42,8 @@ CLASS(gprs_t)
 	int	(*get_firstDiscnt_seq)( gprs_t *self);
 	int	(*get_firstCnt_seq)( gprs_t *self);
 	
+
 	//电话簿操作接口
-	int	( *read_simPhonenum)( gprs_t *self, char *phonenum);
 	int	( *create_newContact)( gprs_t *self, char *name, char *phonenum);
 	int	( *modify_contact)( gprs_t *self, char *name, char *phonenum);
 	int	( *delete_contact)( gprs_t *self, char *name);
@@ -61,6 +67,8 @@ typedef enum {
 	
 }SIM_Event;
 
-
+int check_phoneNO(char *NO);
+int copy_phoneNO(char *dest_NO, char *src_NO);
+int check_ip(char *ip);
 
 #endif

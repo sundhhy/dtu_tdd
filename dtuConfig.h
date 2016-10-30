@@ -10,11 +10,12 @@
 #define MODE_DTU					0			//
 #define MODE_SMS					1			//
 #define MODE_REMOTERTU		2
-#define MODE_LOCALRTU			3	
+#define MODE_LOCALRTU			3
+#define MODE_BEGIN					0
 #define MODE_END					4
 
-#define DTU_CONFGILE_MAIN_VER		01
-#define DTU_CONFGILE_SUB_VER		04
+#define DTU_CONFGILE_MAIN_VER		1
+#define DTU_CONFGILE_SUB_VER		9
 
 #define DEF_PROTOTOCOL "TCP"
 #define DEF_IPADDR "chitic.zicp.net"
@@ -24,6 +25,8 @@
 #define ADMIN_PHNOE_NUM			4
 #define REGPACKAGE_LEN			32
 #define HEATBEATPACKAGE_LEN			32
+#define IP_LEN		16
+#define IP_ADDR_LEN		64
 
 typedef struct {
 	
@@ -31,7 +34,10 @@ typedef struct {
 	char	work_mode;					//工作模式
 	uint8_t	ver[2];						//版本
 	
-	char	DateCenter_ip[IPMUX_NUM][64];
+	char	dns_ip[IP_LEN];
+	char	smscAddr[16];
+	char	apn[IP_ADDR_LEN];
+	char	DateCenter_ip[IPMUX_NUM][IP_ADDR_LEN];
 	int		DateCenter_port[IPMUX_NUM];
 	char	protocol[IPMUX_NUM][4];
 	char	registry_package[32];
@@ -40,15 +46,20 @@ typedef struct {
 	char	admin_Phone[ADMIN_PHNOE_NUM][12];
 	
 	char			output_mode;
-	char			resv_1;
-	uint16_t	hartbeat_timespan_s;
-	char	heatbeat_package[32];
+	char			chn_type[3];
+	
+	uint32_t	hartbeat_timespan_s;
+	char		heatbeat_package[32];
 	uint32_t		dtu_id;
+	uint32_t		rtu_addr;
+	
+	
+			
 	ser_485Cfg	the_485cfg;
 	
 	
 }DtuCfg_t;
 
-
+extern DtuCfg_t	Dtu_config;
 
 #endif

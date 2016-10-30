@@ -35,7 +35,7 @@ int enter_TTCP(char *cmd)
 		if( cmd[i] == ' ')
 		{
 			
-			if( i > 9)
+			if( i > 6)
 			{
 				return ERR_OK;
 			}
@@ -96,7 +96,7 @@ int decodeTTCP_begin (char *cmd)
 	Decode_Atcmd.cmd = pdeal;
 	while( *pdeal)
 	{
-		if( *pdeal == OFS_CMD_ARG)
+		if( *pdeal == OFS_CMD_ARG || *pdeal == '\r' || *pdeal == '\n')
 		{
 			*pdeal = '\0';
 			pdeal ++;

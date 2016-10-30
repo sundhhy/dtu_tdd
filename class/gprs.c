@@ -22,6 +22,7 @@
 #include <string.h>
 #include "def.h"
 #include "debug.h"
+#include "dtuConfig.h"
 
 
 
@@ -475,6 +476,9 @@ int delete_sms( gprs_t *self, int seq)
 	}
 	
 }
+
+
+
 /**
  * @brief 向指定的地址发起连接
  *
@@ -695,11 +699,7 @@ int deal_tcpclose_event( gprs_t *self, char *data, int len)
 	return ERR_BAD_PARAMETER;
 }
 
-int	read_simPhonenum( gprs_t *self, char *phonenum)
-{
-	
-	return ERR_OK;
-}
+
 int	create_newContact( gprs_t *self, char *name, char *phonenum)
 {
 	
@@ -814,9 +814,251 @@ int	get_firstCnt_seq( gprs_t *self)
 
 int set_dns_ip( gprs_t *self, char *dns_ip)
 {
+	short	retry = RETRY_TIMES;
+	char *pp = NULL;
 	
+	if( check_ip( dns_ip) != ERR_OK)
+		return ERR_BAD_PARAMETER;
+
+	while(1)
+	{
+
+		sprintf( Gprs_cmd_buf,"%s%s\r\n",AT_SET_DNSIP, dns_ip);
+		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+		pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+		if( pp)
+		{
+			return ERR_OK;
+		}
+		pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+		if( pp)
+		{
+			return ERR_BAD_PARAMETER;
+		}
+		if(	retry)
+			retry --;
+		else
+			return ERR_FAIL;
+				
+			
+	}
+	
+}
+
+
+int get_apn( gprs_t *self, char *buf)
+{
+	if( buf == NULL )
+		return ERR_BAD_PARAMETER;
+	if( Dtu_config.apn[0] == 0)
+		strcpy(buf, "CNMT");
+	else
+		strcpy(buf,Dtu_config.apn);
 	
 	return ERR_OK;
+	
+	
+}
+
+
+
+int read_smscAddr(gprs_t *self, char *addr)
+{
+	short step = 0;
+	short	retry = RETRY_TIMES;
+	char *pp = NULL;
+	int tmp = 0;
+	if( check_phoneNO( addr) == ERR_OK)
+		return ERR_OK;
+	
+	//返回SIM卡的默认短信中心号码
+	while(1)
+	{
+		switch( step)
+		{
+			case 0:
+				strcpy( Gprs_cmd_buf,"AT+CSCA=?\r\n");
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+				if( pp)
+				{
+					step ++;
+					retry = RETRY_TIMES;
+					break;
+				}
+				if( retry)
+					retry --;
+				else
+					return ERR_FAIL;
+				break;
+			case 1:
+				sprintf( Gprs_cmd_buf,"AT+CSCA?\r\n");
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+				if( pp)
+				{
+					//+CSCA: "+8613800571500",145
+					tmp = strcspn( pp, "0123456789");	
+					
+					pp = strstr((const char*)Gprs_cmd_buf,"+CSCA:");
+					if( pp)
+					{
+						pp += strlen("+CSCA:") + 1;
+						//"+8613800571500",145
+						while( *pp != ',')
+						{
+							
+							*addr = *pp;
+							addr ++;
+							pp ++;
+							
+						}
+
+						return ERR_OK;
+					}
+					return ERR_FAIL;
+				}
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+				if( pp)
+				{
+					return ERR_FAIL;
+				}
+				if(	retry)
+					retry --;
+				else
+					return ERR_FAIL;
+				break;
+			default:
+				return ERR_FAIL;
+		}
+	}
+	
+	
+}
+
+
+int set_smscAddr(gprs_t *self, char *addr)
+{
+	short step = 0;
+	short	retry = RETRY_TIMES;
+	char *pp = NULL;
+	if( check_phoneNO( addr) != ERR_OK)
+		return ERR_BAD_PARAMETER;
+	while(1)
+	{
+		switch( step)
+		{
+			case 0:
+				strcpy( Gprs_cmd_buf,"AT+CSCA=?\r\n");
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+				if( pp)
+				{
+					step ++;
+					retry = RETRY_TIMES;
+					break;
+				}
+				if( retry)
+					retry --;
+				else
+					return ERR_FAIL;
+				break;
+			case 1:
+				sprintf( Gprs_cmd_buf,"AT+CSCA=\"%s\"\r\n", addr);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+				if( pp)
+				{
+					
+					return ERR_OK;
+					
+				}
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+				if( pp)
+				{
+					return ERR_FAIL;
+				}
+				if(	retry)
+					retry --;
+				else
+					return ERR_FAIL;
+				break;
+			default:
+				return ERR_FAIL;
+		}
+	}
+	
+	
+}
+
+int check_phoneNO(char *NO)
+{
+	int j = 0;
+	char *pp = NO;
+	
+	//跳过"
+	if( NO[0] == '\"')
+	{
+		pp ++;
+	}
+	//跳过区号：+86
+	if( pp[0] == '+')
+	{
+		pp += 3;
+	}
+	while(pp[j] != '\0')
+	{
+		if( pp[j] < '0' || pp[j] > '9')
+			break;
+		j ++;
+		
+	}
+	if( j == 11)
+		return ERR_OK;
+	return ERR_BAD_PARAMETER;
+	
+}
+int copy_phoneNO(char *dest_NO, char *src_NO)
+{
+	int j = 0;
+	while(src_NO[j] != '\0')
+	{
+		if( src_NO[j] >= '0' && src_NO[j] <= '9')
+		{
+			dest_NO[j] = src_NO[j];
+		}
+		else
+			break;
+		j ++;
+		if( j == 11)
+			return ERR_OK;
+	}
+	
+	return ERR_BAD_PARAMETER;
+	
+}
+//从字符串中能找到4个点，并且没有处理数字以外的数据，就认为ip地址是合法的
+int check_ip(char *ip)
+{
+	int j = 0;
+	int dit_count = 0;
+	while(ip[j] != '\0')
+	{
+		if( ip[j] == '.')
+		{
+			dit_count ++;
+			
+			
+		}
+		if( ip[j] < '0' && ip[j] > '9')
+			return ERR_BAD_PARAMETER;
+		j ++;
+		
+	}
+	if( dit_count == 3)
+		return ERR_OK;
+	return ERR_BAD_PARAMETER;
+	
 }
 int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 {
@@ -977,8 +1219,9 @@ static int serial_cmmn( char *buf, int bufsize, int delay_ms)
 
 static int set_sms2TextMode(gprs_t *self)
 {
-	int retry = 1;
+	int retry = RETRY_TIMES;
 	char *pp = NULL;
+	int step = 0;
 	
 	if( Gprs_state.sms_msgFromt == SMS_MSG_TEXT)
 	{
@@ -986,19 +1229,36 @@ static int set_sms2TextMode(gprs_t *self)
 	}
 	while(1)
 	{
-		strcpy( Gprs_cmd_buf, "AT+CMGF=1\x00D\x00A" );
-		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
-		pp = strstr((const char*)Gprs_cmd_buf,"OK");
-		if(pp)
+		switch( step)
 		{
+			case 0:
+				self->set_smscAddr( self, Dtu_config.smscAddr);
+				step ++;
+			case 1:
+				strcpy( Gprs_cmd_buf, "AT+CMGF=1\x00D\x00A" );
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");
+				if(pp)
+				{
+					
+					Gprs_state.sms_msgFromt = SMS_MSG_TEXT;
+					step ++;
+					retry = RETRY_TIMES;
+					return ERR_OK;
+				}
+				
+				retry --;
+				if( retry == 0)
+					return ERR_FAIL;
+				break;
+			default:
+				step = 0;
+				break;
 			
-			Gprs_state.sms_msgFromt = SMS_MSG_TEXT;
-			return ERR_OK;
+			
+			
 		}
 		
-		retry --;
-		if( retry == 0)
-			return ERR_FAIL;
 		osDelay(100);
 	}
 	
@@ -1043,7 +1303,10 @@ static int prepare_ip(gprs_t *self)
 				break;
 			
 			case 1:
-				strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置gprs接入点
+				if( Dtu_config.apn[0] == 0)
+					strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置默认gprs接入点
+				else
+					sprintf( Gprs_cmd_buf, "AT+CSTT=%s\x00D\x00A", Dtu_config.apn );
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
@@ -1089,6 +1352,12 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
+			case 4:
+				
+					
+				self->set_dns_ip( self, Dtu_config.dns_ip);
+				return ERR_OK;
+				
 			default:
 				retry = RETRY_TIMES;
 				step = 0;
@@ -1130,13 +1399,14 @@ FUNCTION_SETTING(read_phnNmbr_TextSMS, read_phnNmbr_TextSMS);
 FUNCTION_SETTING(delete_sms, delete_sms);
 FUNCTION_SETTING(sms_test, sms_test);
 
+FUNCTION_SETTING(get_apn, get_apn);
 FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
 FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
 FUNCTION_SETTING(guard_serial, guard_serial);
 FUNCTION_SETTING(get_firstDiscnt_seq, get_firstDiscnt_seq);
 FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
-
-
+FUNCTION_SETTING(read_smscAddr, read_smscAddr);
+FUNCTION_SETTING(set_smscAddr, set_smscAddr);
 FUNCTION_SETTING(set_dns_ip, set_dns_ip);
 FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);
 FUNCTION_SETTING(sendto_tcp, sendto_tcp);
@@ -1144,7 +1414,6 @@ FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(tcp_test, tcp_test);
 
-FUNCTION_SETTING(read_simPhonenum, read_simPhonenum);
 FUNCTION_SETTING(create_newContact, create_newContact);
 FUNCTION_SETTING(modify_contact, modify_contact);
 FUNCTION_SETTING(delete_contact, delete_contact);

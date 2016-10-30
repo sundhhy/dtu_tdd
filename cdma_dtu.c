@@ -17,6 +17,8 @@
 #define HEARTBEAT_ALARMID		0
 #define SER485_WORKINGMODE_ALARMID		1			//485从默认模式转换到工作模式的时间
  
+static int get_dtuCfg(DtuCfg_t *conf);
+static void dtu_conf(void);
 
 
 void thrd_dtu (void const *argument);                             // thread function
@@ -24,9 +26,6 @@ osThreadId tid_ThrdDtu;                                          // thread id
 osThreadDef (thrd_dtu, osPriorityNormal, 1, 0);                   // thread object
 
 static uint32_t Heatbeat_count = 0;
-
-static int get_dtuCfg(DtuCfg_t *conf);
-static void dtu_conf(void);
 gprs_t *SIM800 ;
 DtuCfg_t	Dtu_config;
 sdhFile *DtuCfg_file;
@@ -37,6 +36,29 @@ int Init_ThrdDtu (void) {
 	SIM800 = gprs_t_new();
 	SIM800->init(SIM800);
 	s485_uart_init( &Conf_S485Usart_default);
+	
+	
+	
+	while(1)
+	{
+		if( SIM800->startup(SIM800) != ERR_OK)
+		{
+			
+			osDelay(1000);
+		}
+		else if( SIM800->check_simCard(SIM800) == ERR_OK)
+		{	
+			
+			break;
+		}
+		else {
+			
+			osDelay(1000);
+		}
+		
+	}
+	
+	
 	get_dtuCfg( &Dtu_config);
 	clean_time2_flags();
 
@@ -55,11 +77,15 @@ void thrd_dtu (void const *argument) {
 	short i = 0;
 	short ser_confmode = 0;
 	char *pp;
-	set_alarmclock_s( SER485_WORKINGMODE_ALARMID, 3);
+	
 	
 	//刚上电的时候等待进入配置的模式
 	//如果指定时间内不能进入配置模式，就退出等待，进入正常工作模式
 	//一旦进入配置模式，就不会退出到工作模式。用户只能通过重启来退出配置模式
+	strcpy( DTU_Buf, " wait for signal ...");
+	s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
+	osDelay(10);
+	set_alarmclock_s( SER485_WORKINGMODE_ALARMID, 30);
 	while( 1)
 	{
 		if( Ringing_s(SER485_WORKINGMODE_ALARMID) == ERR_OK)
@@ -81,7 +107,9 @@ void thrd_dtu (void const *argument) {
 			{
 				get_TTCPVer( DTU_Buf);
 				ser_confmode = 1;
-				s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
+				while( s485_Uart_write(DTU_Buf, strlen(DTU_Buf) ) != ERR_OK)
+					;
+				osDelay(1);
 			}
 			
 		}
@@ -107,31 +135,7 @@ void thrd_dtu (void const *argument) {
 	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 2000);
 	s485_Uart_ioctl(S485_UART_CMD_CLR_RXBLOCK);
 	
-	if( Dtu_config.work_mode == MODE_LOCALRTU)		//本地RTU模式不处理短信或者tcp
-		step = 2;
-	else
-	{
-		
-		while(1)
-		{
-			if( SIM800->startup(SIM800) != ERR_OK)
-			{
-				
-				osDelay(1000);
-			}
-			else if( SIM800->check_simCard(SIM800) == ERR_OK)
-			{	
-				
-				break;
-			}
-			else {
-				
-				osDelay(1000);
-			}
-			
-		}
-		
-	}
+
 	while (1) {
 		switch( step)
 		{
@@ -275,9 +279,43 @@ void thrd_dtu (void const *argument) {
 	}
 }
 
+
+static void set_default( DtuCfg_t *conf)
+{
+	//默认的配置
+	int i = 0;
+	memset( conf, 0, sizeof( DtuCfg_t));
+		 
+	conf->ver[0] = DTU_CONFGILE_MAIN_VER;
+	conf->ver[1] = DTU_CONFGILE_SUB_VER;
+	conf->Activestandby_mode = 1;
+	conf->hartbeat_timespan_s = 5;
+	conf->work_mode = MODE_DTU;
+	conf->dtu_id = 1;
+	conf->rtu_addr = 1;
+	strcpy( conf->sim_NO,"13888888888");
+	sprintf( conf->registry_package,"XMYN%09d%s",conf->dtu_id, conf->sim_NO);
+	conf->heatbeat_package[0] = '$';
+	conf->heatbeat_package[1] = '\0';
+	conf->output_mode = 0;
+	conf->chn_type[0] = 1;
+	conf->chn_type[1] = 1;
+	conf->chn_type[2] = 1;
+	memcpy( &conf->the_485cfg, &Conf_S485Usart_default, sizeof( Conf_S485Usart_default));
+	
+	for( i = 0; i < IPMUX_NUM; i++)
+	{
+		strcpy( conf->DateCenter_ip[i], DEF_IPADDR);
+		strcpy( conf->protocol[i], DEF_PROTOTOCOL);
+		conf->DateCenter_port[i] = DEF_PORTNUM;
+		
+	}
+	
+}
+
 static int get_dtuCfg(DtuCfg_t *conf)
 {
-	int i = 0;
+	
 	
 	DtuCfg_file	= fs_open( DTUCONF_filename);
 
@@ -299,30 +337,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	
 	
 	
-	//默认的配置
-	
-	
-		 
-	conf->ver[0] = DTU_CONFGILE_MAIN_VER;
-	conf->ver[1] = DTU_CONFGILE_SUB_VER;
-	conf->Activestandby_mode = 1;
-	conf->hartbeat_timespan_s = 5;
-	conf->work_mode = 0;
-	conf->dtu_id = MODE_DTU;
-	strcpy( conf->sim_NO,"13888888888");
-	SIM800->read_simPhonenum( SIM800, DTU_Buf);
-	sprintf( conf->registry_package,"XMYN%09d%s",conf->dtu_id, DTU_Buf);
-	conf->heatbeat_package[0] = '$';
-	conf->heatbeat_package[1] = '\0';
-	conf->output_mode = 0;
-	memcpy( &conf->the_485cfg, &Conf_S485Usart_default, sizeof( Conf_S485Usart_default));
-	for( i = 0; i < IPMUX_NUM; i++)
-	{
-		strcpy( conf->DateCenter_ip[i], DEF_IPADDR);
-		strcpy( conf->protocol[i], DEF_PROTOTOCOL);
-		conf->DateCenter_port[i] = DEF_PORTNUM;
-		
-	}
+	set_default( conf);
 	
 	if( DtuCfg_file)
 	{
@@ -341,41 +356,8 @@ void ack_str( char *str)
 	s485_Uart_write(str, strlen(str));
 }
 
-static int check_phoneNO(char *NO)
-{
-	int j = 0;
-	while(NO[j] != '\0')
-	{
-		if( NO[j] < '0' && NO[j] > '9')
-			break;
-		j ++;
-		if( j == 11)
-			return ERR_OK;
-	}
-	
-	return ERR_BAD_PARAMETER;
-	
-}
 
-static int copy_phoneNO(char *dest_NO, char *src_NO)
-{
-	int j = 0;
-	while(src_NO[j] != '\0')
-	{
-		if( src_NO[j] >= '0' && src_NO[j] <= '9')
-		{
-			dest_NO[j] = src_NO[j];
-		}
-		else
-			break;
-		j ++;
-		if( j == 11)
-			return ERR_OK;
-	}
-	
-	return ERR_BAD_PARAMETER;
-	
-}
+
 
 
 static void dtu_conf(void)
@@ -384,9 +366,9 @@ static void dtu_conf(void)
 	char *parg;
 	int 	i_data = 0;
 	short		i = 0, j = 0;
-	char	com_Wordbits[4] = { '8', '9', '0', 0};
-	char	com_Paritybit[4] = { 'N', 'E', 'O', 0};
-	char	com_stopbit[4] = { '1', '2',0,0};
+	char		com_Wordbits[4] = { '8', '9', 0, 0};
+	char		com_Paritybit[4] = { 'N', 'E', 'O', 0};
+	char		com_stopbit[4] = { '1', '2',0,0};
 	if( get_cmdtype() != CONFCMD_TYPE_ATC)
 		return;
 	
@@ -407,7 +389,7 @@ static void dtu_conf(void)
 				sprintf( DTU_Buf, "%d", Dtu_config.work_mode);
 				ack_str( DTU_Buf);
 			}
-			else if( i_data < MODE_END)
+			else if( i_data < MODE_END && i_data >= MODE_BEGIN)
 			{
 				Dtu_config.work_mode = i_data;
 				ack_str( "OK");
@@ -419,7 +401,7 @@ static void dtu_conf(void)
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"CONN") == 0)
+		else if( strcmp(pcmd ,"CONN") == 0)
 		{
 			i_data = 2;
 			if( parg)
@@ -430,7 +412,7 @@ static void dtu_conf(void)
 				sprintf( DTU_Buf, "%d", Dtu_config.Activestandby_mode);
 				ack_str( DTU_Buf);
 			}
-			else if( i_data < 2)
+			else if( i_data == 0 || i_data == 1)
 			{
 				Dtu_config.Activestandby_mode = i_data;
 				ack_str( "OK");
@@ -442,52 +424,54 @@ static void dtu_conf(void)
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"SVDM") == 0)
+		else if( strcmp(pcmd ,"SVDM") == 0 || strcmp(pcmd ,"SVIP") == 0)
 		{
 			
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"SVIP") == 0)
-		{
-			
-			goto exit;
-		}
+
 		
-		if( strcmp(pcmd ,"DNIP") == 0)
+		else if( strcmp(pcmd ,"DNIP") == 0)
 		{
-			if( SIM800->set_dns_ip( SIM800, parg) == ERR_OK)
-				ack_str( "OK");
+			if( parg[0] == '?')
+			{
+				if( check_ip( Dtu_config.dns_ip) == ERR_OK)
+					sprintf( DTU_Buf, "%s",Dtu_config.dns_ip);
+				else
+					strcpy( DTU_Buf, "  ");
+				
+				ack_str( DTU_Buf);
+			}
 			else
-				ack_str( "ERROR");
+			{
+				if( check_ip( parg) != ERR_OK)
+				{
+					ack_str( "ERROR");
+				}
+				else
+				{
+					strcpy( Dtu_config.dns_ip, parg);
+					ack_str( "OK");
+				}
+				
+			}
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"ATBT") == 0)
+		else if( strcmp(pcmd ,"ATBT") == 0)
 		{
 				
 			if( parg == NULL)
 			{
-				ack_str( "ERROR");
+				ack_str( "OK");
 				goto exit;
 			}
 			if( parg[0] == '?')
 			{
-				i_data = 0;
-				for( i = 0; j < ADMIN_PHNOE_NUM; i ++)
-				{
-					
-					if( check_phoneNO( Dtu_config.admin_Phone[i]) == ERR_OK)
-					{
-						i_data ++;
-						
-					}
-					
-				}
-				
-				sprintf( DTU_Buf, "%d,%d,%s,%d", Dtu_config.dtu_id, Dtu_config.hartbeat_timespan_s,\
-																		Dtu_config.sim_NO, i_data );
-				for( i = 0; j < ADMIN_PHNOE_NUM; i ++)
+				i_data = 0;								
+				sprintf( DTU_Buf, "%09d,%d,%s", Dtu_config.dtu_id, Dtu_config.hartbeat_timespan_s, Dtu_config.sim_NO );
+				for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 				{
 					
 					if( check_phoneNO( Dtu_config.admin_Phone[i]) == ERR_OK)
@@ -516,11 +500,6 @@ static void dtu_conf(void)
 					i++;
 					break;
 				case 2:
-					i_data = atoi( parg);
-					Dtu_config.hartbeat_timespan_s = i_data;
-					i++;
-					break;
-				case 3:
 					if( check_phoneNO(parg) != ERR_OK)
 					{
 						ack_str( "ERROR");
@@ -528,21 +507,11 @@ static void dtu_conf(void)
 					}
 					copy_phoneNO( Dtu_config.sim_NO, parg);
 					
-					i++;
-					break;
-				case 4:
-					j = ADMIN_PHNOE_NUM +1;
-					j = atoi( parg);
-					if( j > ADMIN_PHNOE_NUM)
-					{
-						ack_str( "ERROR");
-						goto exit;
-						
-					}
+					memset( Dtu_config.admin_Phone[0], 0, sizeof(Dtu_config.admin_Phone));
 					i++;
 					i_data = 0;
 					break;
-				case 5:
+				case 3:
 					if( check_phoneNO(parg) != ERR_OK)
 					{
 						ack_str( "ERROR");
@@ -550,16 +519,13 @@ static void dtu_conf(void)
 					}
 					copy_phoneNO( Dtu_config.admin_Phone[ i_data], parg);
 					i_data ++;
-					j --;
-					if( j)
+					
+					if( i_data >= ADMIN_PHNOE_NUM)
 					{
-						break;
-					}
-					else
-					{
-						ack_str( "ERROR");
+						ack_str( "OK");
 						goto exit;
 					}
+					break;
 				default:
 					ack_str( "ERROR");
 					goto exit;
@@ -568,7 +534,7 @@ static void dtu_conf(void)
 			
 		}
 		
-		if( strcmp(pcmd ,"PRNT") == 0)
+		else if( strcmp(pcmd ,"PRNT") == 0)
 		{
 			if( parg[0] == '?')
 			{
@@ -603,62 +569,275 @@ static void dtu_conf(void)
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"SCOM ") == 0)
+		else if( strcmp(pcmd ,"SCOM") == 0)
 		{
+			if( parg == NULL)
+			{
+				ack_str( "OK");
+				goto exit;
+			}
+			
 			if( parg[0] == '?')
 			{
 				
 				sprintf( DTU_Buf, "%d,%c,%c,%c", Dtu_config.the_485cfg.USART_BaudRate, \
-																				 com_Wordbits[Dtu_config.the_485cfg.USART_WordLength/0x1000], \
-																					com_Paritybit[Dtu_config.the_485cfg.USART_Parity/0x300], \
-																					com_stopbit[Dtu_config.the_485cfg.USART_StopBits/0x2000]	);
-				for( i = 0; j < ADMIN_PHNOE_NUM; i ++)
-				{
-					
-					if( check_phoneNO( Dtu_config.admin_Phone[i]) == ERR_OK)
-					{
-						strcat( DTU_Buf,",");
-						strcat( DTU_Buf, Dtu_config.admin_Phone[i]);
-						
-					}
-					
-				}
+												 com_Wordbits[Dtu_config.the_485cfg.USART_WordLength/0x1000], \
+												 com_Paritybit[Dtu_config.the_485cfg.USART_Parity/0x300], \
+												 com_stopbit[Dtu_config.the_485cfg.USART_StopBits/0x2000]	);
+	
 				
-				
+				ack_str(DTU_Buf);
 				
 				goto exit;
 				
 			}
 			
-			goto exit;
+			switch(i)
+			{
+				case 0:
+					i_data = atoi( parg);
+					Dtu_config.the_485cfg.USART_BaudRate = i_data;
+					i++;
+					break;
+				case 1:
+					if( parg[0] == '8')
+						Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_8b;
+					else if( parg[0] == '9')
+						Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_9b;
+					else
+					{
+						ack_str( "ERROR");
+						goto exit;
+					}
+					i++;
+					break;
+				case 2:
+					if( parg[0] == 'N')
+						Dtu_config.the_485cfg.USART_Parity = USART_Parity_No;
+					else if( parg[0] == 'E')
+						Dtu_config.the_485cfg.USART_Parity = USART_Parity_Even;
+					else if( parg[0] == 'O')
+						Dtu_config.the_485cfg.USART_Parity = USART_Parity_Odd;
+					else
+					{
+						ack_str( "ERROR");
+						goto exit;
+					}
+						
+					i++;
+					break;
+				case 3:
+					if( parg[0] == '1')
+						Dtu_config.the_485cfg.USART_StopBits = USART_StopBits_1;
+					else if( parg[0] == '2')
+						Dtu_config.the_485cfg.USART_StopBits = USART_StopBits_2;
+					else
+					{
+						ack_str( "ERROR");
+						goto exit;
+					}
+					i++;
+					break;
+				default:
+					ack_str( "ERROR");
+					goto exit;
+					
+			}		//switch
+			
 		}
 		
-		if( strcmp(pcmd ,"REGT ") == 0)
+		else if( strcmp(pcmd ,"REGT") == 0)
 		{
+			if( *parg == '?')
+			{
+				sprintf( DTU_Buf, "%s", Dtu_config.registry_package);
+				ack_str( DTU_Buf);
+			}
+			else
+			{
+				i =  strlen(parg);
+				if( i > 31)
+					i = 31;
+						
+				memcpy( Dtu_config.registry_package, parg, i );
+				Dtu_config.registry_package[31] = 0;
+				ack_str( "OK");
+			}
 			
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"HEAT  ") == 0)
+		else if( strcmp(pcmd ,"HEAT") == 0)
 		{
+			if( *parg == '?')
+			{
+				sprintf( DTU_Buf, "%s", Dtu_config.heatbeat_package);
+				ack_str( DTU_Buf);
+			}
+			else
+			{
+				i =  strlen(parg);
+				if( i > 31)
+					i = 31;
+						
+				memcpy( Dtu_config.heatbeat_package, parg, i );
+				Dtu_config.heatbeat_package[31] = 0;
+				ack_str( "OK");
+			}
 			
 			goto exit;
 		}
 		
-		if( strcmp(pcmd ,"VAPN ") == 0)
+		else if( strcmp(pcmd ,"VAPN") == 0)
 		{
+			if( parg == NULL)
+			{
+				ack_str( "OK");
+				goto exit;
+			}
+			if( parg[0] == '?')
+			{
+				SIM800->get_apn( SIM800, DTU_Buf);
+				
+					
+				ack_str( DTU_Buf);
+					
+				
+				
+			}
+			else
+			{
+				if( i == 0)
+				{
+					strcpy( Dtu_config.apn, parg);
+					
+				}
+				else
+				{
+					
+					strcat( Dtu_config.apn, ",");
+					strcat( Dtu_config.apn, parg);
+				}
+				i ++;
+				
+			}
 			
-			goto exit;
+			
 		}
 		
-		if( strcmp(pcmd ,"CNUM ") == 0)
+		else if( strcmp(pcmd ,"CNUM") == 0)
 		{
+			if( *parg == '?')
+			{
+				SIM800->read_smscAddr( SIM800, Dtu_config.smscAddr);
+				ack_str( Dtu_config.smscAddr);
+			}
+			else
+			{
+				if( check_phoneNO( parg) == ERR_OK)
+				{
+					strcpy( Dtu_config.smscAddr, parg);
+					ack_str( "OK");
+				}
+				else
+				{
+					ack_str( "ERROR");
+				}
+				
+			}
 			
 			goto exit;
 		}
+		else if( strcmp(pcmd ,"RTUA") == 0)
+		{
+			if( *parg == '?')
+			{
+				sprintf( DTU_Buf, "%d", Dtu_config.rtu_addr);
+				ack_str( DTU_Buf);
+			}
+			else
+			{
+				i_data = atoi( parg);
+				if( i_data > 0)
+				{
+					Dtu_config.rtu_addr = i_data;
+					ack_str( "OK");
+				}
+				else
+				{
+					ack_str( "ERROR");
+				}
+			}
+			
+			goto exit;
+		}
+		else if( strcmp(pcmd ,"SIGN") == 0)
+		{
+			if( *parg == '?')
+			{
+				sprintf( DTU_Buf, "%d,%d,%d", Dtu_config.chn_type[0],Dtu_config.chn_type[1],Dtu_config.chn_type[2] );
+				ack_str( DTU_Buf);
+			}
+			else
+			{
+				switch(i)
+				{
+					case 0:
+						j = atoi( parg);
+						if( j >2 || j < 0)
+						{
+							ack_str( "ERROR");
+							goto exit;
+						}
+						i++;
+						break;
+					case 1:
+						i_data = atoi( parg);
+						if( i_data != 1 && i_data != 2)
+						{
+							ack_str( "ERROR");
+							goto exit;
+						}
+						Dtu_config.chn_type[j] = i_data;
+						ack_str( "OK");
+						goto exit;
+					default:
+						ack_str( "ERROR");
+						goto exit;
+						
+				}		//switch
+				
+				
+				
+			}
+			goto exit;
+		}
+		else if( strcmp(pcmd ,"FACT") == 0)
+		{
+			set_default(&Dtu_config);
+			ack_str( "OK");
+			goto exit;
+		}
+		else if( strcmp(pcmd ,"REST") == 0)
+		{
+			
+			ack_str( "OK");
+			fs_flush();
+			SIM800->shutdown(SIM800);
+			
+			goto exit;
+		}
+		if( parg == NULL)
+		{
+			ack_str( "ERROR");
+			goto exit;
+		}
+
+		
 	}
 
 	exit:	
 	fs_write( DtuCfg_file, (uint8_t *)&Dtu_config, sizeof( DtuCfg_t));
+	fs_flush();
 	
 }

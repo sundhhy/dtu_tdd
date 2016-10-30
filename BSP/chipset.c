@@ -282,7 +282,7 @@ void Init_TIM2(void)
     TIM_DeInit(TIM2);										 //复位时钟TIM2
 
     TIM_TimeBaseSturcture.TIM_Period = 10000;				  //定时器周期
-    TIM_TimeBaseSturcture.TIM_Prescaler = 71;				  //72000000/72=1000000
+    TIM_TimeBaseSturcture.TIM_Prescaler = 719;				  //72000000/720=100000
     TIM_TimeBaseSturcture.TIM_ClockDivision = 0x00;				//TIM_CKD_DIV1    TIM2时钟分频
     TIM_TimeBaseSturcture.TIM_CounterMode = TIM_CounterMode_Up; //計數方式	   
 
