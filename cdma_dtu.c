@@ -512,7 +512,7 @@ static void dtu_conf(void)
 					i++;
 					break;
 				case 3:
-					if( strcmp(parg ,"TCP") == 0 || strcmp(parg ,"UDP"))
+					if( strcmp(parg ,"TCP") == 0 || strcmp(parg ,"UDP") == 0)
 					{
 						strcpy( Dtu_config.protocol[ i_data], parg);
 						ack_str( "OK");
