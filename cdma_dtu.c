@@ -33,17 +33,18 @@ sdhFile *DtuCfg_file;
 char	DTU_Buf[DTU_BUF_LEN];
 char	Recv_PhnoeNo[16];
 int Init_ThrdDtu (void) {
+	int retry = 20;
 	SIM800 = gprs_t_new();
 	SIM800->init(SIM800);
 	s485_uart_init( &Conf_S485Usart_default);
 	
 	
 	//todo  :如果只是工作在本地模式并且没有焊SIM900或者没有插入SIM卡的时候，这里就会导致一直死循环，需要处理掉这个问题
-	while(1)
+	while(retry)
 	{
 		if( SIM800->startup(SIM800) != ERR_OK)
 		{
-			
+			retry--;
 			osDelay(1000);
 		}
 		else if( SIM800->check_simCard(SIM800) == ERR_OK)
@@ -52,7 +53,7 @@ int Init_ThrdDtu (void) {
 			break;
 		}
 		else {
-			
+			retry --;
 			osDelay(1000);
 		}
 		
@@ -66,6 +67,17 @@ int Init_ThrdDtu (void) {
 	if (!tid_ThrdDtu) return(-1);
 
 	return(0);
+}
+
+
+static void prnt_485( char *data)
+{
+	if( Dtu_config.output_mode)
+	{
+		
+		s485_Uart_write(data, strlen(data) );
+	}
+	
 }
 
 void thrd_dtu (void const *argument) {
@@ -141,11 +153,25 @@ void thrd_dtu (void const *argument) {
 		{
 			case 0:
 				
+				
+				sprintf(DTU_Buf, "cnnnect DC :%d,%s,%d,%s ...", cnnt_seq,Dtu_config.DateCenter_ip[ cnnt_seq],\
+								Dtu_config.DateCenter_port[cnnt_seq],Dtu_config.protocol[cnnt_seq] );
+				prnt_485( DTU_Buf);
 				ret = SIM800->tcp_cnnt( SIM800, cnnt_seq, Dtu_config.DateCenter_ip[cnnt_seq], Dtu_config.DateCenter_port[cnnt_seq]);
 				if( Dtu_config.Activestandby_mode && ret == ERR_OK)
 				{
+					prnt_485("succeed !\n");
 					step ++;
 					break;
+				}
+				if( ret == ERR_OK)
+				{
+					prnt_485(" succeed !\n");
+					
+				}
+				else
+				{
+					prnt_485(" failed !\n");
 				}
 				cnnt_seq ++;
 				if( cnnt_seq >= IPMUX_NUM)
@@ -265,7 +291,20 @@ void thrd_dtu (void const *argument) {
 			
 				ret = SIM800->get_firstDiscnt_seq(SIM800);
 				if( ret >= 0)
-					SIM800->tcp_cnnt( SIM800, ret, Dtu_config.DateCenter_ip[ret], Dtu_config.DateCenter_port[ret]);
+				{
+					sprintf(DTU_Buf, "cnnnect DC :%d,%s,%d,%s ...", ret,Dtu_config.DateCenter_ip[ ret],\
+								Dtu_config.DateCenter_port[ret],Dtu_config.protocol[ret] );
+					prnt_485( DTU_Buf);
+					if( SIM800->tcp_cnnt( SIM800, ret, Dtu_config.DateCenter_ip[ret], Dtu_config.DateCenter_port[ret]) == ERR_OK)
+					{
+						prnt_485(" succeed !\n");
+					
+					}
+					else
+					{
+						prnt_485(" failed !\n");
+					}	
+				}
 				step = 1;
 				break;
 			default:
@@ -366,6 +405,7 @@ static void dtu_conf(void)
 	char *parg;
 	int 	i_data = 0;
 	short		i = 0, j = 0;
+	char		tmpbuf[8];
 	char		com_Wordbits[4] = { '8', '9', 0, 0};
 	char		com_Paritybit[4] = { 'N', 'E', 'O', 0};
 	char		com_stopbit[4] = { '1', '2',0,0};
@@ -424,26 +464,72 @@ static void dtu_conf(void)
 			goto exit;
 		}
 		
-		else if( strcmp(pcmd ,"SVDM") == 0 )
+		else if( strcmp(pcmd ,"SVDM") == 0 || strcmp(pcmd ,"SVIP") == 0)
 		{
+			if( parg == NULL)
+			{
+				
+				goto exit;
+			}
+			if( parg[0] == '?')
+			{
+				memset( DTU_Buf, 0, DTU_BUF_LEN);
+				for( i = 0; i < IPMUX_NUM; i++)
+				{
+					sprintf(tmpbuf, "%d,", i);
+					strcat(DTU_Buf, tmpbuf);
+					strcat(DTU_Buf, Dtu_config.DateCenter_ip[ i]);
+					strcat(DTU_Buf, ",");
+					sprintf(tmpbuf, "%d,", Dtu_config.DateCenter_port[i]);
+					strcat(DTU_Buf, tmpbuf);
+					strcat(DTU_Buf, Dtu_config.protocol[i]);
+					strcat(DTU_Buf, ",");
+					
+				}
+				
+				ack_str(DTU_Buf);
+				goto exit;
+			}
+			//N, ip, port, protocol
+			
 			switch( i)
 			{
 				case 0:
 					i_data = atoi(parg);
-					if( i_data < 0 || i_data > 
-				
-				
+					if( i_data < 0 || i_data >= IPMUX_NUM)
+					{
+						ack_str( "ERROR");
+						goto exit;
+					}
+					i ++;
+					break;
+				case 1:
+					strcpy( Dtu_config.DateCenter_ip[ i_data], parg);
+					i ++;
+					break;
+				case 2:
+					Dtu_config.DateCenter_port[ i_data] = atoi(parg);
+					i++;
+					break;
+				case 3:
+					if( strcmp(parg ,"TCP") == 0 || strcmp(parg ,"UDP"))
+					{
+						strcpy( Dtu_config.protocol[ i_data], parg);
+						ack_str( "OK");
+					}
+					else
+					{
+						ack_str( "ERROR");
+						
+					}
+					goto exit;
+				default:
+					ack_str( "ERROR");
+					goto exit;
 			}
-			goto exit;
+				
+				
 		}
-		else if( strcmp(pcmd ,"SVIP") == 0)
-		{
-			
-			goto exit;
-		}
-		
-
-		
 		else if( strcmp(pcmd ,"DNIP") == 0)
 		{
 			if( parg[0] == '?')
