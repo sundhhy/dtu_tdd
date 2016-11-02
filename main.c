@@ -76,8 +76,8 @@ int main (void) {
 	
 	 
   // initialize peripherals here
-//	RCC_Configuration();
-	
+	RCC_Configuration();
+	IWDG_Configuration();
 	NVIC_Configuration();
 	
 	GPIO_Configuration();

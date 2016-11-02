@@ -922,7 +922,7 @@ static void dtu_conf(void)
 			ack_str( "OK");
 			fs_flush();
 			SIM800->shutdown(SIM800);
-			
+			os_reboot();
 			goto exit;
 		}
 		if( parg == NULL)

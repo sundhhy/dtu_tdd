@@ -29,6 +29,7 @@
 ".\objects\stm32f10x_spi.o"
 ".\objects\stm32f10x_tim.o"
 ".\objects\stm32f10x_usart.o"
+".\objects\stm32f10x_iwdg.o"
 --library_type=microlib --strict --scatter ".\Objects\dtu_tdd.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

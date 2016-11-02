@@ -33,8 +33,10 @@
  *---------------------------------------------------------------------------*/
  
 #include "cmsis_os.h"
- 
+#include "stm32f10x_iwdg.h"
+#include "osObjects.h"
 
+static int32_t	reset = 0;
 /*----------------------------------------------------------------------------
  *      RTX User configuration part BEGIN
  *---------------------------------------------------------------------------*/
@@ -226,7 +228,15 @@ void os_idle_demon (void) {
  
   for (;;) {
     /* HERE: include optional user code to be executed when no thread runs.*/
+	  if( reset == 0)
+		IWDG_ReloadCounter();
   }
+}
+
+void os_reboot(void)
+{
+	reset = 1;
+	
 }
  
 #if (OS_SYSTICK == 0)   // Functions for alternative timer as RTX kernel timer

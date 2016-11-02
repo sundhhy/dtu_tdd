@@ -96,15 +96,15 @@ int startup(gprs_t *self)
 void shutdown(gprs_t *self)
 {
 	
-	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	osDelay(100);
-	GPIO_SetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	osDelay(1500);
-	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	
-	Gprs_currentState = SHUTDOWN;
-	
-	osDelay(5000);
+	char *pp;
+	while(1)
+	{
+		strcpy( Gprs_cmd_buf, "AT+CPOWD=1\r\n" );		//正常关机
+		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,5000);
+		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
+		if( pp)
+			return;
+	}
 }
 
 int	check_simCard( gprs_t *self)

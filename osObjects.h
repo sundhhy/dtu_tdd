@@ -67,4 +67,7 @@ osMailQId qid_sample_name;                              // mail queue id
 osMailQDef (sample_name, 16, type_sample_name);         // mail queue object
 */
 
+
+void os_reboot(void);
+
 #endif  // __osObjects

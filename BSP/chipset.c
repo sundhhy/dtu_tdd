@@ -33,6 +33,7 @@
 #include "stm32f10x_flash.h"
 #include "hardwareConfig.h"
 #include "stm32f10x_dma.h"
+#include "stm32f10x_iwdg.h"
 
 #include "misc.h" /* High level functions for NVIC and SysTick (add-on to CMSIS functions) */
 static vu32 TimingDelay;
@@ -63,37 +64,30 @@ static vu32 TimingDelay;
 */
 void RCC_Configuration(void)
 {
-    ErrorStatus HSEStartUpStatus;
-    RCC_DeInit();                               /* RCC system reset(for debug purpose) */
-    RCC_HSEConfig(RCC_HSE_ON);                  /* Enable HSE */
-    HSEStartUpStatus = RCC_WaitForHSEStartUp(); /* Wait till HSE is ready */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 /*| RCC_APB1Periph_TIM3*/,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
+                           RCC_APB2Periph_GPIOC  | RCC_APB2Periph_GPIOD  | RCC_APB2Periph_GPIOE, ENABLE);
 
-    if(HSEStartUpStatus == SUCCESS)
-    {
-        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);   /* Enable Prefetch Buffer */
-        FLASH_SetLatency(FLASH_Latency_2);                      /* Flash 2 wait state */
-        RCC_HCLKConfig(RCC_SYSCLK_Div1);                        /* HCLK = SYSCLK */
-        RCC_PCLK2Config(RCC_HCLK_Div1);
-        RCC_PCLK1Config(RCC_HCLK_Div1);                         /* PCLK2 = HCLK */
-        //        RCC_PCLK1Config(RCC_HCLK_Div2);                         /* PCLK1 = HCLK/2 */
-        //注：AHB主要负责外部存储器时钟。APB2负责AD，I/O，高级TIM，串口1
-        //  APB1负责DA，USB，SPI，I2C，CAN，串口2345，普通TIM
-        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_6);    /* PLLCLK = 8MHz * 9 = 72 MHz */
-        RCC_PLLCmd(ENABLE);                                     /* Enable PLL */
-
-        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)      /* Wait till PLL is ready */
-        {
-        }
-
-        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);              /* Select PLL as system clock source */
-
-        while(RCC_GetSYSCLKSource() != 0x08)                    /* Wait till PLL is used as system clock source */
-        {
-        }
-    }
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);  //Enable UART4 clocks
+	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+	
+	
 }
 
-
+void IWDG_Configuration(void)
+{
+	
+	
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);   /* 写入0x5555,允许向狗的寄存器写入 */
+    IWDG_SetPrescaler(IWDG_Prescaler_256);          /* 时钟分频,40K/256=156HZ(6.4ms)*/
+    IWDG_SetReload(781);                            /* 喂狗时间 5s/6.4MS=781 不得超过0xfff*/
+    IWDG_ReloadCounter();                           /* 喂狗*/
+    IWDG_Enable();                                  /* 使能狗*/
+	
+}
 
 /*! System NVIC Configuration */
 void NVIC_Configuration(void)
@@ -159,7 +153,7 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 /*| RCC_APB1Periph_TIM3*/,ENABLE);
+	
     NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
@@ -178,11 +172,7 @@ void GPIO_Configuration(void)
     // device immunity against EMI/EMC
     // Enables or disables the High Speed APB(APB2) peripheral clock
 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
-                           RCC_APB2Periph_GPIOC  | RCC_APB2Periph_GPIOD  | RCC_APB2Periph_GPIOE, ENABLE);
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);  //Enable UART4 clocks
+    
 
 	
 	
@@ -311,8 +301,7 @@ void w25q_init_spi(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	SPI_InitTypeDef spi_conf;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+	
 
 	///spi gpio init
 	
