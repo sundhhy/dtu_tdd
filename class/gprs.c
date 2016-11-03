@@ -718,14 +718,13 @@ int	delete_contact( gprs_t *self, char *name)
 	return ERR_OK;
 }
 	
-
+//返回值是读取的短信的编号
 int deal_smsrecv_event( gprs_t *self, char *in_buf, char *out_buf, int *lsize, char *phno)
 {
 	
 	
-	read_phnNmbr_TextSMS( self, phno, in_buf, out_buf, lsize);
+	return read_phnNmbr_TextSMS( self, phno, in_buf, out_buf, lsize);
 	
-	return ERR_OK;
 }
 int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
 {
@@ -767,21 +766,21 @@ int	guard_serial( gprs_t *self, char *buf, int *lsize)
 		
 		return tcp_close;
 	}
-	pp = strstr((const char*)buf,"CMTI");
-	if( pp)
-	{
-		return sms_urc;
-		
-	}
-	
 	pp = strstr((const char*)buf,"RECEIVE");
 	if( pp)
 	{
 		return tcp_receive;
 	}
+//	pp = strstr((const char*)buf,"CMTI");
+//	if( pp)
+//	{
+//		return sms_urc;
+//		
+//	}
+//	return ERR_UNKOWN;
 	
-	return ERR_UNKOWN;
-	
+	//每次都去读取下短信吧，防止被垃圾短信塞满短信存储区而导致无法接收短信了
+	return sms_urc;
 }
 
 //返回第一个未处于连接状态的序号

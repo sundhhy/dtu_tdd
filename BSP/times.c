@@ -9,11 +9,11 @@ TIME2_T g_time2;
 
 
 
-static char	Set_AlarmClock_S[MAX_ALARM_TOP] = {0};
-static uint32_t	Alarmtims_s[MAX_ALARM_TOP] = {0};
-static uint32_t	AlarmStart_s[MAX_ALARM_TOP] = {0};
+static char	Set_AlarmClock_flag[MAX_ALARM_TOP] = {0};
+static uint32_t	Alarmtims_ms[MAX_ALARM_TOP] = {0};
+static uint32_t	AlarmStart_ms[MAX_ALARM_TOP] = {0};
 
-
+static uint32_t	Tick_count = 0;
 uint32_t get_time_s(void)
 {
 	return g_time2.time_s ;
@@ -33,25 +33,40 @@ void set_alarmclock_s(int alarm_id, int sec)
 	if( alarm_id >= MAX_ALARM_TOP)
 		return ;
 	
-	if( Set_AlarmClock_S[alarm_id] == 0)
+	if( Set_AlarmClock_flag[alarm_id] == 0)
 	{
 		
-		Alarmtims_s[alarm_id] = sec;
-		AlarmStart_s[alarm_id] = g_time2.time_s;
-		Set_AlarmClock_S[alarm_id] = 1;
+		Alarmtims_ms[alarm_id] = sec * 1000;
+		AlarmStart_ms[alarm_id] = g_time2.time_ms;
+		Set_AlarmClock_flag[alarm_id] = 1;
 	}
 	
 }
-int Ringing_s(int alarm_id)
+
+void set_alarmclock_ms(int alarm_id, int msec)
+{
+	if( alarm_id >= MAX_ALARM_TOP)
+		return ;
+	
+	if( Set_AlarmClock_flag[alarm_id] == 0)
+	{
+		
+		Alarmtims_ms[alarm_id] = msec;
+		AlarmStart_ms[alarm_id] = g_time2.time_ms;
+		Set_AlarmClock_flag[alarm_id] = 1;
+	}
+	
+}
+int Ringing(int alarm_id)
 {
 	if( alarm_id >= MAX_ALARM_TOP)
 		return ERR_BAD_PARAMETER;
-	if( Set_AlarmClock_S[alarm_id])
+	if( Set_AlarmClock_flag[alarm_id])
 	{
-		if( g_time2.time_s - AlarmStart_s[alarm_id] > Alarmtims_s[alarm_id])
+		if( g_time2.time_ms - AlarmStart_ms[alarm_id] >= Alarmtims_ms[alarm_id])
 		{
 			
-			Set_AlarmClock_S[alarm_id] = 0;
+			Set_AlarmClock_flag[alarm_id] = 0;
 			return ERR_OK;
 		}
 		
@@ -66,9 +81,11 @@ void TIM2_IRQHandler(void)          //定时器中断约10ms
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
     { 
 			g_time2.time_ms += 10;
-			if( g_time2.time_ms >= 1000)
+			Tick_count ++;	
+			if( Tick_count >= 100)
 			{
 				g_time2.time_s ++;
+				Tick_count = 0;
 			}   
 
 			TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update);
@@ -83,7 +100,23 @@ void clean_time2_flags(void)
    
 }
 
-
+void time_test(void)
+{
+	while(1)
+	{
+		set_alarmclock_s(0, 10);
+		while(1)
+		{
+			if( Ringing(0) == ERR_OK)
+				break;
+			 
+		}
+		
+		
+	}
+	
+	
+}
 
 
 

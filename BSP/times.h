@@ -15,5 +15,6 @@ void clean_time2_flags(void);
 uint32_t get_time_s(void);
 uint32_t get_time_ms(void);
 void set_alarmclock_s(int alarm_id, int sec);
-int Ringing_s(int alarm_id);
+int Ringing(int alarm_id);
+void time_test(void);
 #endif

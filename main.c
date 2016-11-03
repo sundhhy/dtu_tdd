@@ -18,6 +18,7 @@
 #include "stm32f10x_usart.h"
 #include "sw_filesys.h"
 #include "stdio.h"
+#include "times.h"
 
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
@@ -77,7 +78,7 @@ int main (void) {
 	 
   // initialize peripherals here
 	RCC_Configuration();
-	IWDG_Configuration();
+//	IWDG_Configuration();
 	NVIC_Configuration();
 	
 	GPIO_Configuration();
@@ -86,6 +87,9 @@ int main (void) {
 //	
 	printf(" DTU TDD start ...\n");
 
+#ifdef TDD_TIMER
+	time_test();
+#endif
 #ifdef TDD_ADC
 	printf("enter ADC test ?Y/N \n");
 	

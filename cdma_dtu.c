@@ -38,7 +38,7 @@ int Init_ThrdDtu (void) {
 	SIM800->init(SIM800);
 	s485_uart_init( &Conf_S485Usart_default);
 	
-	
+	//这里尝试启动SIM是为了能够获取默认的短信中心号码
 	//todo  :如果只是工作在本地模式并且没有焊SIM900或者没有插入SIM卡的时候，这里就会导致一直死循环，需要处理掉这个问题
 	while(retry)
 	{
@@ -83,7 +83,7 @@ static void prnt_485( char *data)
 void thrd_dtu (void const *argument) {
 	short step = 0;
 	short cnnt_seq = 0;
-
+	int retry = 20;
 	int ret = 0;
 	int lszie = 0;
 	short i = 0;
@@ -100,7 +100,7 @@ void thrd_dtu (void const *argument) {
 	set_alarmclock_s( SER485_WORKINGMODE_ALARMID, 30);
 	while( 1)
 	{
-		if( Ringing_s(SER485_WORKINGMODE_ALARMID) == ERR_OK)
+		if( Ringing(SER485_WORKINGMODE_ALARMID) == ERR_OK)
 		{
 			if( ser_confmode == 0)
 				break;
@@ -146,6 +146,39 @@ void thrd_dtu (void const *argument) {
 	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
 	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 2000);
 	s485_Uart_ioctl(S485_UART_CMD_CLR_RXBLOCK);
+	
+	
+	
+	if( Dtu_config.work_mode != MODE_LOCALRTU)
+	{
+		
+		while(retry)
+		{
+			
+			if( SIM800->check_simCard(SIM800) == ERR_OK)
+			{	
+				
+				break;
+			}
+			else if( SIM800->startup(SIM800) != ERR_OK)
+			{
+				retry--;
+				osDelay(1000);
+			}
+			else {
+				retry --;
+				osDelay(1000);
+			}
+			
+		}
+		
+	}
+	else
+		step = 2;
+	
+	
+	
+	
 	
 
 	while (1) {
@@ -202,31 +235,33 @@ void thrd_dtu (void const *argument) {
 				}
 				if( ret == sms_urc)
 				{
+					memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
 					ret = SIM800->deal_smsrecv_event( SIM800, DTU_Buf, DTU_Buf,  &lszie, Recv_PhnoeNo);
-					if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
-					{
-						dtu_conf();
-						decodeTTCP_finish();
-						
-					}
-					else if( Dtu_config.work_mode == MODE_SMS)
+					
+					
+					if( ret > 0)
 					{
 						for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 						{
 							pp = strstr((const char*)Recv_PhnoeNo, Dtu_config.admin_Phone[i]);
 							if( pp)
 							{
-								s485_Uart_write(DTU_Buf, lszie);
+								
+								if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
+								{
+									dtu_conf();
+									decodeTTCP_finish();
+									
+								}
+								else if( Dtu_config.work_mode == MODE_SMS)
+									s485_Uart_write(DTU_Buf, lszie);
 								break;
 							}
 							
 						}
-						
-						
-						
+						SIM800->delete_sms( SIM800, ret);
 					}
-					
-					
+						
 				}
 				step ++;
 				break;
@@ -263,7 +298,7 @@ void thrd_dtu (void const *argument) {
 				
 				step++;
 			case 3:
-				if( Ringing_s(HEARTBEAT_ALARMID) == ERR_OK)
+				if( Ringing(HEARTBEAT_ALARMID) == ERR_OK)
 				{
 					strcpy( DTU_Buf,  Dtu_config.heatbeat_package);
 					Heatbeat_count ++;
@@ -380,6 +415,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	
 	if( DtuCfg_file)
 	{
+		fs_lseek( DtuCfg_file, WR_SEEK_SET, 0);
 		fs_write( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
 		fs_flush();
 	}
@@ -935,6 +971,7 @@ static void dtu_conf(void)
 	}
 
 	exit:	
+	fs_lseek( DtuCfg_file, WR_SEEK_SET, 0);
 	fs_write( DtuCfg_file, (uint8_t *)&Dtu_config, sizeof( DtuCfg_t));
 	fs_flush();
 	

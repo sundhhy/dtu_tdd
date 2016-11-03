@@ -58,4 +58,5 @@
 //#define TDD_FILESYS_TEST
 
 //#define TDD_ADC
+//#define TDD_TIMER
 #endif
