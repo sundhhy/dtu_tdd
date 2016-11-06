@@ -1,7 +1,7 @@
 #ifndef __GPRS_H__
 #define __GPRS_H__
 #include "lw_oopc.h"
-
+#include "stdint.h"
 #define RETRY_TIMES	5
 
 #define IPMUX_NUM	4		//支持4路连接
@@ -11,10 +11,13 @@
 
 CLASS(gprs_t)
 {
+	
+	uint32_t	event;
+	
 	// public
 	int ( *init)( gprs_t *self);
 	
-	int (*startup)( gprs_t *self);
+	void (*startup)( gprs_t *self);
 	void (*shutdown)( gprs_t *self);
 	
 	int	(*check_simCard)( gprs_t *self);
@@ -43,11 +46,6 @@ CLASS(gprs_t)
 	int	(*get_firstCnt_seq)( gprs_t *self);
 	
 
-	//电话簿操作接口
-	int	( *create_newContact)( gprs_t *self, char *name, char *phonenum);
-	int	( *modify_contact)( gprs_t *self, char *name, char *phonenum);
-	int	( *delete_contact)( gprs_t *self, char *name);
-	
 };
 
 
@@ -66,6 +64,10 @@ typedef enum {
 	tcp_close,
 	
 }SIM_Event;
+
+#define SET_EVENT( event, flag)  ( event | ( 1 << flag) )
+#define CKECK_EVENT( event, flag)  ( event & ( 1 << flag) )
+#define CLR_EVENT( event, flag)  ( event & ~( 1 << flag) )
 
 int check_phoneNO(char *NO);
 int copy_phoneNO(char *dest_NO, char *src_NO);

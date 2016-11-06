@@ -228,14 +228,21 @@ void os_idle_demon (void) {
  
   for (;;) {
     /* HERE: include optional user code to be executed when no thread runs.*/
-	  if( reset == 0)
-		IWDG_ReloadCounter();
+	 feed_iwwg();
   }
 }
 
 void os_reboot(void)
 {
 	reset = 1;
+	
+}
+
+
+void feed_iwwg(void)
+{
+	 if( reset == 0)
+		IWDG_ReloadCounter();
 	
 }
  

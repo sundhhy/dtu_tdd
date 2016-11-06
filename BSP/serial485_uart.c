@@ -60,8 +60,13 @@ static void DMA_s485Uart_Init(void);
 **/
 int s485_uart_init(ser_485Cfg *cfg)
 {
-	SemId_s485txFinish = osSemaphoreCreate(osSemaphore(Sem_s485txFinish), 1);
-	SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), 1);
+	static char first = 0;
+	if( first == 0)
+	{
+		SemId_s485txFinish = osSemaphoreCreate(osSemaphore(Sem_s485txFinish), 1);
+		SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), 1);
+		first = 1;
+	}
 	
 
 	
@@ -106,7 +111,7 @@ int s485_Uart_write(char *data, uint16_t size)
 	DMA_s485_usart.dma_tx_base->CNDTR = (uint16_t)size; 
 	DMA_Cmd( DMA_s485_usart.dma_tx_base, ENABLE);        //¿ªÊ¼DMA·¢ËÍ
 
-	
+	osDelay(1);
 	if( S485_uart_ctl.tx_block)
 	{
 		if( S485_uart_ctl.tx_waittime_ms == 0)

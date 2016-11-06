@@ -69,5 +69,5 @@ osMailQDef (sample_name, 16, type_sample_name);         // mail queue object
 
 
 void os_reboot(void);
-
+void feed_iwwg(void);
 #endif  // __osObjects

@@ -37,6 +37,12 @@ osSemaphoreId SemId_rxFrame;                         // Semaphore ID
 uint32_t os_semaphore_cb_Sem_rxFrame[2] = { 0 }; 
 const osSemaphoreDef_t os_semaphore_def_Sem_rxFrame = { (os_semaphore_cb_Sem_rxFrame) };
 
+
+struct {
+	rxirq_cb cb;
+	void *arg;
+}GprsRxirqCB;
+
 char	GprsUart_buf[GPRS_UART_BUF_LEN];			//用于DMA接收缓存
 static struct usart_control_t {
 	short	tx_block;		//阻塞标志
@@ -82,7 +88,8 @@ int gprs_uart_init(void)
 	USART_Cmd(GPRS_USART, ENABLE);
 	
 	
-
+	GprsRxirqCB.arg = NULL;
+	GprsRxirqCB.cb = NULL;
 	
 	Gprs_uart_ctl.rx_block = 1;
 	Gprs_uart_ctl.tx_block = 1;
@@ -92,6 +99,14 @@ int gprs_uart_init(void)
 	return ERR_OK;
 }
 
+
+
+void regRxIrq_cb(rxirq_cb cb, void *arg)
+{
+	
+	GprsRxirqCB.arg = arg;
+	GprsRxirqCB.cb = cb;
+}
 
 /*!
 **
@@ -360,6 +375,9 @@ void USART3_IRQHandler(void)
 		USART_ReceiveData( USART3 ); // Clear IDLE interrupt flag bit
 		
 		osSemaphoreRelease( SemId_rxFrame);
+		
+		if( GprsRxirqCB.cb != NULL)
+			GprsRxirqCB.cb(GprsUart_buf,  GprsRxirqCB.arg);
 	}
 
 }

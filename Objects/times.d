@@ -27,3 +27,4 @@
 .\objects\times.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h
 .\objects\times.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\times.o: ..\dtu_tdd\sdhError.h
+.\objects\times.o: ..\dtu_tdd\osObjects.h

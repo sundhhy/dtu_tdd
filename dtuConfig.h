@@ -30,7 +30,7 @@
 
 typedef struct {
 	
-	char	Activestandby_mode;			//主备模式
+	char	multiCent_mode;			//多中心模式
 	char	work_mode;					//工作模式
 	uint8_t	ver[2];						//版本
 	

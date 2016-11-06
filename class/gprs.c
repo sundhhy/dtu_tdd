@@ -28,9 +28,9 @@
 
 static int set_sms2TextMode(gprs_t *self);
 static int serial_cmmn( char *buf, int bufsize, int delay_ms);
-
+void get_event(void *buf, void *arg);
 static int prepare_ip(gprs_t *self);
-static void get_sms_phNO(char *databuf, char *phbuf);
+static int get_sms_phNO(char *databuf, char *phbuf);
 
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
@@ -74,13 +74,14 @@ int init(gprs_t *self)
 	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, 800);
 	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, 2000);
 	
+	regRxIrq_cb( get_event, (void *)&self->event);
 	Gprs_state.sms_msgFromt = -1;
 	Gprs_state.sms_chrcSet = -1;
 	return ERR_OK;
 }
 
 
-int startup(gprs_t *self)
+void startup(gprs_t *self)
 {
 //	char *pp = NULL;
 //	int		retry = RETRY_TIMES;
@@ -89,7 +90,7 @@ int startup(gprs_t *self)
 	GPIO_SetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	osDelay(1100);
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	return ERR_OK;
+	return ;
 	
 }
 
@@ -269,7 +270,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 					return ERR_FAIL;
 				break;
 			case 2:
-				sprintf(Gprs_cmd_buf,"AT+CMGS=\"+86%s\"\x00D\x00A",phnNmbr);
+				sprintf(Gprs_cmd_buf,"AT+CMGS=\"%s\"\x00D\x00A",phnNmbr);
 				UART_SEND( Gprs_cmd_buf, strlen(Gprs_cmd_buf));
 				osDelay(100);
 				sms[ sms_len] = 0X1A;		//把字符串的结尾0替换成gprs模块的结束符0x1A
@@ -331,16 +332,11 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 	char  text_begin = 0, text_end = 0;
 			
 	short tmp = 0;
-	short correct = 1;
+	short legal_phno = 0;
+	int	phnoend_offset = 0;
 	
-	for( i = 0; i < strlen( phnNmbr); i ++)
-	{
-		if( phnNmbr[i] >'9' || phnNmbr[i] < '0')
-		{
-			correct = 0;
-			break;
-		}
-	}
+	if( check_phoneNO( phnNmbr) == ERR_OK)
+		legal_phno = 1;
 	
 	
 	while(1)
@@ -363,6 +359,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				break;
 			case 1:		///获取短信的总数量
 				strcpy( Gprs_cmd_buf, "AT+CPMS?\x00D\x00A" );
+//				strcpy( Gprs_cmd_buf, "AT+CNMI?\x00D\x00A" );
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				tmp = strcspn( Gprs_cmd_buf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
 				number = atoi( Gprs_cmd_buf + tmp);			///第一个数字就是短信的数量
@@ -375,21 +372,22 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
 				sprintf( in_buf, "AT+CMGR=%d\x00D\x00A", i);
-				serial_cmmn( in_buf, *len, 1);
+				serial_cmmn( in_buf, *len, 1000);
 			
 				pp = in_buf;			///假定pp的值是正常的
-				if( phnNmbr && correct)
+				if(  legal_phno)			//输入的号码合法，就进行匹配
 				{
 					pp = strstr((const char*)in_buf,phnNmbr);
 				}
-				else	//没有指定要接收短信的发送方号码时，把发送方号码放入传入的号码中去
+				else if( phnNmbr)	//没有指定要接收短信的发送方号码时，把发送方号码放入传入的号码中去
 				{
-					if( phnNmbr)
-					{
-						get_sms_phNO( in_buf, phnNmbr);
-						
-					}
 					
+					
+					phnoend_offset = get_sms_phNO( pp, phnNmbr);
+					if( phnoend_offset > 0)
+						pp += phnoend_offset ;
+					else			//找不到任何有效的号码，就不收这个短信了
+						pp = NULL;
 				}
 				
 				
@@ -432,9 +430,18 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 //todo  如果出现接收到的数据没有结尾怎么办？
 					return 0;
 				}
-				i ++;
+				pp = strstr((const char*)in_buf,"REC");		//当接收的数据中有REC的时候，可能是串口数据没收全，再试几次
+				if( pp && retry)
+				{
+					retry --;
+				}
+				else
+				{
+					retry = RETRY_TIMES;
+					i ++;
+				}
 				if( i > number)
-					return 0;
+					return ERR_FAIL;
 				break;
 			default:
 				step = 0;
@@ -538,6 +545,7 @@ int delete_sms( gprs_t *self, int seq)
 				DPRINTF("  %s ", Gprs_cmd_buf);
 				UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
 				osDelay(10);
+				retry = RETRY_TIMES * 10;
 				step++;
 			case 4:
 				
@@ -551,6 +559,7 @@ int delete_sms( gprs_t *self, int seq)
 					if( pp)
 					{
 						Ip_cnnState.cnn_state[ cnnt_num] = CNNT_ESTABLISHED;
+						osDelay(1000);
 						return ERR_OK;
 					}
 					pp = strstr((const char*)Gprs_cmd_buf,"CONNECT FAIL");
@@ -688,6 +697,7 @@ int deal_tcpclose_event( gprs_t *self, char *data, int len)
 {
 	char *pp;
 	short tmp, close_seq;
+	self->event = CLR_EVENT( self->event, tcp_close);
 	pp = strstr((const char*)data,"CLOSED");
 	if( pp)
 	{
@@ -721,9 +731,10 @@ int	delete_contact( gprs_t *self, char *name)
 //返回值是读取的短信的编号
 int deal_smsrecv_event( gprs_t *self, char *in_buf, char *out_buf, int *lsize, char *phno)
 {
-	
-	
-	return read_phnNmbr_TextSMS( self, phno, in_buf, out_buf, lsize);
+	int ret = read_phnNmbr_TextSMS( self, phno, in_buf, out_buf, lsize);
+	if( ret < 0)	//短信全部被收完才把短信事件清除
+		self->event = CLR_EVENT( self->event, sms_urc);
+	return ret;
 	
 }
 int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
@@ -731,7 +742,7 @@ int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
 	char *pp;
 	int recv_seq = -1;
 	int tmp = 0;
-	
+	self->event = CLR_EVENT( self->event, tcp_receive);
 	pp = strstr((const char*)in_buf,"RECEIVE");	
 	if( pp == NULL)
 		return ERR_FAIL;
@@ -748,29 +759,66 @@ int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
 	
 }
 
+
+void get_event(void *buf, void *arg)
+{
+	uint32_t *event ;
+	char *pp;
+	if( arg == NULL)
+		return ;
+	event = ( uint32_t *)arg;
+	
+
+	
+	
+	pp = strstr((const char*)buf,"CLOSED");
+	if( pp)
+	{
+		*event = SET_EVENT( *event, tcp_close);
+	}
+	pp = strstr((const char*)buf,"RECEIVE");
+	if( pp)
+	{
+		*event = SET_EVENT( *event, tcp_receive);
+	}
+	pp = strstr((const char*)buf,"CMTI");
+	if( pp)
+	{
+		*event = SET_EVENT( *event, sms_urc);
+		
+	}
+	
+	
+	
+}
+
 int	guard_serial( gprs_t *self, char *buf, int *lsize)
 {
 	int ret;
 	char *pp;
 	
+	if( self->event == 0)
+		return 0;
 	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
 	ret = UART_RECV( buf, *lsize);
 	gprs_Uart_ioctl( GPRS_UART_CMD_SET_RXBLOCK);
-	if( ret < 1)
-	 return ERR_FAIL;
+	return self->event;
 	
-	*lsize = ret;
-	pp = strstr((const char*)buf,"CLOSED");
-	if( pp)
-	{
-		
-		return tcp_close;
-	}
-	pp = strstr((const char*)buf,"RECEIVE");
-	if( pp)
-	{
-		return tcp_receive;
-	}
+//	if( ret < 1)
+//	 return ERR_UNKOWN;
+//	
+//	*lsize = ret;
+//	pp = strstr((const char*)buf,"CLOSED");
+//	if( pp)
+//	{
+//		
+//		return tcp_close;
+//	}
+//	pp = strstr((const char*)buf,"RECEIVE");
+//	if( pp)
+//	{
+//		return tcp_receive;
+//	}
 //	pp = strstr((const char*)buf,"CMTI");
 //	if( pp)
 //	{
@@ -780,7 +828,7 @@ int	guard_serial( gprs_t *self, char *buf, int *lsize)
 //	return ERR_UNKOWN;
 	
 	//每次都去读取下短信吧，防止被垃圾短信塞满短信存储区而导致无法接收短信了
-	return sms_urc;
+//	return sms_urc;
 }
 
 //返回第一个未处于连接状态的序号
@@ -866,7 +914,7 @@ int read_smscAddr(gprs_t *self, char *addr)
 	short step = 0;
 	short	retry = RETRY_TIMES;
 	char *pp = NULL;
-	int tmp = 0;
+//	int tmp = 0;
 	if( check_phoneNO( addr) == ERR_OK)
 		return ERR_OK;
 	
@@ -897,7 +945,7 @@ int read_smscAddr(gprs_t *self, char *addr)
 				if( pp)
 				{
 					//+CSCA: "+8613800571500",145
-					tmp = strcspn( pp, "0123456789");	
+//					tmp = strcspn( pp, "0123456789");	
 					
 					pp = strstr((const char*)Gprs_cmd_buf,"+CSCA:");
 					if( pp)
@@ -995,6 +1043,8 @@ int check_phoneNO(char *NO)
 	int j = 0;
 	char *pp = NO;
 	
+	if( NO == NULL)
+		return ERR_BAD_PARAMETER;
 	//跳过"
 	if( NO[0] == '\"')
 	{
@@ -1020,11 +1070,24 @@ int check_phoneNO(char *NO)
 int copy_phoneNO(char *dest_NO, char *src_NO)
 {
 	int j = 0;
-	while(src_NO[j] != '\0')
+	char *pp = src_NO;
+	
+	//跳过"
+	if( src_NO[0] == '\"')
 	{
-		if( src_NO[j] >= '0' && src_NO[j] <= '9')
+		pp ++;
+	}
+	//跳过区号：+86
+	if( pp[0] == '+')
+	{
+		pp += 3;
+	}
+	
+	while(pp[j] != '\0')
+	{
+		if( pp[j] >= '0' && pp[j] <= '9')
 		{
-			dest_NO[j] = src_NO[j];
+			dest_NO[j] = pp[j];
 		}
 		else
 			break;
@@ -1371,20 +1434,25 @@ static int prepare_ip(gprs_t *self)
 //+CMGR: "REC UNREAD","+8613918186089", "","02/01/30,20:40:31+00",This is a test
 //
 //OK
-static void get_sms_phNO(char *databuf, char *phbuf)
+//返回值是号码结束的地方
+static int get_sms_phNO(char *databuf, char *phbuf)
 {
 	
 	char *pp;
-	int tmp;
+	int tmp = 0;
 	
 	tmp = strcspn( databuf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
+	if( tmp == strlen( databuf))			//找不到数字
+		return -1;
 	pp = databuf + tmp;	///第一个数字就是号码开始的地方
-	while( *pp != '"')
+	while( *pp != '"' && *pp != '\0')
 	{
 		*phbuf = *pp;
 		phbuf ++;
 		pp ++;
+		tmp ++;
 	}
+	return tmp;
 }
 
 
@@ -1413,7 +1481,4 @@ FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(tcp_test, tcp_test);
 
-FUNCTION_SETTING(create_newContact, create_newContact);
-FUNCTION_SETTING(modify_contact, modify_contact);
-FUNCTION_SETTING(delete_contact, delete_contact);
 END_CTOR

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "cmsis_os.h"
 #include "sdhError.h"
+#include "osObjects.h"
+
 TIME2_T g_time2;
 
 
@@ -13,7 +15,6 @@ static char	Set_AlarmClock_flag[MAX_ALARM_TOP] = {0};
 static uint32_t	Alarmtims_ms[MAX_ALARM_TOP] = {0};
 static uint32_t	AlarmStart_ms[MAX_ALARM_TOP] = {0};
 
-static uint32_t	Tick_count = 0;
 uint32_t get_time_s(void)
 {
 	return g_time2.time_s ;
@@ -37,7 +38,7 @@ void set_alarmclock_s(int alarm_id, int sec)
 	{
 		
 		Alarmtims_ms[alarm_id] = sec * 1000;
-		AlarmStart_ms[alarm_id] = g_time2.time_ms;
+		AlarmStart_ms[alarm_id] = g_time2.time_ms + g_time2.time_s *1000;
 		Set_AlarmClock_flag[alarm_id] = 1;
 	}
 	
@@ -52,18 +53,21 @@ void set_alarmclock_ms(int alarm_id, int msec)
 	{
 		
 		Alarmtims_ms[alarm_id] = msec;
-		AlarmStart_ms[alarm_id] = g_time2.time_ms;
+
+		AlarmStart_ms[alarm_id] = g_time2.time_ms + g_time2.time_s *1000;
 		Set_AlarmClock_flag[alarm_id] = 1;
 	}
 	
 }
 int Ringing(int alarm_id)
 {
+	uint32_t now_ms = 0;
 	if( alarm_id >= MAX_ALARM_TOP)
 		return ERR_BAD_PARAMETER;
 	if( Set_AlarmClock_flag[alarm_id])
 	{
-		if( g_time2.time_ms - AlarmStart_ms[alarm_id] >= Alarmtims_ms[alarm_id])
+		now_ms = g_time2.time_ms + g_time2.time_s *1000;
+		if( now_ms - AlarmStart_ms[alarm_id] >= Alarmtims_ms[alarm_id])
 		{
 			
 			Set_AlarmClock_flag[alarm_id] = 0;
@@ -81,11 +85,11 @@ void TIM2_IRQHandler(void)          //定时器中断约10ms
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
     { 
 			g_time2.time_ms += 10;
-			Tick_count ++;	
-			if( Tick_count >= 100)
+			if( g_time2.time_ms >= 1000)
 			{
 				g_time2.time_s ++;
-				Tick_count = 0;
+				g_time2.time_ms = 0;
+				feed_iwwg();
 			}   
 
 			TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update);

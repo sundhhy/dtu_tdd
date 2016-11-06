@@ -16,7 +16,6 @@
 #include "stdlib.h"
 #include "stm32f10x_spi.h"
 #include "osObjects.h"                      // RTOS object definitions
-#include "CircularBuffer.h"
 #include <stdarg.h>
 
 //sCircularBuffer	Spi_rxCb;
