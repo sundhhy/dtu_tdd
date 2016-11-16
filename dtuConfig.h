@@ -14,14 +14,15 @@
 #define MODE_BEGIN					0
 #define MODE_END					4
 
-#define DTU_CONFGILE_MAIN_VER		1
-#define DTU_CONFGILE_SUB_VER		9
+#define DTU_CONFGILE_MAIN_VER		2
+#define DTU_CONFGILE_SUB_VER		0
 
 #define DEF_PROTOTOCOL "TCP"
 #define DEF_IPADDR "chitic.zicp.net"
 #define DEF_PORTNUM 18897
 #define	DTUCONF_filename	"dtu.cfg"
 
+#define PHONENO_LEN				16
 #define ADMIN_PHNOE_NUM			4
 #define REGPACKAGE_LEN			32
 #define HEATBEATPACKAGE_LEN			32
@@ -42,8 +43,8 @@ typedef struct {
 	char	protocol[IPMUX_NUM][4];
 	char	registry_package[32];
 	
-	char	sim_NO[12];
-	char	admin_Phone[ADMIN_PHNOE_NUM][12];
+	char	sim_NO[PHONENO_LEN];
+	char	admin_Phone[ADMIN_PHNOE_NUM][PHONENO_LEN];
 	
 	char			output_mode;
 	char			chn_type[3];

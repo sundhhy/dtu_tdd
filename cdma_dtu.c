@@ -197,8 +197,9 @@ void thrd_dtu (void const *argument) {
 				sprintf(DTU_Buf, "cnnnect DC :%d,%s,%d,%s ...", cnnt_seq,Dtu_config.DateCenter_ip[ cnnt_seq],\
 								Dtu_config.DateCenter_port[cnnt_seq],Dtu_config.protocol[cnnt_seq] );
 				prnt_485( DTU_Buf);
-				ret = SIM800->tcp_cnnt( SIM800, cnnt_seq, Dtu_config.DateCenter_ip[cnnt_seq], Dtu_config.DateCenter_port[cnnt_seq]);
-				if( Dtu_config.multiCent_mode == 0 && ret == ERR_OK)
+				ret = SIM800->tcpip_cnnt( SIM800, cnnt_seq,Dtu_config.protocol[cnnt_seq], Dtu_config.DateCenter_ip[cnnt_seq], Dtu_config.DateCenter_port[cnnt_seq]);
+				
+				if( ret == ERR_OK)
 				{
 					while(1)
 					{
@@ -217,13 +218,8 @@ void thrd_dtu (void const *argument) {
 							break;
 						}
 					}
-					
-					step ++;
-					break;
-				}
-				if( ret == ERR_OK)
-				{
-					prnt_485(" succeed !\n");
+					if( Dtu_config.multiCent_mode == 0)
+						step ++;
 					
 				}
 				else
@@ -267,11 +263,7 @@ void thrd_dtu (void const *argument) {
 					{
 						for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 						{
-							if( check_phoneNO( Dtu_config.admin_Phone[i]) == ERR_OK)
-								pp = strstr((const char*)Recv_PhnoeNo, Dtu_config.admin_Phone[i]);
-							else
-								pp = NULL;
-							if( pp)
+							if( compare_phoneNO( Recv_PhnoeNo, Dtu_config.admin_Phone[i]) == 0)
 							{
 								TText_source = TTEXTSRC_SMS( i);
 								if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
@@ -311,13 +303,18 @@ void thrd_dtu (void const *argument) {
 				{
 					SIM800->sendto_tcp( SIM800, i, DTU_Buf, ret);
 					
-				}			
+				}		
+				///发生了tcpip数据之后不能立即发送短信，所以延迟一会再发短信
+				if(  Dtu_config.work_mode == MODE_SMS)	
+				{
+					osDelay(2000);
+				}					
 				if(  Dtu_config.work_mode == MODE_SMS)
 				{
 					for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 					{
 						SIM800->send_text_sms( SIM800, Dtu_config.admin_Phone[i], DTU_Buf);
-						
+						osDelay(2000);
 					}
 					
 					
@@ -364,7 +361,7 @@ void thrd_dtu (void const *argument) {
 						sprintf(DTU_Buf, "cnnnect DC :%d,%s,%d,%s ...", ret,Dtu_config.DateCenter_ip[ ret],\
 									Dtu_config.DateCenter_port[ret],Dtu_config.protocol[ret] );
 						prnt_485( DTU_Buf);
-						if( SIM800->tcp_cnnt( SIM800, ret, Dtu_config.DateCenter_ip[ret], Dtu_config.DateCenter_port[ret]) == ERR_OK)
+						if( SIM800->tcpip_cnnt( SIM800, ret, Dtu_config.protocol[cnnt_seq], Dtu_config.DateCenter_ip[ret], Dtu_config.DateCenter_port[ret]) == ERR_OK)
 						{
 							prnt_485(" succeed !\n");
 						

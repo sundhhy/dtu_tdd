@@ -171,18 +171,50 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>235</LineNumber>
+          <LineNumber>288</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134221786</Address>
+          <Address>134240824</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\BSP\spi.c</Filename>
+          <Filename>.\class\gprs.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\dtu_tdd\class/gprs.c\288</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>293</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134240844</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\class\gprs.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\class/gprs.c\293</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>299</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134240862</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\class\gprs.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\class/gprs.c\299</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -199,20 +231,15 @@
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Dtu_config</ItemText>
+          <ItemText>Recv_PhnoeNo</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Recv_PhnoeNo</ItemText>
-        </Ww>
-        <Ww>
-          <count>4</count>
-          <WinNumber>1</WinNumber>
           <ItemText>Dtu_config</ItemText>
         </Ww>
         <Ww>
-          <count>5</count>
+          <count>4</count>
           <WinNumber>1</WinNumber>
           <ItemText>SIM800</ItemText>
         </Ww>
@@ -221,32 +248,32 @@
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>sms</ItemText>
+          <ItemText>phnNmbr</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>Ip_cnnState</ItemText>
+          <ItemText>Gprs_cmd_buf</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>2</WinNumber>
-          <ItemText>Gprs_cmd_buf</ItemText>
+          <ItemText>GprsUart_buf</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>2</WinNumber>
-          <ItemText>S485Uart_buf</ItemText>
+          <ItemText>phnNmbr</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>2</WinNumber>
-          <ItemText>GprsUart_buf</ItemText>
+          <ItemText>DTU_Buf</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>2</WinNumber>
-          <ItemText>phnNmbr</ItemText>
+          <ItemText>parg</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

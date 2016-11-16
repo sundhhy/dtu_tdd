@@ -30,7 +30,7 @@ CLASS(gprs_t)
 	int (*set_smscAddr)(gprs_t *self, char *addr);
 	int (*get_apn)( gprs_t *self, char *buf);
 	int (*set_dns_ip)( gprs_t *self, char *dns_ip);
-	int (*tcp_cnnt)( gprs_t *self, int cnnt_num, char *addr, int portnum);
+	int (*tcpip_cnnt)( gprs_t *self, int cnnt_num, char *prtl, char *addr, int portnum);
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
 	int (*deal_smsrecv_event)( gprs_t *self, char *in_buf, char *out_buf, int *lsize, char *phno);
@@ -69,6 +69,7 @@ typedef enum {
 #define CKECK_EVENT( event, flag)  ( event & ( 1 << flag) )
 #define CLR_EVENT( event, flag)  ( event & ~( 1 << flag) )
 
+int compare_phoneNO(char *NO1, char *NO2);
 int check_phoneNO(char *NO);
 int copy_phoneNO(char *dest_NO, char *src_NO);
 int check_ip(char *ip);

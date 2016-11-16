@@ -67,7 +67,8 @@ static struct {
 }Ip_cnnState;
 
 static char Gprs_cmd_buf[CMDBUF_LEN];
-static int	Gprs_currentState = SHUTDOWN;
+static short	Gprs_currentState = SHUTDOWN;
+static short	FlagSmsReady = 0;
 int init(gprs_t *self)
 {
 	gprs_uart_init();
@@ -217,13 +218,14 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 	int  sms_len = strlen( sms);
 	if( phnNmbr == NULL || sms == NULL)
 		return ERR_BAD_PARAMETER;
+	if( FlagSmsReady == 0)
+		return ERR_UNINITIALIZED;
 	if( Gprs_currentState < INIT_FINISH_OK)
 		return ERR_UNINITIALIZED;
-	for( i = 0; i < strlen( phnNmbr); i ++)
-	{
-		if( phnNmbr[i] >'9' || phnNmbr[i] < '0')
-			return ERR_BAD_PARAMETER;	
-	}
+	
+	if( check_phoneNO( phnNmbr) != ERR_OK)
+		return ERR_BAD_PARAMETER;	
+	
 	
 	
 	while(1)
@@ -242,7 +244,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				osDelay(100);
 				retry --;
 				if( retry == 0)
-					return ERR_FAIL;
+					return ERR_DEV_TIMEOUT;
 				break;
 			case 1:		//set char mode
 				if( Gprs_state.sms_chrcSet == SMS_CHRC_SET_GSM)
@@ -267,7 +269,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				osDelay(100);
 				retry --;
 				if( retry == 0)
-					return ERR_FAIL;
+					return ERR_DEV_TIMEOUT;
 				break;
 			case 2:
 				sprintf(Gprs_cmd_buf,"AT+CMGS=\"%s\"\x00D\x00A",phnNmbr);
@@ -294,7 +296,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				osDelay(200);
 				retry --;
 				if( retry == 0)
-					return ERR_FAIL;
+					return ERR_DEV_TIMEOUT;
 				
 		} //switch
 		
@@ -504,7 +506,7 @@ int delete_sms( gprs_t *self, int seq)
  * @retval	ERR_BAD_PARAMETER 输入的连接号超出范围
  * @retval	ERR_ADDR_ERROR 输入的地址无法连接
  */
- int tcp_cnnt( gprs_t *self, int cnnt_num, char *addr, int portnum)
+ int tcpip_cnnt( gprs_t *self, int cnnt_num,char *prtl, char *addr, int portnum)
  {
 	short step = 0;
 	short	retry = RETRY_TIMES;
@@ -787,6 +789,13 @@ void get_event(void *buf, void *arg)
 		*event = SET_EVENT( *event, sms_urc);
 		
 	}
+	pp = strstr((const char*)buf,"SMS Ready");
+	if( pp)
+	{
+		FlagSmsReady = 1;
+		
+		
+	}
 	
 	
 	
@@ -1067,9 +1076,53 @@ int check_phoneNO(char *NO)
 	return ERR_BAD_PARAMETER;
 	
 }
+int compare_phoneNO(char *NO1, char *NO2)
+{
+	int j = 0;
+	char *pp1 = NO1;
+	char *pp2 = NO2;
+	
+	if( NO1 == NULL || NO2 == NULL)
+		return ERR_BAD_PARAMETER;
+	//跳过"
+	if( NO1[0] == '\"')
+	{
+		pp1 ++;
+	}
+	//跳过区号：+86
+	if( pp1[0] == '+')
+	{
+		pp1 += 3;
+	}
+	
+	//跳过"
+	if( NO2[0] == '\"')
+	{
+		pp2 ++;
+	}
+	//跳过区号：+86
+	if( pp2[0] == '+')
+	{
+		pp2 += 3;
+	}
+	if( strlen( pp1 ) != strlen( pp2 ))
+		return 1;
+	while( pp1[j] != '\0' && pp2[j] != '\0')
+	{
+		if( pp1[j] != pp2[j])
+			return 1;
+		j ++;
+		
+	}
+	
+	return 0;
+	
+}
+
 int copy_phoneNO(char *dest_NO, char *src_NO)
 {
 	int j = 0;
+	int count = 0;
 	char *pp = src_NO;
 	
 	//跳过"
@@ -1080,7 +1133,12 @@ int copy_phoneNO(char *dest_NO, char *src_NO)
 	//跳过区号：+86
 	if( pp[0] == '+')
 	{
-		pp += 3;
+		
+		dest_NO[0] = pp[0];
+		dest_NO[1] = pp[1];
+		dest_NO[2] = pp[2];
+		j = 3;
+		
 	}
 	
 	while(pp[j] != '\0')
@@ -1092,11 +1150,12 @@ int copy_phoneNO(char *dest_NO, char *src_NO)
 		else
 			break;
 		j ++;
-		if( j == 11)
-			return ERR_OK;
+		count ++;
+		if( count == 11)
+			break;
 	}
-	
-	return ERR_BAD_PARAMETER;
+	dest_NO[j] = 0;
+	return ERR_OK;
 	
 }
 //从字符串中能找到4个点，并且没有处理数字以外的数据，就认为ip地址是合法的
@@ -1202,7 +1261,7 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 		switch( step)
 		{
 			case 0:
-				ret = self->tcp_cnnt( self, i, tets_addr, portnum);
+				ret = self->tcpip_cnnt( self, i, "TCP", tets_addr, portnum);
 				if( ret < 0)
 					return ERR_FAIL;
 				step ++;
@@ -1255,7 +1314,7 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 				{
 					ret = self->deal_tcpclose_event( self, buf, len);
 					if( ret >= 0)
-						self->tcp_cnnt( self, ret, tets_addr, portnum);
+						self->tcpip_cnnt( self, ret, "TCP", tets_addr, portnum);
 				}
 				break;
 			default:break;
@@ -1444,7 +1503,10 @@ static int get_sms_phNO(char *databuf, char *phbuf)
 	tmp = strcspn( databuf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
 	if( tmp == strlen( databuf))			//找不到数字
 		return -1;
-	pp = databuf + tmp;	///第一个数字就是号码开始的地方
+	if( databuf[ tmp -1] == '+')		//说明带区号
+		tmp --;
+	
+	pp = databuf + tmp;	///第一个数字就是号码开始的地方,把区号页放入号码中
 	while( *pp != '"' && *pp != '\0')
 	{
 		*phbuf = *pp;
@@ -1475,7 +1537,7 @@ FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
 FUNCTION_SETTING(read_smscAddr, read_smscAddr);
 FUNCTION_SETTING(set_smscAddr, set_smscAddr);
 FUNCTION_SETTING(set_dns_ip, set_dns_ip);
-FUNCTION_SETTING(tcp_cnnt, tcp_cnnt);
+FUNCTION_SETTING(tcpip_cnnt, tcpip_cnnt);
 FUNCTION_SETTING(sendto_tcp, sendto_tcp);
 FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
