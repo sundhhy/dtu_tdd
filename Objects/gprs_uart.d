@@ -1,6 +1,6 @@
 .\objects\gprs_uart.o: BSP\gprs_uart.c
 .\objects\gprs_uart.o: BSP\chipset.h
-.\objects\gprs_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\gprs_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\gprs_uart.o: BSP\gprs_uart.h
 .\objects\gprs_uart.o: BSP\hardwareConfig.h
 .\objects\gprs_uart.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
@@ -27,7 +27,7 @@
 .\objects\gprs_uart.o: ..\dtu_tdd\sdhError.h
 .\objects\gprs_uart.o: ..\dtu_tdd\osObjects.h
 .\objects\gprs_uart.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h
-.\objects\gprs_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
-.\objects\gprs_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
-.\objects\gprs_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\gprs_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\gprs_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\gprs_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\gprs_uart.o: ..\dtu_tdd\def.h

@@ -90,7 +90,8 @@ void thrd_dtu (void const *argument) {
 	int ret = 0;
 	int lszie = 0;
 	short i = 0;
-	short ser_confmode = 0;
+	char ser_confmode = 0;
+	char count = 0;
 	char *pp;
 	
 	
@@ -237,9 +238,9 @@ void thrd_dtu (void const *argument) {
 				lszie = DTU_BUF_LEN;
 				
  				ret = SIM800->guard_serial( SIM800, DTU_Buf, &lszie);
-				if( CKECK_EVENT( ret, tcp_receive) )
+				if( CKECK_EVENT( SIM800, tcp_receive) )
 				{
-					ret = SIM800->deal_tcprecv_event( SIM800, DTU_Buf,  DTU_Buf, &lszie);
+					SIM800->deal_tcprecv_event( SIM800, DTU_Buf,  DTU_Buf, &lszie);
 					if( lszie >= 0)
 					{
 						
@@ -249,11 +250,11 @@ void thrd_dtu (void const *argument) {
 				
 					
 				}
-				if( CKECK_EVENT( ret, tcp_close) )
+				if( CKECK_EVENT( SIM800, tcp_close) )
 				{
-					ret = SIM800->deal_tcpclose_event( SIM800, DTU_Buf, lszie);
+					SIM800->deal_tcpclose_event( SIM800, DTU_Buf, lszie);
 				}
-				if( CKECK_EVENT( ret, sms_urc) )
+				if( CKECK_EVENT( SIM800, sms_urc) )
 				{
 					memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
 					ret = SIM800->deal_smsrecv_event( SIM800, DTU_Buf, DTU_Buf,  &lszie, Recv_PhnoeNo);
@@ -311,10 +312,24 @@ void thrd_dtu (void const *argument) {
 				}					
 				if(  Dtu_config.work_mode == MODE_SMS)
 				{
-					for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
+					for( i = 0; i < ADMIN_PHNOE_NUM; )
 					{
-						SIM800->send_text_sms( SIM800, Dtu_config.admin_Phone[i], DTU_Buf);
-						osDelay(2000);
+						if( SIM800->send_text_sms( SIM800, Dtu_config.admin_Phone[i], DTU_Buf) == ERR_FAIL)
+						{
+							count ++;
+							if( count > 3)	//÷ÿ ‘3¥Œ
+							{
+								i ++;
+								count = 0;
+							}
+							
+						}
+						else
+						{
+							i ++;
+							count = 0;
+						}
+//						osDelay(2000);
 					}
 					
 					

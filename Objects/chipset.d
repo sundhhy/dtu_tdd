@@ -1,10 +1,10 @@
 .\objects\chipset.o: BSP\chipset.c
-.\objects\chipset.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-.\objects\chipset.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\chipset.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\chipset.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\chipset.o: BSP\chipset.h
 .\objects\chipset.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\stm32f10x.h
 .\objects\chipset.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include\core_cm3.h
-.\objects\chipset.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\chipset.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\chipset.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include\core_cmInstr.h
 .\objects\chipset.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include\cmsis_armcc.h
 .\objects\chipset.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include\core_cmFunc.h

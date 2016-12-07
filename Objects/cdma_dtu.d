@@ -1,11 +1,11 @@
 .\objects\cdma_dtu.o: cdma_dtu.c
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h
-.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
-.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\cdma_dtu.o: osObjects.h
 .\objects\cdma_dtu.o: .\class\gprs.h
 .\objects\cdma_dtu.o: .\lw_oopc_v1.2\lw_oopc.h
-.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\cdma_dtu.o: sdhError.h
 .\objects\cdma_dtu.o: dtuConfig.h
 .\objects\cdma_dtu.o: .\BSP\serial485_uart.h
@@ -29,9 +29,9 @@
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_tim.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\misc.h
-.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\cdma_dtu.o: .\BSP\debug.h
-.\objects\cdma_dtu.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\cdma_dtu.o: .\sdh_lib\sw_filesys.h
 .\objects\cdma_dtu.o: .\sdh_lib\hw_w25q.h
 .\objects\cdma_dtu.o: .\BSP\hardwareConfig.h

@@ -1,6 +1,6 @@
 .\objects\serial485_uart.o: BSP\serial485_uart.c
 .\objects\serial485_uart.o: BSP\chipset.h
-.\objects\serial485_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\serial485_uart.o: BSP\serial485_uart.h
 .\objects\serial485_uart.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\serial485_uart.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\stm32f10x.h
@@ -27,7 +27,7 @@
 .\objects\serial485_uart.o: ..\dtu_tdd\sdhError.h
 .\objects\serial485_uart.o: ..\dtu_tdd\osObjects.h
 .\objects\serial485_uart.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h
-.\objects\serial485_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
-.\objects\serial485_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
-.\objects\serial485_uart.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\serial485_uart.o: ..\dtu_tdd\def.h

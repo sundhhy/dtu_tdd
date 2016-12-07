@@ -66,7 +66,7 @@ typedef enum {
 }SIM_Event;
 
 #define SET_EVENT( event, flag)  ( event | ( 1 << flag) )
-#define CKECK_EVENT( event, flag)  ( event & ( 1 << flag) )
+#define CKECK_EVENT( target, flag)  ( target->event & ( 1 << flag) )
 #define CLR_EVENT( event, flag)  ( event & ~( 1 << flag) )
 
 int compare_phoneNO(char *NO1, char *NO2);

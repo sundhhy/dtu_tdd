@@ -38,6 +38,7 @@ static int get_sms_phNO(char *databuf, char *phbuf);
 //fromt
 #define SMS_MSG_PDU		0
 #define SMS_MSG_TEXT		1
+#define SMS_MSG_ERR			2
 
 #define SMS_CHRC_SET_GSM	0
 #define SMS_CHRC_SET_UCS2	1
@@ -69,6 +70,8 @@ static struct {
 static char Gprs_cmd_buf[CMDBUF_LEN];
 static short	Gprs_currentState = SHUTDOWN;
 static short	FlagSmsReady = 0;
+static int RcvSms_seq = 0;
+
 int init(gprs_t *self)
 {
 	gprs_uart_init();
@@ -290,6 +293,11 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
 				if(pp)
 				{
+//					sprintf(Gprs_cmd_buf,"AT+CMGS=\"%s\"\x00D\x00A",phnNmbr);
+//					UART_SEND( Gprs_cmd_buf, strlen(Gprs_cmd_buf));
+//					osDelay(100);
+//					UART_SEND( sms, sms_len + 1);
+					Gprs_state.sms_msgFromt = SMS_MSG_ERR;
 					return ERR_FAIL;
 				}
 					
@@ -367,7 +375,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				number = atoi( Gprs_cmd_buf + tmp);			///第一个数字就是短信的数量
 				if( number < 1)
 					return 0;	
-				i = 1;		///短信从1开始读取
+				i = RcvSms_seq;		///短信从短信CMIT通知开始读取
 				step ++;
 				retry = RETRY_TIMES;
 				break;
@@ -761,6 +769,13 @@ int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
 	
 }
 
+static int get_cmit_seq( char *data)
+{
+	//+CMTI:"SM",1
+	int tmp;
+	tmp = strcspn( data, "0123456789");	
+	return  atoi( data + tmp);
+}
 
 void get_event(void *buf, void *arg)
 {
@@ -788,6 +803,7 @@ void get_event(void *buf, void *arg)
 	{
 		*event = SET_EVENT( *event, sms_urc);
 		
+		RcvSms_seq = get_cmit_seq(pp);
 	}
 	pp = strstr((const char*)buf,"SMS Ready");
 	if( pp)
@@ -803,13 +819,12 @@ void get_event(void *buf, void *arg)
 
 int	guard_serial( gprs_t *self, char *buf, int *lsize)
 {
-	int ret;
 	char *pp;
 	
 	if( self->event == 0)
 		return 0;
 	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
-	ret = UART_RECV( buf, *lsize);
+	UART_RECV( buf, *lsize);
 	gprs_Uart_ioctl( GPRS_UART_CMD_SET_RXBLOCK);
 	return self->event;
 	
