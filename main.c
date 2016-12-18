@@ -256,6 +256,7 @@ int main (void) {
 		return ERR_FAIL;
 		
 	}
+	printf(" mount filesystem succeed! \n");
 	
 	Init_ThrdDtu();
   // create 'thread' functions that start executing,

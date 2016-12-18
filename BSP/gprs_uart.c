@@ -49,6 +49,7 @@ static struct usart_control_t {
 	short	rx_block;
 	
 	uint16_t	recv_size;
+	uint16_t	totle_size;
 	short	tx_waittime_ms;
 	short	rx_waittime_ms;
 	
@@ -367,6 +368,9 @@ void USART3_IRQHandler(void)
 		DMA_Cmd(DMA_gprs_usart.dma_rx_base, DISABLE);       // 关闭DMA
 		DMA_ClearFlag( DMA_gprs_usart.dma_rx_flag );           // 清除DMA标志
 		Gprs_uart_ctl.recv_size = GPRS_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
+		Gprs_uart_ctl.totle_size += Gprs_uart_ctl.recv_size;
+		 
+		
 		DMA_gprs_usart.dma_rx_base->CNDTR = GPRS_UART_BUF_LEN;
 		DMA_Cmd( DMA_gprs_usart.dma_rx_base, ENABLE);
 		

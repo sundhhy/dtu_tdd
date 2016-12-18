@@ -28,13 +28,13 @@ uint32_t get_time_ms(void)
 }
 
 //一次只允许3设置一个闹钟
-//当已经设置了一个闹钟以后，只有它已经获取以后才能再次设置新的闹钟
+//当已经设置了一个闹钟以后，再次设置闹钟将本次时间作为闹钟起始时间
 void set_alarmclock_s(int alarm_id, int sec)
 {
 	if( alarm_id >= MAX_ALARM_TOP)
 		return ;
 	
-	if( Set_AlarmClock_flag[alarm_id] == 0)
+//	if( Set_AlarmClock_flag[alarm_id] == 0)
 	{
 		
 		Alarmtims_ms[alarm_id] = sec * 1000;
@@ -49,7 +49,7 @@ void set_alarmclock_ms(int alarm_id, int msec)
 	if( alarm_id >= MAX_ALARM_TOP)
 		return ;
 	
-	if( Set_AlarmClock_flag[alarm_id] == 0)
+//	if( Set_AlarmClock_flag[alarm_id] == 0)
 	{
 		
 		Alarmtims_ms[alarm_id] = msec;

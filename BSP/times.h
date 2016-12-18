@@ -2,7 +2,9 @@
 #define _TIMERS_H_
 #include "stdint.h"
 //#define MAX_COMMA 256
-#define MAX_ALARM_TOP		4			//支持的最多的闹铃数量
+#define MAX_ALARM_TOP		8			//支持的最多的闹铃数量 4个TCP连接和1个模式转换闹铃共5个
+#define ALARM_CHGWORKINGMODE	0			//485从默认模式转换到工作模式的时间
+#define ALARM_GPRSLINK(n)		(1+n)			//GPRS link
 typedef struct TIME2_T
 {
 	uint32_t		time_ms;

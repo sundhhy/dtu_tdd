@@ -94,6 +94,10 @@ void startup(gprs_t *self)
 	GPIO_SetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	osDelay(1100);
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
+	
+	
+	
+	
 	return ;
 	
 }
@@ -1400,6 +1404,18 @@ static int set_sms2TextMode(gprs_t *self)
 	
 }
 
+static int check_apn(char *apn)
+{
+	while( *apn != '\0' && apn != NULL)
+	{
+		if( *apn++ != ' ')
+			return 1;
+	}
+	
+	return 0;
+	
+}
+
 static int prepare_ip(gprs_t *self)
 {
 	short retry = RETRY_TIMES;
@@ -1439,7 +1455,7 @@ static int prepare_ip(gprs_t *self)
 				break;
 			
 			case 1:
-				if( Dtu_config.apn[0] == 0)
+				if( !check_apn( Dtu_config.apn))
 					strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置默认gprs接入点
 				else
 					sprintf( Gprs_cmd_buf, "AT+CSTT=%s\x00D\x00A", Dtu_config.apn );

@@ -14,9 +14,8 @@
  *      Thread 1 'Thread_Name': Sample thread
  *---------------------------------------------------------------------------*/
 #define DTU_BUF_LEN		512
-#define HEARTBEAT_ALARMID		0
-#define SER485_WORKINGMODE_ALARMID		1			//485从默认模式转换到工作模式的时间
- 
+
+
 static int get_dtuCfg(DtuCfg_t *conf);
 static void dtu_conf(void);
 
@@ -39,27 +38,27 @@ static int TText_source = TTEXTSRC_485;
 
 
 int Init_ThrdDtu (void) {
-	int retry = 20;
+//	int retry = 20;
 	SIM800 = gprs_t_new();
 	SIM800->init(SIM800);
 	s485_uart_init( &Conf_S485Usart_default);
 	
 	//这里尝试启动SIM是为了能够获取默认的短信中心号码
 	//todo  :如果只是工作在本地模式并且没有焊SIM900或者没有插入SIM卡的时候，这里就会导致一直死循环，需要处理掉这个问题
-	while(retry)
-	{
-		SIM800->startup(SIM800);
-		if( SIM800->check_simCard(SIM800) == ERR_OK)
-		{	
-			
-			break;
-		}
-		else {
-			retry --;
-			osDelay(1000);
-		}
-		
-	}
+//	while(retry)
+//	{
+//		SIM800->startup(SIM800);
+//		if( SIM800->check_simCard(SIM800) == ERR_OK)
+//		{	
+//			
+//			break;
+//		}
+//		else {
+//			retry --;
+//			osDelay(1000);
+//		}
+//		
+//	}
 	
 	
 	get_dtuCfg( &Dtu_config);
@@ -93,18 +92,18 @@ void thrd_dtu (void const *argument) {
 	char ser_confmode = 0;
 	char count = 0;
 	char *pp;
-	
+	int retry = 20;
 	
 	//刚上电的时候等待进入配置的模式
 	//如果指定时间内不能进入配置模式，就退出等待，进入正常工作模式
 	//一旦进入配置模式，就不会退出到工作模式。用户只能通过重启来退出配置模式
-	strcpy( DTU_Buf, " wait for signal ...");
-	s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
-	osDelay(10);
-	set_alarmclock_s( SER485_WORKINGMODE_ALARMID, 3);
+//	strcpy( DTU_Buf, " wait for signal ...");
+//	s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
+//	osDelay(10);
+	set_alarmclock_s( ALARM_CHGWORKINGMODE, 3);
 	while( 1)
 	{
-		if( Ringing(SER485_WORKINGMODE_ALARMID) == ERR_OK)
+		if( Ringing(ALARM_CHGWORKINGMODE) == ERR_OK)
 		{
 			if( ser_confmode == 0)
 				break;
@@ -146,6 +145,24 @@ void thrd_dtu (void const *argument) {
 		
 	}
 	
+	sprintf(DTU_Buf, "starting up gprs ...");
+	prnt_485( DTU_Buf);
+	while(retry)
+	{
+		SIM800->startup(SIM800);
+		if( SIM800->check_simCard(SIM800) == ERR_OK)
+		{	
+			sprintf(DTU_Buf, "succeed !\n");
+			break;
+		}
+		else {
+			retry --;
+			osDelay(1000);
+		}
+		
+	}	
+	
+	
 	//使用用户的配置来重新启动485串口
 	s485_uart_init( &Dtu_config.the_485cfg);
 	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
@@ -156,9 +173,7 @@ void thrd_dtu (void const *argument) {
 	
 	
 	
-	
-	
-	set_alarmclock_s( HEARTBEAT_ALARMID, Dtu_config.hartbeat_timespan_s);
+
 
 	sprintf(DTU_Buf, "Begain DTU thread ...");
 	prnt_485( DTU_Buf);
@@ -207,7 +222,11 @@ void thrd_dtu (void const *argument) {
 						ret = SIM800->sendto_tcp( SIM800, cnnt_seq, Dtu_config.registry_package, strlen(Dtu_config.registry_package) );
 						if( ret == ERR_OK)
 						{
+							//启动心跳包的闹钟
+							set_alarmclock_s( ALARM_GPRSLINK(cnnt_seq), Dtu_config.hartbeat_timespan_s);
 							prnt_485("succeed !\n");
+							if( Dtu_config.multiCent_mode == 0)
+								step ++;
 							break;
 							
 						}
@@ -219,8 +238,7 @@ void thrd_dtu (void const *argument) {
 							break;
 						}
 					}
-					if( Dtu_config.multiCent_mode == 0)
-						step ++;
+					
 					
 				}
 				else
@@ -237,13 +255,15 @@ void thrd_dtu (void const *argument) {
 			case 3:
 				lszie = DTU_BUF_LEN;
 				
- 				ret = SIM800->guard_serial( SIM800, DTU_Buf, &lszie);
+ 				SIM800->guard_serial( SIM800, DTU_Buf, &lszie);
 				if( CKECK_EVENT( SIM800, tcp_receive) )
 				{
-					SIM800->deal_tcprecv_event( SIM800, DTU_Buf,  DTU_Buf, &lszie);
+
+					ret = SIM800->deal_tcprecv_event( SIM800, DTU_Buf,  DTU_Buf, &lszie);
 					if( lszie >= 0)
 					{
-						
+						//接收到数据就将闹钟的起始时间设置为当前时间
+						set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
 						DPRINTF(" recv : %s \n", DTU_Buf);
 						s485_Uart_write(DTU_Buf, lszie);
 					}
@@ -337,16 +357,18 @@ void thrd_dtu (void const *argument) {
 				
 				step++;
 			case 5:
-				if( Ringing(HEARTBEAT_ALARMID) == ERR_OK)
+				for( i = 0; i < IPMUX_NUM; i ++)
 				{
-					set_alarmclock_s( HEARTBEAT_ALARMID, Dtu_config.hartbeat_timespan_s);
-					for( i = 0; i < IPMUX_NUM; i ++)
+					if( Ringing(ALARM_GPRSLINK(i)) == ERR_OK)
 					{
-						SIM800->sendto_tcp( SIM800, i, Dtu_config.heatbeat_package, strlen( Dtu_config.heatbeat_package));
+						set_alarmclock_s( ALARM_GPRSLINK(i), Dtu_config.hartbeat_timespan_s);
 						
-					}
-					
-				}	
+						SIM800->sendto_tcp( SIM800, i, Dtu_config.heatbeat_package, strlen( Dtu_config.heatbeat_package));
+							
+						
+						
+					}	
+				}
 				step++;
 				break;
 			case 6:
@@ -418,6 +440,8 @@ static void set_default( DtuCfg_t *conf)
 	conf->dtu_id = 1;
 	conf->rtu_addr = 1;
 	strcpy( conf->sim_NO,"13888888888");
+	strcpy( conf->apn," ");
+	strcpy( conf->smscAddr," ");
 	sprintf( conf->registry_package,"XMYN%09d%s",conf->dtu_id, conf->sim_NO);
 	conf->heatbeat_package[0] = '$';
 	conf->heatbeat_package[1] = '\0';
@@ -913,9 +937,9 @@ static void dtu_conf(void)
 			}
 			if( parg[0] == '?')
 			{
-				SIM800->get_apn( SIM800, DTU_Buf);
+//				SIM800->get_apn( SIM800, DTU_Buf);
 				
-					
+				strcpy( DTU_Buf, Dtu_config.apn);	
 				ack_str( DTU_Buf);
 					
 				
@@ -945,7 +969,7 @@ static void dtu_conf(void)
 		{
 			if( *parg == '?')
 			{
-				SIM800->read_smscAddr( SIM800, Dtu_config.smscAddr);
+//				SIM800->read_smscAddr( SIM800, Dtu_config.smscAddr);
 				ack_str( Dtu_config.smscAddr);
 			}
 			else

@@ -15,7 +15,7 @@
 #define MODE_END					4
 
 #define DTU_CONFGILE_MAIN_VER		2
-#define DTU_CONFGILE_SUB_VER		0
+#define DTU_CONFGILE_SUB_VER		1
 
 #define DEF_PROTOTOCOL "TCP"
 #define DEF_IPADDR "chitic.zicp.net"
