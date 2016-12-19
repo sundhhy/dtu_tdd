@@ -6,6 +6,7 @@
 .\objects\cdma_dtu.o: .\class\gprs.h
 .\objects\cdma_dtu.o: .\lw_oopc_v1.2\lw_oopc.h
 .\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\cdma_dtu.o: .\sdh_lib\CircularBuffer.h
 .\objects\cdma_dtu.o: sdhError.h
 .\objects\cdma_dtu.o: dtuConfig.h
 .\objects\cdma_dtu.o: .\BSP\serial485_uart.h

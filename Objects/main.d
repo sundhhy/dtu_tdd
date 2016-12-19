@@ -7,6 +7,7 @@
 .\objects\main.o: .\class\gprs.h
 .\objects\main.o: .\lw_oopc_v1.2\lw_oopc.h
 .\objects\main.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\main.o: .\sdh_lib\CircularBuffer.h
 .\objects\main.o: .\BSP\hardwareConfig.h
 .\objects\main.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
 .\objects\main.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\stm32f10x.h

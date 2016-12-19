@@ -92,6 +92,7 @@ void thrd_dtu (void const *argument) {
 	char ser_confmode = 0;
 	char count = 0;
 	char *pp;
+	void *gprs_event;
 	int retry = 20;
 	
 	//刚上电的时候等待进入配置的模式
@@ -253,56 +254,61 @@ void thrd_dtu (void const *argument) {
 				}
 				break;
 			case 3:
-				lszie = DTU_BUF_LEN;
-				
- 				SIM800->guard_serial( SIM800, DTU_Buf, &lszie);
-				if( CKECK_EVENT( SIM800, tcp_receive) )
+				while(1)
 				{
-
-					ret = SIM800->deal_tcprecv_event( SIM800, DTU_Buf,  DTU_Buf, &lszie);
-					if( lszie >= 0)
+					lszie = DTU_BUF_LEN;
+					ret = SIM800->get_event( SIM800, &gprs_event);
+					if( ret != ERR_OK)
+					{	
+						break;
+					}
+					
+					ret = SIM800->linkRecv_seq( SIM800, gprs_event);
+					if( ret >= 0)
 					{
 						//接收到数据就将闹钟的起始时间设置为当前时间
 						set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
-						DPRINTF(" recv : %s \n", DTU_Buf);
-						s485_Uart_write(DTU_Buf, lszie);
+					}
+					if( CKECK_EVENT( gprs_event, sms_urc) )
+					{
+						
+						memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
+						ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Recv_PhnoeNo);
+						
+						
+						if( ret > 0)
+						{
+							for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
+							{
+								if( compare_phoneNO( Recv_PhnoeNo, Dtu_config.admin_Phone[i]) == 0)
+								{
+									TText_source = TTEXTSRC_SMS( i);
+									if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
+									{
+										dtu_conf();
+										decodeTTCP_finish();
+										
+									}
+									else if( Dtu_config.work_mode == MODE_SMS)
+										s485_Uart_write(DTU_Buf, lszie);
+									break;
+								}
+								
+							}
+							SIM800->delete_sms( SIM800, ret);
+						
+						}
+					
+					}	//if( CKECK_EVENT( gprs_event, sms_urc) )
+					else 
+					{
+						
+						SIM800->deal_link_event( SIM800, gprs_event, DTU_Buf,  &lszie);
 					}
 				
-					
-				}
-				if( CKECK_EVENT( SIM800, tcp_close) )
-				{
-					SIM800->deal_tcpclose_event( SIM800, DTU_Buf, lszie);
-				}
-				if( CKECK_EVENT( SIM800, sms_urc) )
-				{
-					memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
-					ret = SIM800->deal_smsrecv_event( SIM800, DTU_Buf, DTU_Buf,  &lszie, Recv_PhnoeNo);
-					
-					
-					if( ret > 0)
-					{
-						for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
-						{
-							if( compare_phoneNO( Recv_PhnoeNo, Dtu_config.admin_Phone[i]) == 0)
-							{
-								TText_source = TTEXTSRC_SMS( i);
-								if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
-								{
-									dtu_conf();
-									decodeTTCP_finish();
-									
-								}
-								else if( Dtu_config.work_mode == MODE_SMS)
-									s485_Uart_write(DTU_Buf, lszie);
-								break;
-							}
-							
-						}
-						SIM800->delete_sms( SIM800, ret);
-					}
-						
-				}
+					SIM800->free_event( SIM800, gprs_event);
+				
+				}	//while(1)
 				step ++;
 				break;
 			case 4:

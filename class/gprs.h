@@ -2,18 +2,26 @@
 #define __GPRS_H__
 #include "lw_oopc.h"
 #include "stdint.h"
+#include "CircularBuffer.h"
+
 #define RETRY_TIMES	5
 
 #define IPMUX_NUM	4		//支持4路连接
+#define EVENT_MAX	16		//最大缓存事件数
 
 //SIM900 ATCMD
 #define AT_SET_DNSIP  "AT+CDNSCFG=" 
 
+typedef struct {
+	short		type;
+	short		arg;
+	uint8_t 	*data;
+}gprs_event_t;
+
 CLASS(gprs_t)
 {
-	
-	uint32_t	event;
-	
+
+	sCircularBuffer		*event_cbuf;
 	// public
 	int ( *init)( gprs_t *self);
 	
@@ -24,6 +32,7 @@ CLASS(gprs_t)
 	
 	int	(*send_text_sms)(  gprs_t *self, char *phnNmbr, char *sms);
 	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *in_buf, char *out_buf, int *len);
+	int	(*read_seq_TextSMS)( gprs_t *self, char *phnNmbr, int seq, char *buf, int *len);
 	int (*delete_sms)( gprs_t *self, int seq);
 	
 	int (*read_smscAddr)(gprs_t *self, char *addr);
@@ -33,7 +42,7 @@ CLASS(gprs_t)
 	int (*tcpip_cnnt)( gprs_t *self, int cnnt_num, char *prtl, char *addr, int portnum);
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
-	int (*deal_smsrecv_event)( gprs_t *self, char *in_buf, char *out_buf, int *lsize, char *phno);
+	
 	int (*deal_tcpclose_event)( gprs_t *self, char *data, int len);
 	int (*deal_tcprecv_event)( gprs_t *self, char *in_buf, char *out_buf, int *len);
 	
@@ -41,7 +50,12 @@ CLASS(gprs_t)
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
-	int	(*guard_serial)( gprs_t *self, char *buf, int *lsize);
+	int (*get_event)( gprs_t *self, void **event);
+	int (*linkRecv_seq)( gprs_t *self, void *event);
+	void (*deal_link_event)( gprs_t *self, void *event, char *out_buf, int *lsize);
+	int (*deal_smsrecv_event)( gprs_t *self,  void *event, char *buf, int *lsize, char *phno);
+	void (*free_event)( gprs_t *self, void *event);
+	
 	int	(*get_firstDiscnt_seq)( gprs_t *self);
 	int	(*get_firstCnt_seq)( gprs_t *self);
 	
@@ -66,7 +80,7 @@ typedef enum {
 }SIM_Event;
 
 #define SET_EVENT( event, flag)  ( event | ( 1 << flag) )
-#define CKECK_EVENT( target, flag)  ( target->event & ( 1 << flag) )
+#define CKECK_EVENT( target, flag)  ( ( ( gprs_event_t*)target)->type ==  flag)
 #define CLR_EVENT( event, flag)  ( event & ~( 1 << flag) )
 
 int compare_phoneNO(char *NO1, char *NO2);
