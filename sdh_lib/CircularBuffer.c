@@ -62,7 +62,7 @@ int	CBRead( sCircularBuffer *cb, tElement *data)
 	if( CBLengthData( cb) == 0)	return ERR_RES_UNAVAILABLE;
 	*data = cb->buf[ cb->read];
 	CPU_IRQ_OFF;
-	cb->read = ( cb->read + 1) & ( cb->read - 1);  //必须是原子的
+	cb->read = ( cb->read + 1) & ( cb->size - 1);  //必须是原子的
 	CPU_IRQ_ON;
 	return ERR_OK;
 }

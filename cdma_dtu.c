@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
  *---------------------------------------------------------------------------*/
-#define DTU_BUF_LEN		512
+#define DTU_BUF_LEN		256
 
 
 static int get_dtuCfg(DtuCfg_t *conf);

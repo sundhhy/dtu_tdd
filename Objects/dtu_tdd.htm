@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Mon Dec 19 22:59:18 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Wed Dec 21 23:00:15 2016
 <BR><P>
 <H3>Maximum Stack Usage =        280 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -479,7 +479,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[43]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
 <LI><a href="#[48]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;deal_tcpclose_event
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_cmit_seq
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;decodeTTCP_begin
 </UL>
 
@@ -490,9 +490,8 @@ Global Symbols
 <LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_errno_addr
 </UL>
 <BR>[Called By]<UL><LI><a href="#[43]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
-<LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
 <LI><a href="#[48]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;deal_tcpclose_event
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_cmit_seq
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
@@ -1199,7 +1198,8 @@ Global Symbols
 <P><STRONG><a name="[3d]"></a>free</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, malloc.o(i.free))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = free
 </UL>
-<BR>[Called By]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_event
+<BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
+<LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_event
 <LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
 <LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 </UL>
@@ -1391,7 +1391,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 </UL>
 
-<P><STRONG><a name="[3e]"></a>init</STRONG> (Thumb, 92 bytes, Stack size 8 bytes, gprs.o(i.init))
+<P><STRONG><a name="[3e]"></a>init</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, gprs.o(i.init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = init &rArr; gprs_uart_init &rArr; USART_Init &rArr; RCC_GetClocksFreq
 </UL>
 <BR>[Calls]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;regRxIrq_cb
@@ -1633,15 +1633,15 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_Tick_Handler
 </UL>
 
-<P><STRONG><a name="[58]"></a>read_event</STRONG> (Thumb, 246 bytes, Stack size 32 bytes, gprs.o(i.read_event))
-<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = read_event &rArr; get_cmit_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
+<P><STRONG><a name="[58]"></a>read_event</STRONG> (Thumb, 276 bytes, Stack size 32 bytes, gprs.o(i.read_event))
+<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = read_event &rArr; get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CBWrite
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_cmit_seq
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
 <LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
-<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
+<LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.init)
 </UL>
@@ -2587,8 +2587,8 @@ Local Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 </UL>
 
-<P><STRONG><a name="[f0]"></a>get_cmit_seq</STRONG> (Thumb, 22 bytes, Stack size 16 bytes, gprs.o(i.get_cmit_seq))
-<BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = get_cmit_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
+<P><STRONG><a name="[f0]"></a>get_seq</STRONG> (Thumb, 30 bytes, Stack size 16 bytes, gprs.o(i.get_seq))
+<BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcspn
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi

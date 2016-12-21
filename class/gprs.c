@@ -79,7 +79,7 @@ int init(gprs_t *self)
 	gprs_uart_init();
 	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, 800);
 	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, 2000);
-	
+	self->event_cbuf = malloc( sizeof( sCircularBuffer ));
 	self->event_cbuf->buf = malloc( EVENT_MAX * sizeof(tElement));
 	if( self->event_cbuf->buf == NULL)
 	{
@@ -909,12 +909,14 @@ int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
 
 
 
-static int get_cmit_seq( char *data)
+static int get_seq( char **data)
 {
 	//+CMTI:"SM",1
 	int tmp;
-	tmp = strcspn( data, "0123456789");	
-	return  atoi( data + tmp);
+	char *buf = *data;
+	tmp = strcspn( buf, "0123456789");	
+	*data += tmp;
+	return  atoi( buf + tmp);
 }
 
 void read_event(void *buf, void *arg)
@@ -927,11 +929,6 @@ void read_event(void *buf, void *arg)
 		return ;
 	
 	cthis = ( gprs_t *)arg;
-	
-
-	event = malloc(	sizeof( gprs_event_t));
-	if( event == NULL)
-		return ;
 	pp = strstr((const char*)buf,"CLOSED");
 	if( pp)
 	{
@@ -939,11 +936,18 @@ void read_event(void *buf, void *arg)
 		if( event)
 		{
 			event->type = tcp_close;
-			event->arg = atoi( pp);
-			CBWrite( cthis->event_cbuf, event);
+			event->arg = get_seq(&pp);
+			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+			{
+				
+				goto CB_WRFAIL;
+				
+			}
+			
 		}
+		
 	}
-	//+RECEIVE:0,6 \n
+	//+RECEIVE,0,6:\0D\0A
 	//123456
 	pp = strstr((const char*)buf,"RECEIVE");
 	if( pp)
@@ -953,9 +957,9 @@ void read_event(void *buf, void *arg)
 		{
 			
 			event->type = tcp_receive;
-			event->arg = atoi( pp);
-			pp = strstr(buf,",");
-			tmp = atoi( pp) ;
+			event->arg = get_seq(&pp);;
+			pp = strstr(pp,",");
+			tmp = get_seq(&pp); ;
 			event->data = malloc( tmp + 1);
 			if( event->data)
 			{
@@ -967,8 +971,14 @@ void read_event(void *buf, void *arg)
 				event->data[tmp] = '\0';
 	
 			}
-			CBWrite( cthis->event_cbuf, event);
+			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+			{
+				
+				goto CB_WRFAIL;
+				
+			}
 		}
+		
 		
 	}
 	pp = strstr((const char*)buf,"CMTI");
@@ -979,12 +989,111 @@ void read_event(void *buf, void *arg)
 		if( event)
 		{
 			event->type = sms_urc;
-			event->arg = get_cmit_seq(pp);;
-			CBWrite( cthis->event_cbuf, event);
+			event->arg = get_seq(&pp);
+			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+			{
+				
+				goto CB_WRFAIL;
+				
+			}
 		}
 		
 		
+		
 	}
+		
+	
+	
+	
+	
+	
+//	while(pp)
+//	{
+//		pp = strstr((const char*)pp,"CLOSED");
+//		if( pp)
+//		{
+//			event = malloc(	sizeof( gprs_event_t));
+//			if( event)
+//			{
+//				event->type = tcp_close;
+//				event->arg = get_seq(&pp);
+//				if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+//				{
+//					
+//					goto CB_WRFAIL;
+//					
+//				}
+//				continue;
+//			}
+//			else
+//			{
+//				break;
+//			}
+//		}
+//		//+RECEIVE,0,6:\0D\0A
+//		//123456
+//		pp = strstr((const char*)pp,"RECEIVE");
+//		if( pp)
+//		{
+//			event = malloc(	sizeof( gprs_event_t));
+//			if( event)
+//			{
+//				
+//				event->type = tcp_receive;
+//				event->arg = get_seq(&pp);;
+//				pp = strstr(pp,",");
+//				tmp = get_seq(&pp); ;
+//				event->data = malloc( tmp + 1);
+//				if( event->data)
+//				{
+//					
+//					while( *pp != '\x00A')
+//						pp++;
+//					
+//					memcpy( event->data, pp + 1, tmp);
+//					event->data[tmp] = '\0';
+//		
+//				}
+//				if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+//				{
+//					
+//					goto CB_WRFAIL;
+//					
+//				}
+//				continue;
+//			}
+//			else
+//			{
+//				break;
+//			}
+//			
+//		}
+//		pp = strstr((const char*)pp,"CMTI");
+//		if( pp)
+//		{
+//			
+//			event = malloc(	sizeof( gprs_event_t));
+//			if( event)
+//			{
+//				event->type = sms_urc;
+//				event->arg = get_seq(&pp);
+//				if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+//				{
+//					
+//					goto CB_WRFAIL;
+//					
+//				}
+//				continue;
+//			}
+//			else
+//			{
+//				break;
+//			}
+//			
+//			
+//		}
+//		
+//	}
 	pp = strstr((const char*)buf,"SMS Ready");
 	if( pp)
 	{
@@ -993,7 +1102,12 @@ void read_event(void *buf, void *arg)
 		
 	}
 	
+	return ;
 	
+	CB_WRFAIL:
+		if( event->data)
+			free( event->data);
+		free( event);
 	
 }
 

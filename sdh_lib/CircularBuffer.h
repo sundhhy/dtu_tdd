@@ -5,9 +5,10 @@
 typedef void* tElement;	
 typedef struct {
 	tElement	*buf;
-	uint16_t	size;		//必须是2的幂
+	uint32_t	size;		//必须是2的幂
 	uint16_t	read;		//当前的读位置
 	uint16_t	write;		//当前的写位置
+	
 }sCircularBuffer;
 
 #define CPU_IRQ_OFF	

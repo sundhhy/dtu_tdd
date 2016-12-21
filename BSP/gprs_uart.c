@@ -364,24 +364,32 @@ void USART3_IRQHandler(void)
 	if(USART_GetITStatus(USART3, USART_IT_IDLE) != RESET)  // 空闲中断
 	{
 
+
 		
 		DMA_Cmd(DMA_gprs_usart.dma_rx_base, DISABLE);       // 关闭DMA
 		DMA_ClearFlag( DMA_gprs_usart.dma_rx_flag );           // 清除DMA标志
+		
+		
+		if( GprsRxirqCB.cb != NULL)
+			GprsRxirqCB.cb(GprsUart_buf,  GprsRxirqCB.arg);
+		
 		Gprs_uart_ctl.recv_size = GPRS_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
 		Gprs_uart_ctl.totle_size += Gprs_uart_ctl.recv_size;
 		 
 		
 		DMA_gprs_usart.dma_rx_base->CNDTR = GPRS_UART_BUF_LEN;
 		DMA_Cmd( DMA_gprs_usart.dma_rx_base, ENABLE);
-		
 		clear_idle = GPRS_USART->SR;
 		clear_idle = GPRS_USART->DR;
 		USART_ReceiveData( USART3 ); // Clear IDLE interrupt flag bit
 		
-		osSemaphoreRelease( SemId_rxFrame);
 		
-		if( GprsRxirqCB.cb != NULL)
-			GprsRxirqCB.cb(GprsUart_buf,  GprsRxirqCB.arg);
+		osSemaphoreRelease( SemId_rxFrame);
+
+		
+		
+		
+		
 	}
 
 }
