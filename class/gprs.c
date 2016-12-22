@@ -837,21 +837,7 @@ int recvform_tcp( gprs_t *self, char *buf, int *lsize)
 	#endif
 	return 0;
 }
-int deal_tcpclose_event( gprs_t *self, char *data, int len)
-{
-	char *pp;
-	short tmp, close_seq;
-//	self->event = CLR_EVENT( self->event, tcp_close);
-	pp = strstr((const char*)data,"CLOSED");
-	if( pp)
-	{
-		tmp = strcspn( data, "0123456789");	
-		close_seq = atoi( data + tmp);
-		Ip_cnnState.cnn_state[ close_seq] = CNNT_DISCONNECT;
-		return close_seq;
-	}
-	return ERR_BAD_PARAMETER;
-}
+
 
 
 
@@ -877,35 +863,49 @@ int	delete_contact( gprs_t *self, char *name)
 //返回值是读取的短信的编号
 int deal_smsrecv_event( gprs_t *self, void *event, char *buf, int *lsize, char *phno)
 {
-	gprs_event_t *t_event = ( gprs_event_t *)event;
-	int ret = self->read_seq_TextSMS( self, phno, t_event->arg, buf, lsize);
-	if( ret == ERR_OK)
-		return t_event->arg;
-	else
-		return ERR_FAIL;
+	gprs_event_t *this_event = ( gprs_event_t *)event;
+	int ret = 0;
+	if( CKECK_EVENT( this_event, sms_urc) )
+	{
+		ret = self->read_seq_TextSMS( self, phno, this_event->arg, buf, lsize);
+		if( ret == ERR_OK)
+			return this_event->arg;
+		
+	}
+	return ERR_FAIL;
 }
-int deal_tcprecv_event( gprs_t *self, char *in_buf, char *out_buf, int *len)
+int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 {
-//	char *pp;
-//	int recv_seq = -1;
-//	int tmp = 0;
-//	self->event = CLR_EVENT( self->event, tcp_receive);
-//	pp = strstr((const char*)in_buf,"RECEIVE");	
-//	if( pp == NULL)
-//		return ERR_FAIL;
-//	
-//	tmp = strcspn( pp, "0123456789");	
-//	recv_seq = atoi( pp + tmp);
-//	*len = atoi( pp + tmp + 2);
-//	while( *pp != '\x00A')
-//		pp++;
-//	
-//	memcpy( out_buf, pp + 1, *len);
-//	out_buf[ *len] = 0;
-//	return recv_seq;
-	return 0;
+	
+	int tmp = 0;
+	gprs_event_t *this_event = (gprs_event_t *)event;
+	if( CKECK_EVENT( this_event, tcp_receive) )
+	{
+		tmp = strlen( (const char *)this_event->data) + 1;
+		if( *len > tmp)
+			*len = tmp;
+		memcpy( buf, this_event->data, *len);
+		
+		return this_event->arg;
+		
+	}
+	
+	return ERR_FAIL;
 }
+int deal_tcpclose_event( gprs_t *self, void *event)
+{
 
+	
+	gprs_event_t *this_event = ( gprs_event_t *)event;
+	if( CKECK_EVENT( this_event, tcp_close) )
+	{
+		
+		Ip_cnnState.cnn_state[ this_event->arg] = CNNT_DISCONNECT;
+		return this_event->arg;
+	}
+	
+	return ERR_FAIL;
+}
 
 
 
@@ -1151,40 +1151,7 @@ int get_event( gprs_t *self, void **event)
 	//每次都去读取下短信吧，防止被垃圾短信塞满短信存储区而导致无法接收短信了
 //	return sms_urc;
 }
-int linkRecv_seq( gprs_t *self, void *event)
-{
-	gprs_event_t *this_event = (gprs_event_t *)event;
-	if( CKECK_EVENT( this_event, tcp_receive) )
-	{
-		return this_event->arg;
-		
-	}
-	
-	return ERR_FAIL;
-}
-void deal_link_event( gprs_t *self, void *event, char *out_buf, int *lsize)
-{
-	int tmp = 0;
-	gprs_event_t *this_event = (gprs_event_t *)event;
-	if( CKECK_EVENT( this_event, tcp_receive) )
-	{
-		tmp = sizeof( this_event->data);
-		if( *lsize > tmp)
-			*lsize = tmp;
-		memcpy( out_buf, this_event->data, *lsize);
-		
-		return ;
-		
-	}
-	if( CKECK_EVENT( this_event, tcp_close) )
-	{
-		
-		Ip_cnnState.cnn_state[ this_event->arg] = CNNT_DISCONNECT;
-		return ;
-	}
-	
-	
-}
+
 
 void free_event( gprs_t *self, void *event)
 {
@@ -1671,9 +1638,9 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 				}
 				if( ret == tcp_close)
 				{
-					ret = self->deal_tcpclose_event( self, buf, len);
-					if( ret >= 0)
-						self->tcpip_cnnt( self, ret, "TCP", tets_addr, portnum);
+//					ret = self->deal_tcpclose_event( self, buf, len);
+//					if( ret >= 0)
+//						self->tcpip_cnnt( self, ret, "TCP", tets_addr, portnum);
 				}
 				break;
 			default:break;
@@ -1903,12 +1870,14 @@ FUNCTION_SETTING(delete_sms, delete_sms);
 FUNCTION_SETTING(sms_test, sms_test);
 
 FUNCTION_SETTING(get_apn, get_apn);
+
+FUNCTION_SETTING(get_event, get_event);
 FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
 FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
-FUNCTION_SETTING(get_event, get_event);
-FUNCTION_SETTING(linkRecv_seq, linkRecv_seq);
-FUNCTION_SETTING(deal_link_event, deal_link_event);
+FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(free_event, free_event);
+
+
 FUNCTION_SETTING(get_firstDiscnt_seq, get_firstDiscnt_seq);
 FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
 FUNCTION_SETTING(read_smscAddr, read_smscAddr);
@@ -1916,7 +1885,6 @@ FUNCTION_SETTING(set_smscAddr, set_smscAddr);
 FUNCTION_SETTING(set_dns_ip, set_dns_ip);
 FUNCTION_SETTING(tcpip_cnnt, tcpip_cnnt);
 FUNCTION_SETTING(sendto_tcp, sendto_tcp);
-FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
 FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(tcp_test, tcp_test);
 

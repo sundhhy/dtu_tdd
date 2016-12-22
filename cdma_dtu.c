@@ -260,56 +260,54 @@ void thrd_dtu (void const *argument) {
 					ret = SIM800->get_event( SIM800, &gprs_event);
 					if( ret != ERR_OK)
 					{	
+						step ++;
 						break;
 					}
-					
-					ret = SIM800->linkRecv_seq( SIM800, gprs_event);
+					ret = SIM800->deal_tcprecv_event( SIM800, gprs_event, DTU_Buf,  &lszie);
 					if( ret >= 0)
 					{
 						//接收到数据就将闹钟的起始时间设置为当前时间
 						set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
+						s485_Uart_write( DTU_Buf, lszie);
+//						prnt_485("recv: ");
+//						prnt_485(DTU_Buf);
+						DPRINTF("rx:[%d] %s \n", ret, DTU_Buf);
+						SIM800->free_event( SIM800, gprs_event);
+						continue;
 					}
-					if( CKECK_EVENT( gprs_event, sms_urc) )
-					{
-						
-						memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
-						ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Recv_PhnoeNo);
-						
-						
-						if( ret > 0)
-						{
-							for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
-							{
-								if( compare_phoneNO( Recv_PhnoeNo, Dtu_config.admin_Phone[i]) == 0)
-								{
-									TText_source = TTEXTSRC_SMS( i);
-									if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
-									{
-										dtu_conf();
-										decodeTTCP_finish();
-										
-									}
-									else if( Dtu_config.work_mode == MODE_SMS)
-										s485_Uart_write(DTU_Buf, lszie);
-									break;
-								}
-								
-							}
-							SIM800->delete_sms( SIM800, ret);
-						
-						}
 					
-					}	//if( CKECK_EVENT( gprs_event, sms_urc) )
-					else 
+					
+					memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
+					ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Recv_PhnoeNo);				
+					if( ret > 0)
 					{
-						
-						SIM800->deal_link_event( SIM800, gprs_event, DTU_Buf,  &lszie);
+						for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
+						{
+							if( compare_phoneNO( Recv_PhnoeNo, Dtu_config.admin_Phone[i]) == 0)
+							{
+								TText_source = TTEXTSRC_SMS( i);
+								if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
+								{
+									dtu_conf();
+									decodeTTCP_finish();
+									
+								}
+								else if( Dtu_config.work_mode == MODE_SMS)
+									s485_Uart_write(DTU_Buf, lszie);
+								break;
+							}
+							
+						}
+						SIM800->delete_sms( SIM800, ret);
+						SIM800->free_event( SIM800, gprs_event);
+						continue;
 					}
-				
+					
+					SIM800->deal_tcpclose_event( SIM800, gprs_event);
 					SIM800->free_event( SIM800, gprs_event);
 				
 				}	//while(1)
-				step ++;
+				
 				break;
 			case 4:
 				//MODE_LOCALRTU 之下不需要执行其他步骤，只需要读取485的数据并处理即可
