@@ -20,7 +20,7 @@
 #define DEF_PROTOTOCOL "TCP"
 #define DEF_IPADDR "chitic.zicp.net"
 #define DEF_PORTNUM 18897
-#define	DTUCONF_filename	"dtu.cfg"
+#define	DTUCONF_filename	"sys.cfg"
 
 #define PHONENO_LEN				16
 #define ADMIN_PHNOE_NUM			4

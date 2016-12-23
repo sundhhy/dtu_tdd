@@ -49,7 +49,7 @@ I (.\lw_oopc_v1.2\lw_oopc.h)(0x57E69510)
 I (D:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5475F300)
 I (.\sdh_lib\CircularBuffer.h)(0x585A955A)
 I (sdhError.h)(0x57F8E267)
-I (dtuConfig.h)(0x5854D0B9)
+I (dtuConfig.h)(0x585D2195)
 I (.\BSP\serial485_uart.h)(0x580DF18E)
 I (d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h)(0x52F9EB20)
 I (d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\stm32f10x.h)(0x53BA0D60)
@@ -113,7 +113,7 @@ I (.\BSP\gprs_uart.h)(0x581F32F5)
 I (..\dtu_tdd\sdhError.h)(0x57F8E267)
 I (D:\Keil_v5\ARM\ARMCC\include\string.h)(0x5475F300)
 I (..\dtu_tdd\def.h)(0x57E69510)
-I (..\dtu_tdd\dtuConfig.h)(0x5854D0B9)
+I (..\dtu_tdd\dtuConfig.h)(0x585D2195)
 I (.\BSP\serial485_uart.h)(0x580DF18E)
 F (.\class\gprs.h)(0x585BD5D7)()
 F (.\BSP\hardwareConfig.c)(0x58154FA7)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\hardwareconfig.o --omf_browse .\objects\hardwareconfig.crf --depend .\objects\hardwareconfig.d)
