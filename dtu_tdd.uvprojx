@@ -548,6 +548,11 @@
               <FileType>1</FileType>
               <FilePath>.\sdh_lib\TTextConfProt.c</FilePath>
             </File>
+            <File>
+              <FileName>Ping_PongBuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\Ping_PongBuf.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -33,6 +33,7 @@ static int serial_cmmn( char *buf, int bufsize, int delay_ms);
 void read_event(void *buf, void *arg);
 static int prepare_ip(gprs_t *self);
 static int get_sms_phNO(char *databuf, char *phbuf);
+static int get_seq( char **data);
 
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
@@ -874,21 +875,48 @@ int deal_smsrecv_event( gprs_t *self, void *event, char *buf, int *lsize, char *
 	}
 	return ERR_FAIL;
 }
+
+	//+RECEIVE,0,6:\0D\0A
+	//123456
 int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 {
 	
 	int tmp = 0;
+	char *pp;
 	gprs_event_t *this_event = (gprs_event_t *)event;
-	if( CKECK_EVENT( this_event, tcp_receive) )
-	{
-		tmp = strlen( (const char *)this_event->data) + 1;
-		if( *len > tmp)
-			*len = tmp;
-		memcpy( buf, this_event->data, *len);
+//	if( CKECK_EVENT( this_event, tcp_receive) )
+//	{
+		
+		pp = strstr((const char*)buf,"RECEIVE");
+		if( pp)
+		{
+
+			this_event->arg = get_seq(&pp);;
+			pp = strstr(pp,",");
+			tmp = get_seq(&pp); 
+			if( *len > tmp)
+				*len = tmp;
+			memcpy( buf, pp + 1, tmp);
+//			event->data = malloc( tmp + 1);
+//			if( event->data)
+//			{
+//				
+//				while( *pp != '\x00A')
+//					pp++;
+//				
+//				memcpy( event->data, pp + 1, tmp);
+//				event->data[tmp] = '\0';
+//	
+//			}	
+//		tmp = strlen( (const char *)this_event->data) + 1;
+//		if( *len > tmp)
+//			*len = tmp;
+//		memcpy( buf, this_event->data, *len);
 		
 		return this_event->arg;
+		}
 		
-	}
+//	}
 	
 	return ERR_FAIL;
 }
@@ -949,38 +977,38 @@ void read_event(void *buf, void *arg)
 	}
 	//+RECEIVE,0,6:\0D\0A
 	//123456
-	pp = strstr((const char*)buf,"RECEIVE");
-	if( pp)
-	{
-		event = malloc(	sizeof( gprs_event_t));
-		if( event)
-		{
-			
-			event->type = tcp_receive;
-			event->arg = get_seq(&pp);;
-			pp = strstr(pp,",");
-			tmp = get_seq(&pp); ;
-			event->data = malloc( tmp + 1);
-			if( event->data)
-			{
-				
-				while( *pp != '\x00A')
-					pp++;
-				
-				memcpy( event->data, pp + 1, tmp);
-				event->data[tmp] = '\0';
-	
-			}
-			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
-			{
-				
-				goto CB_WRFAIL;
-				
-			}
-		}
-		
-		
-	}
+//	pp = strstr((const char*)buf,"RECEIVE");
+//	if( pp)
+//	{
+//		event = malloc(	sizeof( gprs_event_t));
+//		if( event)
+//		{
+//			
+//			event->type = tcp_receive;
+////			event->arg = get_seq(&pp);;
+////			pp = strstr(pp,",");
+////			tmp = get_seq(&pp); ;
+////			event->data = malloc( tmp + 1);
+////			if( event->data)
+////			{
+////				
+////				while( *pp != '\x00A')
+////					pp++;
+////				
+////				memcpy( event->data, pp + 1, tmp);
+////				event->data[tmp] = '\0';
+////	
+////			}
+//			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+//			{
+//				
+//				goto CB_WRFAIL;
+//				
+//			}
+//		}
+//		
+//		
+//	}
 	pp = strstr((const char*)buf,"CMTI");
 	if( pp)
 	{
@@ -1111,8 +1139,11 @@ void read_event(void *buf, void *arg)
 	
 }
 
-int get_event( gprs_t *self, void **event)
+int report_event( gprs_t *self, void **event, char *buf, int *lsize)
 {
+	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
+	UART_RECV( buf, *lsize);
+	gprs_Uart_ioctl( GPRS_UART_CMD_SET_RXBLOCK);
 	
 	return CBRead( self->event_cbuf, event);
 	
@@ -1871,7 +1902,7 @@ FUNCTION_SETTING(sms_test, sms_test);
 
 FUNCTION_SETTING(get_apn, get_apn);
 
-FUNCTION_SETTING(get_event, get_event);
+FUNCTION_SETTING(report_event, report_event);
 FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
 FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
 FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);

@@ -21,8 +21,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include "def.h"
+#include "Ping_PongBuf.h"
 
-
+static PPBuf_t	GprsUart_ppbuf;
 
 
 osSemaphoreId SemId_txFinish;                         // Semaphore ID
@@ -76,7 +77,12 @@ int gprs_uart_init(void)
 
 	
 	USART_DeInit( GPRS_USART);
-	
+
+	GprsUart_ppbuf.ping_buf = GprsUart_buf;
+	GprsUart_ppbuf.pong_buf = GprsUart_buf + GPRS_UART_BUF_LEN/2;
+	GprsUart_ppbuf.ping_len = GPRS_UART_BUF_LEN/2;
+	GprsUart_ppbuf.pong_len = GPRS_UART_BUF_LEN/2;
+	init_pingponfbuf( &GprsUart_ppbuf);
 	DMA_GprsUart_Init();
 
 	USART_Init( GPRS_USART, &Conf_GprsUsart);
@@ -184,8 +190,9 @@ int gprs_Uart_read(char *data, uint16_t size)
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
 		memset( data, 0, size);
-		memcpy( data, GprsUart_buf, len);
-		memset( GprsUart_buf, 0, len);
+		memcpy( data, get_playloadbuf( &GprsUart_ppbuf), len);
+//		memset( get_playloadbuf( &GprsUart_ppbuf), 0, len);
+		free_playloadbuf( &GprsUart_ppbuf);
 		return len;
 	}
 	
@@ -286,8 +293,9 @@ int gprs_uart_test(char *buf, int size)
 void DMA_GprsUart_Init(void)
 {
 
-		DMA_InitTypeDef DMA_InitStructure;	
-
+	DMA_InitTypeDef DMA_InitStructure;	
+	short rxbuflen;
+	char *rxbuf;
     /* DMA clock enable */
 
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); // ??DMA1??
@@ -318,14 +326,14 @@ void DMA_GprsUart_Init(void)
 
 /*--- UART_Rx_DMA_Channel DMA Config ---*/
 
- 
+	switch_receivebuf( &GprsUart_ppbuf, &rxbuf, &rxbuflen);
 
     DMA_Cmd(DMA_gprs_usart.dma_rx_base, DISABLE);                           
     DMA_DeInit(DMA_gprs_usart.dma_rx_base);                                 
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&GPRS_USART->DR);
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)GprsUart_buf;         
+    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)rxbuf;         
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                     
-    DMA_InitStructure.DMA_BufferSize = GPRS_UART_BUF_LEN;                     
+    DMA_InitStructure.DMA_BufferSize = rxbuflen;                     
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
@@ -361,6 +369,8 @@ void DMA1_Channel2_IRQHandler(void)
 void USART3_IRQHandler(void)
 {
 	uint8_t clear_idle = clear_idle;
+	short rxbuflen;
+	char *rxbuf;
 	if(USART_GetITStatus(USART3, USART_IT_IDLE) != RESET)  // 空闲中断
 	{
 
@@ -373,11 +383,11 @@ void USART3_IRQHandler(void)
 		if( GprsRxirqCB.cb != NULL)
 			GprsRxirqCB.cb(GprsUart_buf,  GprsRxirqCB.arg);
 		
-		Gprs_uart_ctl.recv_size = GPRS_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
-		Gprs_uart_ctl.totle_size += Gprs_uart_ctl.recv_size;
-		 
+		Gprs_uart_ctl.recv_size = get_loadbuflen( &GprsUart_ppbuf)  - DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
 		
-		DMA_gprs_usart.dma_rx_base->CNDTR = GPRS_UART_BUF_LEN;
+		switch_receivebuf( &GprsUart_ppbuf, &rxbuf, &rxbuflen);
+		DMA_gprs_usart.dma_rx_base->CMAR = (uint32_t)rxbuf;
+		DMA_gprs_usart.dma_rx_base->CNDTR = rxbuflen;
 		DMA_Cmd( DMA_gprs_usart.dma_rx_base, ENABLE);
 		clear_idle = GPRS_USART->SR;
 		clear_idle = GPRS_USART->DR;

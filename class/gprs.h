@@ -49,7 +49,7 @@ CLASS(gprs_t)
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
-	int (*get_event)( gprs_t *self, void **event);
+	int (*report_event)( gprs_t *self, void **event, char *buf, int *lsize);
 	void (*free_event)( gprs_t *self, void *event);
 	int (*deal_tcpclose_event)( gprs_t *self, void *event);
 	int (*deal_tcprecv_event)( gprs_t *self, void *event, char *buf, int *len);

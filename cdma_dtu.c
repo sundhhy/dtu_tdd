@@ -257,7 +257,7 @@ void thrd_dtu (void const *argument) {
 				while(1)
 				{
 					lszie = DTU_BUF_LEN;
-					ret = SIM800->get_event( SIM800, &gprs_event);
+					ret = SIM800->report_event( SIM800, &gprs_event, DTU_Buf, &lszie);
 					if( ret != ERR_OK)
 					{	
 						step ++;
