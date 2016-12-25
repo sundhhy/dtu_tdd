@@ -15,7 +15,7 @@
 typedef struct {
 	short		type;
 	short		arg;
-	uint8_t 	*data;
+//	uint8_t 	*data;
 }gprs_event_t;
 
 CLASS(gprs_t)
@@ -70,6 +70,14 @@ typedef enum {
     TCP_IP_OK,
     TCP_IP_NO,
 }SIM_STATUS ;
+
+typedef struct {
+	uint16_t	read;
+	uint16_t	write;
+//	uint16_t	data_len;
+	uint32_t	buf_len;
+	char*		buf;
+}RecvdataBuf;
 
 typedef enum {
 	sms_urc = 1,
