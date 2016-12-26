@@ -70,12 +70,22 @@ typedef enum {
     TCP_IP_OK,
     TCP_IP_NO,
 }SIM_STATUS ;
+// { |len| data[0]| ... | data[len - 1]|}
+#define EXTRASPACE		1		//维护缓存的额外空间，此处用于保存数据长度的空间
+#define ADD_RECVBUF_WR(recvbuf) { \
+	recvbuf->write ++;	\
+	recvbuf->write &= ( recvbuf->buf_len - 1);\
+}
 
+#define ADD_RECVBUF_RD(recvbuf) { \
+	recvbuf->read ++;	\
+	recvbuf->read &= ( recvbuf->buf_len - 1);\
+}
 typedef struct {
 	uint16_t	read;
 	uint16_t	write;
-//	uint16_t	data_len;
-	uint32_t	buf_len;
+	uint16_t	free_size;
+	uint16_t	buf_len;
 	char*		buf;
 }RecvdataBuf;
 

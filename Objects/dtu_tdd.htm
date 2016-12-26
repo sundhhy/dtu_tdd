@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sun Dec 25 22:09:18 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Mon Dec 26 23:04:55 2016
 <BR><P>
 <H3>Maximum Stack Usage =        280 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1043,7 +1043,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
-<P><STRONG><a name="[111]"></a>add_recvdata</STRONG> (Thumb, 130 bytes, Stack size 20 bytes, gprs.o(i.add_recvdata))
+<P><STRONG><a name="[111]"></a>add_recvdata</STRONG> (Thumb, 194 bytes, Stack size 20 bytes, gprs.o(i.add_recvdata))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = add_recvdata
 </UL>
 <BR>[Called By]<UL><LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
@@ -1115,7 +1115,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[4a]"></a>deal_tcprecv_event</STRONG> (Thumb, 48 bytes, Stack size 28 bytes, gprs.o(i.deal_tcprecv_event))
+<P><STRONG><a name="[4a]"></a>deal_tcprecv_event</STRONG> (Thumb, 50 bytes, Stack size 28 bytes, gprs.o(i.deal_tcprecv_event))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = deal_tcprecv_event &rArr; read_recvdata
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_recvdata
@@ -1206,7 +1206,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[e4]"></a>free_playloadbuf</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, ping_pongbuf.o(i.free_playloadbuf))
+<P><STRONG><a name="[e4]"></a>free_playloadbuf</STRONG> (Thumb, 16 bytes, Stack size 8 bytes, ping_pongbuf.o(i.free_playloadbuf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
@@ -1328,11 +1328,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
-<P><STRONG><a name="[ac]"></a>get_loadbuflen</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_loadbuflen))
+<P><STRONG><a name="[ac]"></a>get_loadbuflen</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_loadbuflen))
 <BR><BR>[Called By]<UL><LI><a href="#[32]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_IRQHandler
 </UL>
 
-<P><STRONG><a name="[f6]"></a>get_playloadbuf</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_playloadbuf))
+<P><STRONG><a name="[f6]"></a>get_playloadbuf</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_playloadbuf))
 <BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 </UL>
 
@@ -1399,7 +1399,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 </UL>
 
-<P><STRONG><a name="[3e]"></a>init</STRONG> (Thumb, 118 bytes, Stack size 8 bytes, gprs.o(i.init))
+<P><STRONG><a name="[3e]"></a>init</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, gprs.o(i.init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = init &rArr; gprs_uart_init &rArr; USART_Init &rArr; RCC_GetClocksFreq
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;regRxIrq_cb
@@ -1642,7 +1642,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_Tick_Handler
 </UL>
 
-<P><STRONG><a name="[56]"></a>read_event</STRONG> (Thumb, 230 bytes, Stack size 32 bytes, gprs.o(i.read_event))
+<P><STRONG><a name="[56]"></a>read_event</STRONG> (Thumb, 248 bytes, Stack size 32 bytes, gprs.o(i.read_event))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = read_event &rArr; get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CBWrite
@@ -1670,7 +1670,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[c1]"></a>read_recvdata</STRONG> (Thumb, 80 bytes, Stack size 20 bytes, gprs.o(i.read_recvdata))
+<P><STRONG><a name="[c1]"></a>read_recvdata</STRONG> (Thumb, 120 bytes, Stack size 20 bytes, gprs.o(i.read_recvdata))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = read_recvdata
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;deal_tcprecv_event
@@ -2399,7 +2399,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> rt_cmsis.o(i.osTimerCall)
 </UL>
-<P><STRONG><a name="[8a]"></a>switch_receivebuf</STRONG> (Thumb, 100 bytes, Stack size 0 bytes, ping_pongbuf.o(i.switch_receivebuf))
+<P><STRONG><a name="[8a]"></a>switch_receivebuf</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, ping_pongbuf.o(i.switch_receivebuf))
 <BR><BR>[Called By]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_GprsUart_Init
 <LI><a href="#[32]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_IRQHandler
 </UL>

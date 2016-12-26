@@ -99,57 +99,76 @@ int init(gprs_t *self)
 	TcpRecvData.buf_len = TCPDATA_LEN;
 	TcpRecvData.read = 0;
 	TcpRecvData.write = 0;
+	TcpRecvData.free_size = TCPDATA_LEN;
 	
 	regRxIrq_cb( read_event, (void *)self);
 	Gprs_state.sms_msgFromt = -1;
 	Gprs_state.sms_chrcSet = -1;
 	return ERR_OK;
 }
-
+//todo: 没有考虑空洞的情况
 void add_recvdata( RecvdataBuf *recvbuf, char *data, int len)
 {
 	short i = 0;
 	short datalen = 0;
 	if( len > recvbuf->buf_len)
 		return;
+	if( len == 0)
+		return;
 	//buf_len 必须是2的幂
-	while( ( ( recvbuf->write + len) & ( recvbuf->buf_len - 1)) > recvbuf->read)
+	while(  len > TcpRecvData.free_size )
 	{
 		//清除未读取的部分
 		datalen = recvbuf->buf[ recvbuf->read];
 		recvbuf->buf[ recvbuf->read] = 0;
-		recvbuf->read += datalen + 1;
-		
+		recvbuf->read += datalen + EXTRASPACE;
 		recvbuf->read &= ( recvbuf->buf_len - 1);
+		TcpRecvData.free_size += datalen + EXTRASPACE;
+		
 		i ++; 
 		if( i > 5)		//超过5次释放都无法满足，就放弃
 			return;
 	}
-	recvbuf->buf[ recvbuf->write] = len;
-	recvbuf->write ++;
+	recvbuf->buf[ recvbuf->write] = len + 1;		//在结尾要加上0
+	
 	i = 0;
 	while( len)
 	{
-		recvbuf->write &= ( recvbuf->buf_len - 1);
-		recvbuf->buf[ recvbuf->write++ ] = data[i++];
-		
+		ADD_RECVBUF_WR( recvbuf);
+		TcpRecvData.free_size --;
+		recvbuf->buf[ recvbuf->write ] = data[i];
+		i ++;
 		len --;
 	}
+	ADD_RECVBUF_WR( recvbuf);
+	TcpRecvData.free_size --;
+	recvbuf->buf[ recvbuf->write ] = 0;		//以0为结尾
+	ADD_RECVBUF_WR( recvbuf);
+	
 }
 int read_recvdata( RecvdataBuf *recvbuf, char *data, int bufsize)
 {
 	short len = recvbuf->buf[ recvbuf->read];
 	short i = 0;
+	if( len == 0)
+		return 0;
 	//buf_len 必须是2的幂
 	recvbuf->buf[ recvbuf->read] = 0;		//清除长度
+	ADD_RECVBUF_RD( recvbuf);
+	TcpRecvData.free_size ++;
 	while( len )
 	{
+		
+		
 		if( i < bufsize)
-			data[i++ ] = recvbuf->buf[ recvbuf->read++ ];
-		recvbuf->read &= ( recvbuf->buf_len - 1);
+		{
+			data[i++ ] = recvbuf->buf[ recvbuf->read ];
+			
+		}
+		ADD_RECVBUF_RD( recvbuf);
+		TcpRecvData.free_size ++;
 		len --;
 	}
-	data[i ] = 0;
 	if( i < bufsize)
 		return i;
 	return bufsize;
@@ -943,7 +962,7 @@ int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 	int tmp = 0;
 	char *pp;
 	gprs_event_t *this_event = (gprs_event_t *)event;
-	read_recvdata( &TcpRecvData, buf, *len);
+	*len = read_recvdata( &TcpRecvData, buf, *len);
 	if( CKECK_EVENT( this_event, tcp_receive) )
 	{
 		return this_event->arg;
@@ -1045,10 +1064,12 @@ void read_event(void *buf, void *arg)
 		{
 			
 			event->type = tcp_receive;
-			event->arg = get_seq(&pp);;
+			event->arg = get_seq(&pp);
 			pp = strstr(pp,",");
 			tmp = get_seq(&pp); 
-			add_recvdata( &TcpRecvData, pp, tmp);
+			while( *pp != '\x00A')
+				pp++;
+			add_recvdata( &TcpRecvData, pp + 1, tmp);
 //			event->data = malloc( tmp + 1);
 //			if( event->data)
 //			{
