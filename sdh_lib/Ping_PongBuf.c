@@ -15,54 +15,56 @@
 #include <string.h>
 void  init_pingponfbuf( PPBuf_t *ppbuf)
 {
-	
+	ppbuf->ping_status = PPBUF_STATUS_IDLE;
+	ppbuf->pong_status = PPBUF_STATUS_IDLE;
 	ppbuf->loading_buf = BUF_NONE;
 	ppbuf->playload_buf = BUF_NONE;
 }
-
+//
 void switch_receivebuf( PPBuf_t *ppbuf, char **buf, short *len)
 {
-//	if( ppbuf->loading_buf == BUF_NONE)
-//	{
+	if( ppbuf->ping_status == PPBUF_STATUS_IDLE)
+	{
+		if( ppbuf->loading_buf == BUF_PONG)	//上一次装载的缓存是PONG，说明已经有数据存入了
+		{
+			ppbuf->playload_buf = BUF_PONG;
+		}
 		*buf = ppbuf->ping_buf;
 		*len = ppbuf->ping_len;
-//		ppbuf->loading_buf = BUF_PING;
-//		ppbuf->playload_buf = BUF_NONE;
-//	}
-//	else if( ppbuf->loading_buf == BUF_PING)
-//	{
-//		//另一个缓存的数据被取走了才切换过去
-//		if( ppbuf->playload_buf != BUF_PONG)
-//		{
-//			*buf = ppbuf->pong_buf;
-//			*len = ppbuf->pong_len;
-//			ppbuf->loading_buf = BUF_PONG;
-//			//将此缓存作为数据载荷缓存
-//			ppbuf->playload_buf = BUF_PING;
-//		}
-//		
-//	}
-//	else if( ppbuf->loading_buf == BUF_PONG)
-//	{
-//		//另一个缓存的数据被取走了才切换过去
-//		if( ppbuf->playload_buf != BUF_PING)
-//		{
-//			*buf = ppbuf->ping_buf;
-//			*len = ppbuf->ping_len;
-//			ppbuf->loading_buf = BUF_PING;
-//			
-//			ppbuf->playload_buf = BUF_PONG;
-//		}
-//			
-//	}
-//	else
-//	{
-//		*buf = ppbuf->ping_buf;
-//		*len = ppbuf->ping_len;
-//		ppbuf->loading_buf = BUF_PING;
-//		ppbuf->playload_buf = BUF_NONE;
-//	}
-	
+		ppbuf->loading_buf = BUF_PING;
+		ppbuf->ping_status = PPBUF_STATUS_LOADING;
+		
+	}
+	else if( ppbuf->pong_status == PPBUF_STATUS_IDLE)
+	{
+		if( ppbuf->loading_buf == BUF_PING)	//上一次装载的缓存是PING，说明已经有数据存入了
+		{
+			ppbuf->playload_buf = BUF_PING;
+		}
+		*buf = ppbuf->pong_buf;
+		*len = ppbuf->pong_len;
+		ppbuf->loading_buf = BUF_PONG;
+		ppbuf->pong_status = PPBUF_STATUS_LOADING;
+		
+	}
+	else		//没有空闲的缓冲区，就不切换
+	{
+		//返回上一次使用的缓存
+		if( ppbuf->loading_buf == BUF_PING)
+		{
+		
+			*buf = ppbuf->ping_buf;
+			*len = ppbuf->ping_len;
+		}
+		else if( ppbuf->loading_buf == BUF_PONG)
+		{
+			*buf = ppbuf->pong_buf;
+			*len = ppbuf->pong_len;
+			
+		}
+			
+		
+	}
 }
 
 
@@ -70,27 +72,33 @@ void switch_receivebuf( PPBuf_t *ppbuf, char **buf, short *len)
 char *get_playloadbuf( PPBuf_t *ppbuf)
 {
 	
-//	if( ppbuf->playload_buf == BUF_PING)
-//	{
+	if( ppbuf->playload_buf == BUF_PING)
+	{
+		ppbuf->ping_status = PPBUF_STATUS_IDLE;
 		return ppbuf->ping_buf;
-//		
-//	}
-//	else
-//	{
-//		return ppbuf->pong_buf;
-//		
-//	}
-//	ppbuf->playload_buf = BUF_NONE;
+		
+	}
+	else if( ppbuf->playload_buf == BUF_PONG)
+	{
+		ppbuf->pong_status = PPBUF_STATUS_IDLE;
+		return ppbuf->pong_buf;
+		
+	}
+	else
+	{
+		
+		return ppbuf->ping_buf;
+	}
 }
 void free_playloadbuf( PPBuf_t *ppbuf)
 {
 //	if( ppbuf->playload_buf == BUF_PING)
 //	{
-		memset( ppbuf->ping_buf, 0, ppbuf->ping_len);
+//		memset( ppbuf->ping_buf, 0, ppbuf->ping_len);
 //	}
-//	else
+//	else if( ppbuf->playload_buf == BUF_PONG)
 //	{
-//		memset( ppbuf->ping_buf, 0, ppbuf->pong_len);
+//		memset( ppbuf->pong_buf, 0, ppbuf->pong_len);
 //		
 //	}
 //	ppbuf->playload_buf = BUF_NONE;

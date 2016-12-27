@@ -5,7 +5,10 @@
 #define BUF_PING	1
 #define BUF_PONG	2
 
-
+//缓存的状态，只能市三者之一
+#define	PPBUF_STATUS_IDLE   		0
+#define	PPBUF_STATUS_LOADING   		1
+#define	PPBUF_STATUS_PLAYLOAD   	2
 typedef struct
 {
 
@@ -14,11 +17,11 @@ typedef struct
 	short 	ping_len;
 	short 	pong_len;
 	
-	
-	
+	uint8_t	ping_status;
+	uint8_t	pong_status;
 	uint8_t	loading_buf;		//外设接收中的buf
 	uint8_t	playload_buf;		//数据已经结束完成的buf
-	uint8_t	resv[2];
+	
 	
 }PPBuf_t;
 void  init_pingponfbuf( PPBuf_t *ppbuf);

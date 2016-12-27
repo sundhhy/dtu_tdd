@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Mon Dec 26 23:04:55 2016
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Tue Dec 27 21:53:36 2016
 <BR><P>
 <H3>Maximum Stack Usage =        280 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -356,7 +356,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f10x_md.o(RESET)
 </UL>
 <P><STRONG><a name="[d0]"></a>__aeabi_memcpy</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, memcpya.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR><BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
@@ -379,15 +379,14 @@ Global Symbols
 <P><STRONG><a name="[72]"></a>__aeabi_memclr</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sms_test
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_playloadbuf
 </UL>
 
 <P><STRONG><a name="[cb]"></a>__aeabi_memclr4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<BR><BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_default
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
@@ -430,7 +429,7 @@ Global Symbols
 <LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sendto_tcp
 <LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_text_sms
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
-<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;decodeTTCP_begin
 <LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;compare_phoneNO
 <LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;thrd_dtu
@@ -442,10 +441,10 @@ Global Symbols
 <P><STRONG><a name="[ca]"></a>strcmp</STRONG> (Thumb, 28 bytes, Stack size 8 bytes, strcmp.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = strcmp
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;filesys_mount
-<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;searchfile
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;searchfile
 <LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mach_file
 </UL>
 
@@ -460,9 +459,9 @@ Global Symbols
 <LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_simCard
 <LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
-<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_TTCPVer
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_TTCPVer
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 <LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;thrd_dtu
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_default
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
@@ -473,8 +472,8 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = strcspn
 </UL>
 <BR>[Called By]<UL><LI><a href="#[43]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
-<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;decodeTTCP_begin
 </UL>
 
@@ -485,7 +484,7 @@ Global Symbols
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_errno_addr
 </UL>
 <BR>[Called By]<UL><LI><a href="#[43]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
@@ -674,7 +673,7 @@ Global Symbols
 <P><STRONG><a name="[145]"></a>GPIO_SetBits</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_SetBits))
 <BR><BR>[Called By]<UL><LI><a href="#[3f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;startup
 <LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
+<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Write
 <LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
 <LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_waitbusy
@@ -887,7 +886,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f10x_md.o(RESET)
 </UL>
-<P><STRONG><a name="[32]"></a>USART3_IRQHandler</STRONG> (Thumb, 142 bytes, Stack size 24 bytes, gprs_uart.o(i.USART3_IRQHandler))
+<P><STRONG><a name="[32]"></a>USART3_IRQHandler</STRONG> (Thumb, 152 bytes, Stack size 24 bytes, gprs_uart.o(i.USART3_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = USART3_IRQHandler &rArr; osSemaphoreRelease &rArr; isrSemaphoreRelease &rArr; isr_sem_send &rArr; rt_psq_enq
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ReceiveData
@@ -1064,7 +1063,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[41]"></a>check_simCard</STRONG> (Thumb, 298 bytes, Stack size 24 bytes, gprs.o(i.check_simCard))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = check_simCard &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = check_simCard &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -1138,7 +1137,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[45]"></a>delete_sms</STRONG> (Thumb, 90 bytes, Stack size 24 bytes, gprs.o(i.delete_sms))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = delete_sms &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = delete_sms &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -1194,8 +1193,8 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
 <LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_event
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> sw_filesys.o(i.filesys_init)
 </UL>
@@ -1206,22 +1205,18 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[e4]"></a>free_playloadbuf</STRONG> (Thumb, 16 bytes, Stack size 8 bytes, ping_pongbuf.o(i.free_playloadbuf))
-<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = free_playloadbuf
-</UL>
-<BR>[Calls]<UL><LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
-</UL>
-<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<P><STRONG><a name="[f6]"></a>free_playloadbuf</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, ping_pongbuf.o(i.free_playloadbuf))
+<BR><BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 </UL>
 
-<P><STRONG><a name="[e5]"></a>fs_creator</STRONG> (Thumb, 480 bytes, Stack size 48 bytes, sw_filesys.o(i.fs_creator))
+<P><STRONG><a name="[e4]"></a>fs_creator</STRONG> (Thumb, 480 bytes, Stack size 48 bytes, sw_filesys.o(i.fs_creator))
 <BR><BR>[Stack]<UL><LI>Max Depth = 232<LI>Call Chain = fs_creator &rArr; page_free &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_ins_next
-<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;searchfile
+<BR>[Calls]<UL><LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_ins_next
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;searchfile
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
-<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_free
+<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
+<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_free
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
@@ -1242,7 +1237,7 @@ Global Symbols
 <P><STRONG><a name="[de]"></a>fs_format</STRONG> (Thumb, 96 bytes, Stack size 24 bytes, sw_filesys.o(i.fs_format))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = fs_format &rArr; w25q_erase &rArr; w25q_write_waitbusy &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
+<BR>[Calls]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
@@ -1256,12 +1251,12 @@ Global Symbols
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
-<P><STRONG><a name="[eb]"></a>fs_open</STRONG> (Thumb, 388 bytes, Stack size 48 bytes, sw_filesys.o(i.fs_open))
+<P><STRONG><a name="[ea]"></a>fs_open</STRONG> (Thumb, 388 bytes, Stack size 48 bytes, sw_filesys.o(i.fs_open))
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = fs_open &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_ins_next
-<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_get_elmt
-<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;searchfile
+<BR>[Calls]<UL><LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_ins_next
+<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_get_elmt
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;searchfile
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
@@ -1272,11 +1267,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_dtuCfg
 </UL>
 
-<P><STRONG><a name="[ed]"></a>fs_read</STRONG> (Thumb, 246 bytes, Stack size 48 bytes, sw_filesys.o(i.fs_read))
+<P><STRONG><a name="[ec]"></a>fs_read</STRONG> (Thumb, 246 bytes, Stack size 48 bytes, sw_filesys.o(i.fs_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = fs_read &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
-<LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;locate_page
+<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;locate_page
 </UL>
 <BR>[Called By]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_dtuCfg
 </UL>
@@ -1285,13 +1280,13 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = fs_write &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
-<LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;locate_page
+<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;locate_page
 </UL>
 <BR>[Called By]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_dtuCfg
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
-<P><STRONG><a name="[ef]"></a>get_TTCPVer</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, ttextconfprot.o(i.get_TTCPVer))
+<P><STRONG><a name="[ee]"></a>get_TTCPVer</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, ttextconfprot.o(i.get_TTCPVer))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = get_TTCPVer
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
@@ -1332,8 +1327,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[32]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_IRQHandler
 </UL>
 
-<P><STRONG><a name="[f6]"></a>get_playloadbuf</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_playloadbuf))
-<BR><BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<P><STRONG><a name="[f5]"></a>get_playloadbuf</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_playloadbuf))
+<BR><BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 </UL>
 
 <P><STRONG><a name="[fe]"></a>gprs_Uart_ioctl</STRONG> (Thumb, 104 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_ioctl))
@@ -1343,12 +1338,12 @@ Global Symbols
 <LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 </UL>
 
-<P><STRONG><a name="[f4]"></a>gprs_Uart_read</STRONG> (Thumb, 142 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_read))
-<BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = gprs_Uart_read &rArr; free_playloadbuf
+<P><STRONG><a name="[f3]"></a>gprs_Uart_read</STRONG> (Thumb, 142 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_read))
+<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = gprs_Uart_read
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_playloadbuf
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_playloadbuf
+<BR>[Calls]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
+<LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_playloadbuf
+<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free_playloadbuf
 <LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
@@ -1362,7 +1357,7 @@ Global Symbols
 <P><STRONG><a name="[f7]"></a>gprs_Uart_write</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, gprs_uart.o(i.gprs_Uart_write))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = gprs_Uart_write
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
+<BR>[Calls]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_Cmd
 </UL>
 <BR>[Called By]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpip_cnnt
@@ -1410,7 +1405,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[fb]"></a>init_pingponfbuf</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, ping_pongbuf.o(i.init_pingponfbuf))
+<P><STRONG><a name="[fb]"></a>init_pingponfbuf</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, ping_pongbuf.o(i.init_pingponfbuf))
 <BR><BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_uart_init
 </UL>
 
@@ -1467,23 +1462,23 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isrSemaphoreRelease
 </UL>
 
-<P><STRONG><a name="[ec]"></a>list_get_elmt</STRONG> (Thumb, 58 bytes, Stack size 24 bytes, list.o(i.list_get_elmt))
+<P><STRONG><a name="[eb]"></a>list_get_elmt</STRONG> (Thumb, 58 bytes, Stack size 24 bytes, list.o(i.list_get_elmt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = list_get_elmt
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
 </UL>
 
 <P><STRONG><a name="[db]"></a>list_init</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, list.o(i.list_init))
 <BR><BR>[Called By]<UL><LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;filesys_init
 </UL>
 
-<P><STRONG><a name="[e8]"></a>list_ins_next</STRONG> (Thumb, 66 bytes, Stack size 24 bytes, list.o(i.list_ins_next))
+<P><STRONG><a name="[e7]"></a>list_ins_next</STRONG> (Thumb, 66 bytes, Stack size 24 bytes, list.o(i.list_ins_next))
 <BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = list_ins_next &rArr; malloc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 </UL>
 
 <P><STRONG><a name="[0]"></a>main</STRONG> (Thumb, 86 bytes, Stack size 8 bytes, main.o(i.main))
@@ -1510,10 +1505,10 @@ Global Symbols
 <LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
 <LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 <LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_t_new
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;filesys_init
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_ins_next
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_ins_next
 </UL>
 
 <P><STRONG><a name="[bf]"></a>osDelay</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, rt_cmsis.o(i.osDelay))
@@ -1581,9 +1576,9 @@ Global Symbols
 <LI><a href="#[17]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA1_Channel2_IRQHandler
 </UL>
 
-<P><STRONG><a name="[f5]"></a>osSemaphoreWait</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, rt_cmsis.o(i.osSemaphoreWait))
+<P><STRONG><a name="[f4]"></a>osSemaphoreWait</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, rt_cmsis.o(i.osSemaphoreWait))
 <BR><BR>[Called By]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
 </UL>
@@ -1647,7 +1642,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CBWrite
 <LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;add_recvdata
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_seq
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
 <LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 <LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
@@ -1659,7 +1654,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
-<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcspn
@@ -1677,11 +1672,11 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[44]"></a>read_seq_TextSMS</STRONG> (Thumb, 320 bytes, Stack size 72 bytes, gprs.o(i.read_seq_TextSMS))
-<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = read_seq_TextSMS &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = read_seq_TextSMS &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
-<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_sms_phNO
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
@@ -1690,7 +1685,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[4f]"></a>read_smscAddr</STRONG> (Thumb, 210 bytes, Stack size 24 bytes, gprs.o(i.read_smscAddr))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = read_smscAddr &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = read_smscAddr &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
@@ -1708,9 +1703,9 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[48]"></a>report_event</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, gprs.o(i.report_event))
-<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = report_event &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = report_event &rArr; gprs_Uart_read
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_ioctl
 <LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CBRead
 </UL>
@@ -2115,7 +2110,7 @@ Global Symbols
 <P><STRONG><a name="[13b]"></a>s485_Uart_read</STRONG> (Thumb, 136 bytes, Stack size 24 bytes, serial485_uart.o(i.s485_Uart_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = s485_Uart_read
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
+<BR>[Calls]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
 <LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
@@ -2126,7 +2121,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = s485_Uart_write
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
-<LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
+<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_Cmd
 </UL>
 <BR>[Called By]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;thrd_dtu
@@ -2150,10 +2145,10 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[42]"></a>send_text_sms</STRONG> (Thumb, 362 bytes, Stack size 40 bytes, gprs.o(i.send_text_sms))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -2166,10 +2161,10 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[53]"></a>sendto_tcp</STRONG> (Thumb, 178 bytes, Stack size 32 bytes, gprs.o(i.sendto_tcp))
-<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = sendto_tcp &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = sendto_tcp &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
@@ -2184,7 +2179,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[51]"></a>set_dns_ip</STRONG> (Thumb, 102 bytes, Stack size 24 bytes, gprs.o(i.set_dns_ip))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = set_dns_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = set_dns_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_ip
@@ -2194,7 +2189,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[50]"></a>set_smscAddr</STRONG> (Thumb, 176 bytes, Stack size 24 bytes, gprs.o(i.set_smscAddr))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = set_smscAddr &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = set_smscAddr &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
@@ -2205,7 +2200,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[40]"></a>shutdown</STRONG> (Thumb, 42 bytes, Stack size 16 bytes, gprs.o(i.shutdown))
-<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = shutdown &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = shutdown &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
@@ -2399,7 +2394,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> rt_cmsis.o(i.osTimerCall)
 </UL>
-<P><STRONG><a name="[8a]"></a>switch_receivebuf</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, ping_pongbuf.o(i.switch_receivebuf))
+<P><STRONG><a name="[8a]"></a>switch_receivebuf</STRONG> (Thumb, 90 bytes, Stack size 0 bytes, ping_pongbuf.o(i.switch_receivebuf))
 <BR><BR>[Called By]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_GprsUart_Init
 <LI><a href="#[32]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART3_IRQHandler
 </UL>
@@ -2425,10 +2420,10 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[52]"></a>tcpip_cnnt</STRONG> (Thumb, 320 bytes, Stack size 40 bytes, gprs.o(i.tcpip_cnnt))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = tcpip_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = tcpip_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -2449,7 +2444,7 @@ Global Symbols
 <LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_ioctl
 <LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osThreadYield
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
-<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_TTCPVer
+<LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_TTCPVer
 <LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;enter_TTCP
 <LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;decodeTTCP_finish
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;decodeTTCP_begin
@@ -2505,7 +2500,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flush_flash
 </UL>
 
-<P><STRONG><a name="[ea]"></a>w25q_erase</STRONG> (Thumb, 80 bytes, Stack size 32 bytes, hw_w25q.o(i.w25q_erase))
+<P><STRONG><a name="[e9]"></a>w25q_erase</STRONG> (Thumb, 80 bytes, Stack size 32 bytes, hw_w25q.o(i.w25q_erase))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = w25q_erase &rArr; w25q_write_waitbusy &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
@@ -2582,11 +2577,11 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 240<LI>Call Chain = get_dtuCfg &rArr; fs_creator &rArr; page_free &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_write
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_read
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_read
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_lseek
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_flush
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_default
 </UL>
 <BR>[Called By]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init_ThrdDtu
@@ -2617,7 +2612,7 @@ Local Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 </UL>
 
-<P><STRONG><a name="[f2]"></a>get_seq</STRONG> (Thumb, 30 bytes, Stack size 16 bytes, gprs.o(i.get_seq))
+<P><STRONG><a name="[f1]"></a>get_seq</STRONG> (Thumb, 30 bytes, Stack size 16 bytes, gprs.o(i.get_seq))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcspn
@@ -2626,7 +2621,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
 </UL>
 
-<P><STRONG><a name="[f3]"></a>get_sms_phNO</STRONG> (Thumb, 78 bytes, Stack size 24 bytes, gprs.o(i.get_sms_phNO))
+<P><STRONG><a name="[f2]"></a>get_sms_phNO</STRONG> (Thumb, 78 bytes, Stack size 24 bytes, gprs.o(i.get_sms_phNO))
 <BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = get_sms_phNO &rArr; strcspn
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcspn
@@ -2637,7 +2632,7 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[10e]"></a>prepare_ip</STRONG> (Thumb, 362 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_apn
@@ -2650,10 +2645,10 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[bc]"></a>serial_cmmn</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, gprs.o(i.serial_cmmn))
-<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
@@ -2672,7 +2667,7 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[113]"></a>set_sms2TextMode</STRONG> (Thumb, 118 bytes, Stack size 24 bytes, gprs.o(i.set_sms2TextMode))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -2684,7 +2679,7 @@ Local Symbols
 <LI><a href="#[43]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
 </UL>
 
-<P><STRONG><a name="[85]"></a>DMA_GprsUart_Init</STRONG> (Thumb, 216 bytes, Stack size 56 bytes, gprs_uart.o(i.DMA_GprsUart_Init))
+<P><STRONG><a name="[85]"></a>DMA_GprsUart_Init</STRONG> (Thumb, 222 bytes, Stack size 56 bytes, gprs_uart.o(i.DMA_GprsUart_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = DMA_GprsUart_Init &rArr; DMA_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;switch_receivebuf
@@ -2755,20 +2750,20 @@ Local Symbols
 <LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_ReadSR
 <LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;spi_write
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
+<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Erase_Sector
 </UL>
 
-<P><STRONG><a name="[f1]"></a>check_bit</STRONG> (Thumb, 44 bytes, Stack size 12 bytes, sw_filesys.o(i.check_bit))
+<P><STRONG><a name="[f0]"></a>check_bit</STRONG> (Thumb, 44 bytes, Stack size 12 bytes, sw_filesys.o(i.check_bit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = check_bit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_area
+<BR>[Called By]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_area
 </UL>
 
 <P><STRONG><a name="[10d]"></a>clear_bit</STRONG> (Thumb, 36 bytes, Stack size 12 bytes, sw_filesys.o(i.clear_bit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = clear_bit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
+<BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
 </UL>
 
 <P><STRONG><a name="[df]"></a>flush_flash</STRONG> (Thumb, 36 bytes, Stack size 16 bytes, sw_filesys.o(i.flush_flash))
@@ -2781,19 +2776,19 @@ Local Symbols
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
 </UL>
 
-<P><STRONG><a name="[f0]"></a>get_area</STRONG> (Thumb, 146 bytes, Stack size 32 bytes, sw_filesys.o(i.get_area))
+<P><STRONG><a name="[ef]"></a>get_area</STRONG> (Thumb, 146 bytes, Stack size 32 bytes, sw_filesys.o(i.get_area))
 <BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = get_area &rArr; check_bit
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_bit
+<BR>[Calls]<UL><LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_bit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
+<BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
 </UL>
 
-<P><STRONG><a name="[ee]"></a>locate_page</STRONG> (Thumb, 94 bytes, Stack size 20 bytes, sw_filesys.o(i.locate_page))
+<P><STRONG><a name="[ed]"></a>locate_page</STRONG> (Thumb, 94 bytes, Stack size 20 bytes, sw_filesys.o(i.locate_page))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = locate_page
 </UL>
 <BR>[Called By]<UL><LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_write
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_read
+<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_read
 </UL>
 
 <P><STRONG><a name="[3c]"></a>mach_file</STRONG> (Thumb, 24 bytes, Stack size 24 bytes, sw_filesys.o(i.mach_file))
@@ -2803,23 +2798,23 @@ Local Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> sw_filesys.o(i.filesys_init)
 </UL>
-<P><STRONG><a name="[e9]"></a>page_free</STRONG> (Thumb, 172 bytes, Stack size 40 bytes, sw_filesys.o(i.page_free))
+<P><STRONG><a name="[e8]"></a>page_free</STRONG> (Thumb, 172 bytes, Stack size 40 bytes, sw_filesys.o(i.page_free))
 <BR><BR>[Stack]<UL><LI>Max Depth = 184<LI>Call Chain = page_free &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_bit
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<BR>[Called By]<UL><LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 </UL>
 
-<P><STRONG><a name="[e6]"></a>page_malloc</STRONG> (Thumb, 152 bytes, Stack size 32 bytes, sw_filesys.o(i.page_malloc))
+<P><STRONG><a name="[e5]"></a>page_malloc</STRONG> (Thumb, 152 bytes, Stack size 32 bytes, sw_filesys.o(i.page_malloc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 176<LI>Call Chain = page_malloc &rArr; read_flash &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_flash
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_area
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_area
 <LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clear_bit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<BR>[Called By]<UL><LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 </UL>
 
 <P><STRONG><a name="[dd]"></a>read_flash</STRONG> (Thumb, 72 bytes, Stack size 16 bytes, sw_filesys.o(i.read_flash))
@@ -2829,27 +2824,27 @@ Local Symbols
 <LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
 </UL>
 <BR>[Called By]<UL><LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_write
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_read
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_read
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;filesys_mount
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
-<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_free
+<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_malloc
+<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_free
 </UL>
 
-<P><STRONG><a name="[e7]"></a>searchfile</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, sw_filesys.o(i.searchfile))
+<P><STRONG><a name="[e6]"></a>searchfile</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, sw_filesys.o(i.searchfile))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = searchfile &rArr; strcmp
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
+<BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_open
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fs_creator
 </UL>
 
 <P><STRONG><a name="[10c]"></a>set_bit</STRONG> (Thumb, 36 bytes, Stack size 12 bytes, sw_filesys.o(i.set_bit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = set_bit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_free
+<BR>[Called By]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;page_free
 </UL>
 
 <P><STRONG><a name="[c4]"></a>Eliminate_the_space</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, ttextconfprot.o(i.Eliminate_the_space))

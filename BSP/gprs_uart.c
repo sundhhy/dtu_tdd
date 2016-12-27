@@ -54,7 +54,7 @@ static struct usart_control_t {
 	short	tx_waittime_ms;
 	short	rx_waittime_ms;
 	
-
+	char *rxbuf;
 	
 }Gprs_uart_ctl;
 
@@ -345,7 +345,7 @@ void DMA_GprsUart_Init(void)
     DMA_ClearFlag( DMA_gprs_usart.dma_rx_flag);                                
     DMA_Cmd(DMA_gprs_usart.dma_rx_base, ENABLE);                            
 
-   
+   Gprs_uart_ctl.rxbuf = rxbuf;
 
 }
 
@@ -381,7 +381,7 @@ void USART3_IRQHandler(void)
 		
 		
 		if( GprsRxirqCB.cb != NULL)
-			GprsRxirqCB.cb(GprsUart_buf,  GprsRxirqCB.arg);
+			GprsRxirqCB.cb( Gprs_uart_ctl.rxbuf,  GprsRxirqCB.arg);
 		
 		Gprs_uart_ctl.recv_size = get_loadbuflen( &GprsUart_ppbuf)  - DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
 		
@@ -393,7 +393,7 @@ void USART3_IRQHandler(void)
 		clear_idle = GPRS_USART->DR;
 		USART_ReceiveData( USART3 ); // Clear IDLE interrupt flag bit
 		
-		
+		Gprs_uart_ctl.rxbuf = rxbuf;
 		osSemaphoreRelease( SemId_rxFrame);
 
 		
