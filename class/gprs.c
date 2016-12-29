@@ -657,7 +657,7 @@ int	read_seq_TextSMS( gprs_t *self, char *phnNmbr, int seq, char *buf, int *len)
 					return ERR_OK;
 				}
 				pp = strstr((const char*)buf,"REC");		//当接收的数据中有REC的时候，可能是串口数据没收全，再试几次
-				if( pp && retry)
+				if( pp || retry)
 				{
 					retry --;
 				}
@@ -1942,7 +1942,8 @@ static int get_sms_phNO(char *databuf, char *phbuf)
 {
 	
 	char *pp;
-	int tmp = 0;
+	short tmp = 0;
+	short count = 0;
 	
 	tmp = strcspn( databuf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
 	if( tmp == strlen( databuf))			//找不到数字
@@ -1957,7 +1958,10 @@ static int get_sms_phNO(char *databuf, char *phbuf)
 		phbuf ++;
 		pp ++;
 		tmp ++;
+		count ++;
 	}
+	if( count < 8)
+		return -1;
 	return tmp;
 }
 

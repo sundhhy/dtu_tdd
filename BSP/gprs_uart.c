@@ -165,6 +165,7 @@ int gprs_Uart_read(char *data, uint16_t size)
 {
 	int  ret;
 	int len = size;
+	char *playloadbuf ;
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
 		
@@ -190,7 +191,8 @@ int gprs_Uart_read(char *data, uint16_t size)
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
 		memset( data, 0, size);
-		memcpy( data, get_playloadbuf( &GprsUart_ppbuf), len);
+		playloadbuf = get_playloadbuf( &GprsUart_ppbuf);
+		memcpy( data, playloadbuf, len);
 //		memset( get_playloadbuf( &GprsUart_ppbuf), 0, len);
 		free_playloadbuf( &GprsUart_ppbuf);
 		return len;

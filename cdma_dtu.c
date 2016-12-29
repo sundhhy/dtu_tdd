@@ -276,7 +276,7 @@ void thrd_dtu (void const *argument) {
 						continue;
 					}
 					
-					
+					lszie = DTU_BUF_LEN;
 					memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
 					ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Recv_PhnoeNo);				
 					if( ret > 0)
