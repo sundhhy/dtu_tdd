@@ -31,3 +31,7 @@
 .\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\serial485_uart.o: ..\dtu_tdd\def.h
+.\objects\serial485_uart.o: .\class\led.h
+.\objects\serial485_uart.o: .\lw_oopc_v1.2\lw_oopc.h
+.\objects\serial485_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\serial485_uart.o: .\sdh_lib\CircularBuffer.h

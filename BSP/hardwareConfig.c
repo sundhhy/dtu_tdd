@@ -24,6 +24,16 @@ gpio_pins	W25Q_csPin =  {
 	GPIO_Pin_4
 };
 
+gpio_pins	PinLED_run =  {
+	GPIOC,
+	GPIO_Pin_6
+};
+
+gpio_pins	PinLED_com =  {
+	GPIOC,
+	GPIO_Pin_7
+};
+
 USART_InitTypeDef USART_InitStructure = {
 		9600,
 		USART_WordLength_8b,

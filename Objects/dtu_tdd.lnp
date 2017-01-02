@@ -4,6 +4,7 @@
 ".\objects\thread_adc.o"
 ".\objects\gprs.o"
 ".\objects\stm32adc.o"
+".\objects\led.o"
 ".\objects\hardwareconfig.o"
 ".\objects\chipset.o"
 ".\objects\debug.o"

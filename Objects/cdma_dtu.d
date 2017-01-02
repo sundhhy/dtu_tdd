@@ -40,3 +40,4 @@
 .\objects\cdma_dtu.o: .\sdh_lib\list.h
 .\objects\cdma_dtu.o: .\sdh_lib\TTextConfProt.h
 .\objects\cdma_dtu.o: .\BSP\times.h
+.\objects\cdma_dtu.o: .\class\led.h

@@ -448,6 +448,16 @@
               <FileType>5</FileType>
               <FilePath>.\class\stm32ADC.h</FilePath>
             </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\led.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

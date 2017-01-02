@@ -9,7 +9,7 @@
 #include "sw_filesys.h"
 #include "TTextConfProt.h"
 #include "times.h"
-
+#include "led.h"
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
  *---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 
 static int get_dtuCfg(DtuCfg_t *conf);
 static void dtu_conf(void);
-
+static void ledcom_uartcb(void *rxbuf, void *arg);
 
 void thrd_dtu (void const *argument);                             // thread function
 osThreadId tid_ThrdDtu;                                          // thread id
@@ -35,13 +35,15 @@ char	Recv_PhnoeNo[16];
 #define TTEXTSRC_485 0
 #define TTEXTSRC_SMS(n)	( n + 1)
 static int TText_source = TTEXTSRC_485;	
-
+static u485RxirqCB T485cb;
 
 int Init_ThrdDtu (void) {
 //	int retry = 20;
 	SIM800 = gprs_t_new();
 	SIM800->init(SIM800);
-	s485_uart_init( &Conf_S485Usart_default);
+	T485cb.cb = ledcom_uartcb;
+	T485cb.arg = LED_com;
+	s485_uart_init( &Conf_S485Usart_default, &T485cb);
 	
 	//这里尝试启动SIM是为了能够获取默认的短信中心号码
 	//todo  :如果只是工作在本地模式并且没有焊SIM900或者没有插入SIM卡的时候，这里就会导致一直死循环，需要处理掉这个问题
@@ -81,6 +83,13 @@ static void prnt_485( char *data)
 	
 	DPRINTF(" %s \n", data);
 	
+}
+
+static void ledcom_uartcb(void *rxbuf, void *arg)
+{
+	stm32LED	*led_com = ( stm32LED	*)arg;
+	
+	led_com->blink(led_com);
 }
 
 void thrd_dtu (void const *argument) {
@@ -165,7 +174,7 @@ void thrd_dtu (void const *argument) {
 	
 	
 	//使用用户的配置来重新启动485串口
-	s485_uart_init( &Dtu_config.the_485cfg);
+	s485_uart_init( &Dtu_config.the_485cfg, NULL);
 	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
 	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
 	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
@@ -181,6 +190,7 @@ void thrd_dtu (void const *argument) {
 	
 
 	while (1) {
+		LED_run->blink( LED_run);
 		switch( step)
 		{
 			

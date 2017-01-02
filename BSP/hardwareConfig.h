@@ -55,6 +55,10 @@ extern gpio_pins	Gprs_powerkey;
 extern gpio_pins	W25Q_csPin;
 extern SPI_instance W25Q_Spi ;
 extern gpio_pins 	ADC_pins;
+extern gpio_pins	PinLED_run;
+extern gpio_pins	PinLED_com;
+
+
 extern int32_t ADC_chn;
 
 extern USART_InitTypeDef USART_InitStructure;

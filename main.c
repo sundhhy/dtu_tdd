@@ -19,7 +19,7 @@
 #include "sw_filesys.h"
 #include "stdio.h"
 #include "times.h"
-
+#include "led.h"
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
      set to 'Yes') calls __io_putchar() */
@@ -86,7 +86,16 @@ int main (void) {
 	USART_Configuration();
 //	
 	printf(" DTU TDD start ...\n");
-
+	LED_run = stm32LED_new();
+	LED_com = stm32LED_new();
+	LED_run->init( LED_run, &PinLED_run);
+	LED_com->init( LED_com, &PinLED_com);
+	
+#ifdef TDD_LED
+	LED_run->test( LED_run);
+	LED_com->test( LED_com);
+	while(1);
+#endif
 #ifdef TDD_TIMER
 	time_test();
 #endif
@@ -228,7 +237,7 @@ int main (void) {
 	
 	
 #ifdef TDD_S485
-	s485_uart_init( &Conf_S485Usart_default);
+	s485_uart_init( &Conf_S485Usart_default, NULL);
 	while(1)
 	{
 		i ++;

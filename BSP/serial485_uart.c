@@ -20,9 +20,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include "def.h"
+#include "led.h"
 
-
-
+static u485RxirqCB *T485Rxirq_cb;
 
 osSemaphoreId SemId_s485txFinish;                         // Semaphore ID
 uint32_t os_semaphore_cb_Sem_s485txFinish[2] = { 0 }; 
@@ -58,7 +58,7 @@ static void DMA_s485Uart_Init(void);
 ** @param rxbuf 接受缓存地址
 ** @return
 **/
-int s485_uart_init(ser_485Cfg *cfg)
+int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 {
 	static char first = 0;
 	if( first == 0)
@@ -69,7 +69,7 @@ int s485_uart_init(ser_485Cfg *cfg)
 	}
 	
 
-	
+	T485Rxirq_cb = cb;
 	USART_DeInit( SER485_USART);
 	
 	DMA_s485Uart_Init();
@@ -349,8 +349,8 @@ void USART2_IRQHandler(void)
 	uint8_t clear_idle = clear_idle;
 	if(USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)  // 空闲中断
 	{
-
-		
+		if( T485Rxirq_cb != NULL)
+			T485Rxirq_cb->cb( NULL,  T485Rxirq_cb->arg);
 		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE);       // 关闭DMA
 		DMA_ClearFlag( DMA_s485_usart.dma_rx_flag );           // 清除DMA标志
 		S485_uart_ctl.recv_size = S485_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_s485_usart.dma_rx_base); //获得接收到的字节

@@ -3,6 +3,14 @@
 #include "stdint.h"
 #include "stm32f10x_usart.h"
 
+
+typedef void (*uart_cb)(void *rxbuf, void *arg);
+
+typedef struct {
+	uart_cb cb;
+	void *arg;
+}u485RxirqCB;
+
 typedef USART_InitTypeDef	ser_485Cfg;
 /**
  * @brief 485串口初始化
@@ -10,7 +18,7 @@ typedef USART_InitTypeDef	ser_485Cfg;
  * @return ERR_OK 成功
  * @return 
  */
-int s485_uart_init(ser_485Cfg *cfg);
+int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb);
 
 
 

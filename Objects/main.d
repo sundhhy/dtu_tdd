@@ -40,3 +40,4 @@
 .\objects\main.o: .\sdh_lib\hw_w25q.h
 .\objects\main.o: .\sdh_lib\list.h
 .\objects\main.o: .\BSP\times.h
+.\objects\main.o: .\class\led.h

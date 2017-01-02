@@ -790,6 +790,12 @@ int delete_sms( gprs_t *self, int seq)
 					{	
 						return ERR_BAD_PARAMETER;
 					}
+					//服务器关闭连接
+					pp = strstr((const char*)Gprs_cmd_buf,"CLOSED");
+					if( pp)
+					{	
+						return ERR_BAD_PARAMETER;
+					}
 					
 				
 				}
@@ -852,6 +858,13 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 		{
 			Ip_cnnState.cnn_state[ cnnt_num] = CNNT_SENDERROR;
 			return ERR_FAIL;
+		}
+		//花生壳调试时，本地未开启服务器时，会出现连接后马上断开的情况
+		pp = strstr((const char*)Gprs_cmd_buf,"CLOSED");		
+		if( pp)
+		{
+			Ip_cnnState.cnn_state[ cnnt_num] = CNNT_DISCONNECT;
+			return ERR_UNINITIALIZED;
 		}
 		
 		retry --;
