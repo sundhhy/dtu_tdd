@@ -3,18 +3,52 @@
 #include "hardwareConfig.h"
 #include "sdhError.h"
 #define ADC_BUFLEN	200
-static uint16_t ADCConvertedValue[ADC_BUFLEN];	//采样数据采样200个(滤除50HZ干扰)
 
-void adc_init(void)
+
+unsigned char  ConfigRecFinish;
+
+unsigned long   TimingDelay;
+unsigned short  ConfigCheckCnt;
+unsigned short  ADC_timcount;                     //ADC触发时间
+unsigned short  comout_count; 
+unsigned char   BusCheckEN;
+unsigned char   HalfSecCnt500mS;
+unsigned short  HalfSecCnt5000mS;
+unsigned char   Falg_HalfSec;
+unsigned char   RunStat=0;                        //LED灯运行状态控制
+unsigned char   sec_10;	
+
+unsigned char  collectChannel;                    //当前的采集通道  
+unsigned char  RUNorBD;                           //标定或者运行标志(RUNorBD =1表示为标定状态  RUNorBD ==0表示为运行状态)
+unsigned char  sampledote0,sampleolddote0;        //通道0采样点
+unsigned char  sampledote1,sampleolddote1;        //通道1采样点
+unsigned char  sampledote2,sampleolddote2;        //通道2采样点
+
+unsigned char  BD_sampledote,BD_sampleolddote;    //标定当前通道的采样信号点
+unsigned short BUSADdelta;                       
+unsigned char  BUSADdelataCnt;  
+unsigned char  CHannel0finish, CHannel1finish, CHannel2finish;
+unsigned short ADCval0 =0, ADCval1 =0,ADCval2=0;
+float   AV_BUF0,AV_BUF1,AV_BUF2;
+float   rang_f;
+float	  ma_tie=1;
+unsigned short	sample_V11;
+unsigned short	sample_V12;
+unsigned short	sample_V13;
+unsigned short	sample_HIGH1;
+unsigned short	sample_LOW1;
+struct  _RemoteRTU_Module_  RTU[3];  
+struct  _SampleValue_     SAMPLE[3];
+struct  _BDSampleVal_     BDSAMPLE[3];
+
+static uint16_t ADCConvertedValue[ADC_BUFLEN];	//采样数据采样200个(滤除50HZ干扰)
+static void init_adc1DMA(void);
+void init_stm32adc(void *arg)
 {   
 	ADC_InitTypeDef ADC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	DMA_InitTypeDef DMA_InitStructure;
-	// PB1模拟输入(ADC采样口) 
-	GPIO_InitStructure.GPIO_Pin = 	ADC_pins.pin;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN; 		//模拟输入
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; 	//2M时钟速度
-	GPIO_Init(ADC_pins.Port, &GPIO_InitStructure);
+	
 
   	// ADC1 configuration -------------------------------
 	ADC_StructInit( &ADC_InitStructure);
@@ -49,28 +83,1457 @@ void adc_init(void)
 	
 	
 	
-	//DMA1 channel1 configuration ---------------------------------------------
-	DMA_Cmd(DMA_adc.dma_rx_base, DISABLE);                           
-    DMA_DeInit(DMA_s485_usart.dma_rx_base);                                 
-    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&ADC_BASE->DR);
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)ADCConvertedValue;         
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                     
-    DMA_InitStructure.DMA_BufferSize = ADC_BUFLEN;                     
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           
-    DMA_InitStructure.DMA_Priority = DMA_Priority_High;                 
-    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            
-    DMA_Init(DMA_adc.dma_rx_base, &DMA_InitStructure);               
-    DMA_ClearFlag( DMA_adc.dma_rx_flag);      
-	DMA_ITConfig(DMA_adc.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
-
-    DMA_Cmd(DMA_adc.dma_rx_base, ENABLE);                            
+	init_adc1DMA();                        
 	
 }
 
+
+static void init_adc1DMA( )
+{
+	DMA_InitTypeDef DMA_InitStructure;
+	//DMA1 channel1 configuration ---------------------------------------------	
+	DMA_DeInit( DMA_adc.dma_rx_base);
+  	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&ADC1->DR);;
+  	DMA_InitStructure.DMA_MemoryBaseAddr = (u32)&ADCConvertedValue;
+  	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
+  	DMA_InitStructure.DMA_BufferSize = ADC_BUFLEN;
+  	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+  	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+  	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+  	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+  	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+  	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+  	DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
+  	DMA_Init(DMA1_Channel1, &DMA_InitStructure);	 
+  
+  	DMA_ITConfig( DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+	// Enable DMA1 channel1 
+  	DMA_Cmd( DMA_adc.dma_rx_base, ENABLE);			 
+}
+
+/********************************************************************************************************
+** Function name:        void series_se(unsigned char data)         
+** Modified by:          通道切换函数(根据模拟开关选通不同的信号输入)
+** Modified date:        2016-11-28
+*********************************************************************************************************/
+static void series_se(unsigned char data)
+{
+   switch(data)
+   {
+     case 0:  
+		SelectCLR4051_A;	    //选通信号VX32
+		SelectCLR4051_B;
+		SelectCLR4051_C;
+		break;   	  
+	case 1:
+		SelectSET4051_A;      //选通信号VX22
+		SelectCLR4051_B;
+		SelectCLR4051_C;
+		break;
+
+	case 2: 
+		SelectCLR4051_A;	     //选通VX21信号
+		SelectSET4051_B;
+		SelectCLR4051_C; 
+		break;
+
+	case 3:
+		SelectSET4051_A;  	   //选通VX31信号
+		SelectSET4051_B;
+		SelectCLR4051_C;  
+		break;
+
+	case 4:                            //选通VX12信号
+		SelectCLR4051_A;
+		SelectCLR4051_B;
+		SelectSET4051_C;
+		break;
+
+	case 5:   
+		SelectSET4051_A;       //选通GND信号
+		SelectCLR4051_B;
+		SelectSET4051_C;
+		break;
+
+	case 6: 
+		SelectCLR4051_A;       //选通VX11信号
+		SelectSET4051_B;
+		SelectSET4051_C;
+		break;
+
+	case 7:                        //选通VR0基准信号
+		SelectSET4051_A;
+		SelectSET4051_B;
+		SelectSET4051_C;
+		break;
+
+	default:                         //选通GND信号
+		SelectSET4051_A;       
+		SelectCLR4051_B;
+		SelectSET4051_C;
+		break;
+	}	
+
+}
+
+/*********************************************************************************************************
+** Function name:        void sw_select(unsigned char channel)        
+** Modified by:          选择不同的信号通道channel0-channel2
+** Modified date:        2016-11-28
+** intput value:         channel为RTU的通道取值范围为 0-2     
+*********************************************************************************************************/
+
+static void sw_select(unsigned char channel)
+{
+	
+	if(channel==0)
+	{
+		switch(RTU[channel].Type)       //选择channel0
+		{
+
+		  case V_5:                     //电压信号输入
+			case V_1_5:
+			CLR_currentnum0;              //关断Q1 MOS管
+			
+		   if(sampledote0<=2)           
+			{
+				 if(sampledote0==0)	          //采样VX11
+				 {
+					 series_se(VX11);
+				 
+
+				 }
+				 if(sampledote0==1)            //采样GND
+				 {
+					 series_se(GND);
+				 }
+				 if(sampledote0==2)            //采样VR0_A
+				 {
+					 series_se(VR0_A);  
+				 }
+			}
+			else 
+			{
+			     sampledote0 = 0;
+			}
+			
+		    break;
+
+			case mA0_10:	          //0-10mA 电流信号  
+			case mA4_20:		        //4-20mA 电流信号
+			SET_currentnum0;        //打开 Q1 MOS
+				if(sampledote0<=3)
+				{	
+				   
+					if(sampledote0==0)	series_se(VX12);  //采样VX12
+					if(sampledote0==1)	series_se(VX11);  //采样VX11	
+					if(sampledote0==2)	series_se(GND);   //采样GND	
+					if(sampledote0==3)	series_se(VR0_A); //采样基准VR0
+				}
+				else
+					sampledote0=0;
+			break;
+
+			default :
+				break;
+		}	
+	}	
+	
+	else if(channel==1)
+	{	
+		switch(RTU[channel].Type)       //选择channel1
+		{
+
+		  case V_5:                     //电压信号输入
+			case V_1_5:
+			CLR_currentnum1;              //关断Q3 MOS管
+			
+		   if(sampledote1<=2)           
+			{
+				 if(sampledote1==0)	          //采样VX21
+				 {
+					 series_se(VX21);
+				 
+
+				 }
+				 if(sampledote1==1)           //采样GND
+				 {
+					 series_se(GND);
+				 }
+				 if(sampledote1==2)           //采样VR0_A
+				 {
+					 series_se(VR0_A);  
+				 }
+			}
+			else 
+			{
+			     sampledote1 = 0;
+			}
+			
+		    break;
+
+			case mA0_10:	          //0-10mA 电流信号  
+			case mA4_20:		        //4-20mA 电流信号
+				
+			SET_currentnum1;        //打开 Q3 MOS管
+				if(sampledote1<=3)
+				{	
+				   
+					if(sampledote1==0)	series_se(VX22);  //采样VX22
+					if(sampledote1==1)	series_se(VX21);  //采样VX21	
+					if(sampledote1==2)	series_se(GND);   //采样GND	
+					if(sampledote1==3)	series_se(VR0_A); //采样基准VR0_A
+				}
+				else
+					sampledote1=0;
+			break;
+
+			default :
+				break;
+		}
+		
+	}
+	
+	else if(channel==2)
+	{
+		
+		switch(RTU[channel].Type)       //选择channel2
+		{
+
+		  case V_5:                     //电压信号输入
+			case V_1_5:
+			CLR_currentnum2;              //关断Q4 MOS管
+			
+		   if(sampledote2<=2)           
+			{
+				 if(sampledote2==0)	          //采样VX31
+				 {
+					 series_se(VX31);
+				 
+
+				 }
+				 if(sampledote2==1)           //采样GND
+				 {
+					 series_se(GND);
+				 }
+				 if(sampledote2==2)           //采样VR0_A
+				 {
+					 series_se(VR0_A);  
+				 }
+			}
+			else 
+			{
+			     sampledote2 = 0;
+			}
+			
+		    break;
+
+			case mA0_10:	          //0-10mA 电流信号  
+			case mA4_20:		        //4-20mA 电流信号
+				
+			SET_currentnum2;        //打开 Q4 MOS管
+				if(sampledote2<=3)
+				{	
+				   
+					if(sampledote2==0)	series_se(VX32);  //采样VX32
+					if(sampledote2==1)	series_se(VX31);  //采样VX31	
+					if(sampledote2==2)	series_se(GND);   //采样GND	
+					if(sampledote2==3)	series_se(VR0_A); //采样基准VR0_A
+				}
+				else
+					sampledote2=0;
+			break;
+
+			default :
+		  break;
+		}
+		
+	}
+	
+}
+
+/*********************************************************************************************************
+** Function name:        void sw_select(unsigned char channel)        
+** Modified by:          选择不同的信号通道channel0-channel2
+** Modified date:        2016-11-28
+** intput value:         channel为RTU的通道取值范围为 0-2     
+*********************************************************************************************************/
+
+static void BD_sw_select(unsigned char channel,unsigned signaltype)
+{
+	
+	if(channel==0)
+	{
+		switch(signaltype)              //选择channel0下对应的输入信号类型
+		{
+
+		  case V_5:                     //电压信号输入
+			case V_1_5:
+			CLR_currentnum0;              //关断Q1 MOS管
+			
+		   if(BD_sampledote<=2)           
+			{
+				 if(BD_sampledote==0)	       //采样VX11
+				 {
+					 series_se(VX11);
+				 }
+				 if(BD_sampledote==1)        //采样GND
+				 {
+					 series_se(GND);
+				 }
+				 if(BD_sampledote==2)        //采样VR0_A
+				 {
+					 series_se(VR0_A);  
+				 }
+			}
+			else 
+			{
+			     BD_sampledote = 0;
+			}
+			
+		  break;
+
+			case mA0_10:	          //0-10mA 电流信号  
+			case mA4_20:		        //4-20mA 电流信号
+			SET_currentnum0;        //打开 Q1 MOS
+				if(BD_sampledote<=3)
+				{	
+				   
+					if(BD_sampledote==0)	series_se(VX12);  //采样VX12
+					if(BD_sampledote==1)	series_se(VX11);  //采样VX11	
+					if(BD_sampledote==2)	series_se(GND);   //采样GND	
+					if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0
+				}
+				else
+					BD_sampledote=0;
+			break;
+
+			default :
+				break;
+		}	
+	}	
+	
+	else if(channel==1)                //选择channel1下输入的信号类型
+	{	
+		switch(signaltype)            
+		{
+
+		  case V_5:                     //电压信号输入
+			case V_1_5:
+			CLR_currentnum1;              //关断Q3 MOS管
+			
+		   if(BD_sampledote<=2)           
+			{
+				 if(BD_sampledote==0)	          //采样VX21
+				 {
+					 series_se(VX21);
+				 
+
+				 }
+				 if(BD_sampledote==1)           //采样GND
+				 {
+					 series_se(GND);
+				 }
+				 if(BD_sampledote==2)           //采样VR0_A
+				 {
+					 series_se(VR0_A);  
+				 }
+			}
+			else 
+			{
+			     BD_sampledote = 0;
+			}
+			
+		  break;
+
+			case mA0_10:	           //0-10mA 电流信号  
+			case mA4_20:		         //4-20mA 电流信号
+				
+			SET_currentnum1;         //打开 Q3 MOS管
+			if(BD_sampledote<=3)
+			{	
+				 
+				if(BD_sampledote==0)	series_se(VX22);  //采样VX22
+				if(BD_sampledote==1)	series_se(VX21);  //采样VX21	
+				if(BD_sampledote==2)	series_se(GND);   //采样GND	
+				if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0_A
+			}
+			else
+				BD_sampledote=0;
+			break;
+
+			default :
+				break;
+		}
+		
+	}
+	
+	else if(channel==2)
+	{
+		
+		switch(signaltype)              //选择channel2
+		{
+
+		  case V_5:                     //电压信号输入
+			case V_1_5:
+			CLR_currentnum2;              //关断Q4 MOS管
+			
+		   if(BD_sampledote<=2)           
+			{
+				 if(BD_sampledote==0)	          //采样VX31
+				 {
+					 series_se(VX31);
+				 
+
+				 }
+				 if(BD_sampledote==1)           //采样GND
+				 {
+					 series_se(GND);
+				 }
+				 if(BD_sampledote==2)           //采样VR0_A
+				 {
+					 series_se(VR0_A);  
+				 }
+			}
+			else 
+			{
+			     BD_sampledote = 0;
+			}
+			
+		    break;
+
+			case mA0_10:	          //0-10mA 电流信号  
+			case mA4_20:		        //4-20mA 电流信号
+				
+			SET_currentnum2;        //打开 Q4 MOS管
+				if(BD_sampledote<=3)
+				{	
+				   
+					if(BD_sampledote==0)	series_se(VX32);  //采样VX32
+					if(BD_sampledote==1)	series_se(VX31);  //采样VX31	
+					if(BD_sampledote==2)	series_se(GND);   //采样GND	
+					if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0_A
+				}
+				else
+					BD_sampledote=0;
+			break;
+
+			default :
+		  break;
+		}
+		
+	}
+	
+}
+
+/*********************************************************************************************************
+** Function name:        void Data_Deal(unsigned char ch_temp,unsigned char pred)        
+** Modified by:          对采样结果处理函数
+** Modified date:        2016-12-01
+** intput  value：       ch_temp 为RTU通道(取值范围为0-2)  pred 为针对当前RTU通道,采样的点的位置(取值范围 0-3)
+*********************************************************************************************************/
+
+void Data_Deal(unsigned char ch_temp,unsigned char pred)
+{
+	unsigned char  i_temp,j_temp,m_temp;
+	unsigned int	data_temp;
+	data_temp=0;
+	switch(ch_temp)
+	{
+
+        //通道0
+
+		case CHANNEL0:
+			for(j_temp=0;j_temp<200;j_temp++) 	  //排序算法
+			{
+				for(m_temp=0;m_temp<200-j_temp;m_temp++)
+				{
+					if(ADCConvertedValue[m_temp]>ADCConvertedValue[m_temp+1])
+					{
+						data_temp=ADCConvertedValue[m_temp];
+						ADCConvertedValue[m_temp]=ADCConvertedValue[m_temp+1];
+						ADCConvertedValue[m_temp+1]=data_temp;
+					}
+				}
+			}
+			data_temp=0;
+			for(i_temp=88;i_temp<113;i_temp++)
+			{
+				data_temp=data_temp+ADCConvertedValue[i_temp];
+			}
+			data_temp=data_temp/25;
+			ADCval0=(unsigned short) data_temp;
+			
+			switch(pred)             //采样点的位置
+			{
+				case Samplepoint0:		                                                    //若为电流信号则采样VX12
+					
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)  
+					{
+										
+						 SAMPLE[ch_temp].sample_Vpoint_2=(unsigned short) data_temp;
+								
+				    }
+
+				
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)              //若是电压信号,则采样VX11
+					{
+					  				  
+					  SAMPLE[ch_temp].sample_Vpoint_1 = (unsigned short) data_temp; 
+				
+					}
+
+				break;	 
+					 
+				case Samplepoint1:                                                          //若为电流信号，则采样VX11 
+					
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+						
+					{
+						 SAMPLE[ch_temp].sample_Vpoint_1=(unsigned short) data_temp;
+					}
+				 
+					
+			    	else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)	            //如果是电压信号(采样基准GND)
+					{
+					   SAMPLE[ch_temp].sample_LOW=(unsigned short) data_temp;
+					}
+				break;
+
+				case Samplepoint2:		                                                     //若为电流信号采样GND
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+					{
+						SAMPLE[ch_temp].sample_LOW=(unsigned short) data_temp;
+					}
+					
+			    	else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)	             //若为电压信号(采样基准VR0)
+					{
+					    SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
+
+					    CHannel0finish = 1;
+					}
+				   
+				break;
+
+				case Samplepoint3:	                                                                     //若为电流信号采样VR0
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+					{
+						SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
+						CHannel0finish = 1;
+					}
+					else
+					{
+             ;
+					}
+				    
+				break;
+
+				default :
+					break;
+			}
+			break;
+
+      //通道1
+
+			case CHANNEL1:
+
+				for(j_temp=0;j_temp<200;j_temp++) 	  //排序算法
+				{
+					for(m_temp=0;m_temp<200-j_temp;m_temp++)
+					{
+						if(ADCConvertedValue[m_temp]>ADCConvertedValue[m_temp+1])
+						{
+							data_temp=ADCConvertedValue[m_temp];
+							ADCConvertedValue[m_temp]=ADCConvertedValue[m_temp+1];
+							ADCConvertedValue[m_temp+1]=data_temp;
+						}
+					}
+				}
+				data_temp=0;
+				for(i_temp=88;i_temp<113;i_temp++)
+				{
+					data_temp=data_temp+ADCConvertedValue[i_temp];
+				}
+				data_temp=data_temp/25;
+				ADCval1=(unsigned short) data_temp;
+
+				switch(pred)                                                              //采样点的位置
+				{
+				case Samplepoint0:		                                                    //若为电流信号则采样VX22
+
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)  
+					{
+
+						SAMPLE[ch_temp].sample_Vpoint_2=(unsigned short) data_temp;
+
+					}
+
+
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)              //若是电压信号,则采样VX21
+					{
+
+						SAMPLE[ch_temp].sample_Vpoint_1 = (unsigned short) data_temp; 
+
+					}
+
+					break;	 
+
+				case Samplepoint1:                                                       //若为电流信号，则采样VX21 
+
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+
+					{
+						SAMPLE[ch_temp].sample_Vpoint_1=(unsigned short) data_temp;
+					}
+
+
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)	            //如果是电压信号(采样基准GND)
+					{
+						SAMPLE[ch_temp].sample_LOW=(unsigned short) data_temp;
+					}
+					break;
+
+				case Samplepoint2:		                                                     //若为电流信号采样GND
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+					{
+						SAMPLE[ch_temp].sample_LOW=(unsigned short) data_temp;
+					}
+
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)	             //若为电压信号(采样基准VR0)
+					{
+						SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
+
+						CHannel1finish = 1;
+					}
+
+					break;
+
+				case Samplepoint3:	                                                      //若为电流信号采样VR0
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+					{
+						SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
+						CHannel1finish = 1;
+					}
+					else
+					{
+						;
+					}
+
+					break;
+
+
+
+				default :
+					break;
+				}
+				break;
+
+
+
+
+				//通道2
+
+			case CHANNEL2:
+
+				for(j_temp=0;j_temp<200;j_temp++) 	  //排序算法
+				{
+					for(m_temp=0;m_temp<200-j_temp;m_temp++)
+					{
+						if(ADCConvertedValue[m_temp]>ADCConvertedValue[m_temp+1])
+						{
+							data_temp=ADCConvertedValue[m_temp];
+							ADCConvertedValue[m_temp]=ADCConvertedValue[m_temp+1];
+							ADCConvertedValue[m_temp+1]=data_temp;
+						}
+					}
+				}
+				data_temp=0;
+				for(i_temp=88;i_temp<113;i_temp++)
+				{
+					data_temp=data_temp+ADCConvertedValue[i_temp];
+				}
+				data_temp=data_temp/25;
+				ADCval2=(unsigned short) data_temp;
+
+				switch(pred)             //采样点的位置
+				{
+				case Samplepoint0:		                                                    //若为电流信号则采样VX32
+
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)  
+					{
+
+						SAMPLE[ch_temp].sample_Vpoint_2=(unsigned short) data_temp;
+
+					}
+
+
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)              //若是电压信号,则采样VX31
+					{
+
+						SAMPLE[ch_temp].sample_Vpoint_1 = (unsigned short) data_temp; 
+
+					}
+
+					break;	 
+
+				case Samplepoint1:                                                       //若为电流信号，则采样VX31 
+
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+
+					{
+						SAMPLE[ch_temp].sample_Vpoint_1=(unsigned short) data_temp;
+					}
+
+
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)	            //如果是电压信号(采样基准GND)
+					{
+						SAMPLE[ch_temp].sample_LOW=(unsigned short) data_temp;
+					}
+					break;
+
+				case Samplepoint2:		                                                     //若为电流信号采样GND
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+					{
+						SAMPLE[ch_temp].sample_LOW=(unsigned short) data_temp;
+					}
+
+					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)	             //若为电压信号(采样基准VR0)
+					{
+						SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
+
+						CHannel2finish = 1;
+					}
+
+					break;
+
+				case Samplepoint3:	                                                      //若为电流信号采样VR0
+					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
+					{
+						SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
+						CHannel2finish = 1;
+					}
+					else
+					{
+						;
+					}
+
+					break;
+
+
+
+				default :
+					break;
+				}
+				break;
+	
+		default :
+			break;
+		
+	}
+	
+		
+}
+//将实际采样到的码值转换成实际电压值或者电流值
+
+void Calculate(unsigned char channel)
+{
+	
+	
+	float	projectval,bdhigh,bdlow,atemp1,atemp2,tdata1,tdata2,ax1,ax2;
+	float	temp_data1,temp_data2,temp_data3,temp_data4,temp_data5,temp_data6;
+	switch(channel)
+	{
+		case CHANNEL0:
+
+			switch(RTU[channel].Type)
+			{
+
+				case V_5:		                                    //电压信号0-5V 或者1-5V
+				case V_1_5:
+		       bdhigh=(float)RTU[channel].BD.BD_5_HIGH/1000;
+				   bdlow=(float)RTU[channel].BD.BD_5_LOW/100000;
+				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   tdata2=atemp1*bdhigh+bdlow;                  //获取实际的电压值
+				   if(tdata2<0.0005)	tdata2=0;
+				   if(AV_BUF0>10.0)     
+				   {
+					   AV_BUF0=0;	
+				   }		
+				   if((RTU[channel].Type==V_5)&&(AV_BUF0<0.0005))    //0-5V信号
+				   {
+						   AV_BUF0=0;	
+
+				   }
+				   if((RTU[channel].Type==V_1_5)&&(AV_BUF0<0.0005))  // 1-5V 信号
+				   {
+						   AV_BUF0=1.0;
+				   }				   
+				   ax1=tdata2*1000;
+				   ax2=AV_BUF0*1000;
+				   if(ax1-ax2>=10)
+				     AV_BUF0=tdata2;
+				   if(ax2-ax1>=10)
+				     AV_BUF0=tdata2;	
+				   if((ax2-ax1<=0.2)&&(tdata2==0))
+					   AV_BUF0=tdata2;
+				   if((ax1-ax2<=0.2)&&(tdata2==0))
+					   AV_BUF0=tdata2;				   
+				     tdata2=tdata2*0.1+AV_BUF0*0.9;    //迟滞滤波 0.9*旧值+0.1新值  
+				   if((tdata2<10)&&(tdata2>0.0005))
+						 AV_BUF0=tdata2;
+
+				   if(SAMPLE[channel].sample_Vpoint_1<(SAMPLE[channel].sample_LOW-0x200)) //断线这里不好做
+				   {
+				     tdata2=0;
+					   AV_BUF0=0;
+					   RTU[channel].Alarm=0x02;         //断线标志
+				   }
+				   else
+				   {
+				     RTU[channel].Alarm=0x00;
+				   }
+				   if(RTU[channel].Type==V_1_5)       //信号为1-5V信号  
+				   {
+				     if(tdata2<1.0)
+					   tdata2=1.0;
+						  RTU[channel].Alarm=0x02;         //断线标志
+				   }
+					 
+					 #if 0 
+				   tdata2=tdata2/5*30000;
+				   if(tdata2>30000) tdata2=30000;
+					 #endif
+					 
+					  projectval = tdata2/5*30000;
+					  if(projectval>30000) projectval =30000;
+					
+					   if(tdata2>5.0)
+							 tdata2 =5.0;
+					 
+					 if(RTU[channel].Type==V_5)                   //0-5V 信号类型
+					 {
+						 
+						   RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
+						   RTU[channel].value = tdata2;             //获得实际AV值
+						  
+						 
+           }
+					 else if (RTU[channel].Type==V_1_5)           // 1--5V 信号类型
+					 {
+						 if(tdata2<1.0)
+						 {
+							  tdata2 = 1.0; 
+							  projectval = 6000;
+							  
+             }
+						 else if(projectval>30000)
+						 {
+							 projectval = 30000; 
+							 tdata2 = 5.0;
+             }
+						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
+						 RTU[channel].value = tdata2;
+						 
+           }
+					 
+					break;
+
+				case mA0_10:                                    //0-10mA
+				case mA4_20:                                    //4-20mA
+					
+		       bdhigh=(float)RTU[channel].BD.BD_20mA_HIGH/100;
+				   bdlow=(float)RTU[channel].BD.BD_20mA_LOW;
+				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   atemp2=(((float)SAMPLE[channel].sample_Vpoint_2)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   tdata1=atemp1*((float)RTU[channel].BD.BD_5_HIGH/1000)+((float)RTU[channel].BD.BD_5_LOW/100000);
+				   tdata2=atemp2*((float)RTU[channel].BD.BD_5_HIGH/1000)+((float)RTU[channel].BD.BD_5_LOW/100000);
+				   rang_f=(tdata1-tdata2)/ma_tie*1000;
+				   tdata2=(tdata1-tdata2)/bdhigh*1000;
+				   if(tdata2<0.0005)	tdata2=0;
+				   if((RTU[channel].Type==mA0_10)&&(AV_BUF0<0.0005))
+				   {
+						   AV_BUF0=0;	
+
+				   }
+				   ax1=tdata2*1000;
+				   ax2=AV_BUF0*1000;
+				   if(ax1-ax2>=50)
+				     AV_BUF0=tdata2;
+				   if(ax2-ax1>=50)
+				     AV_BUF0=tdata2;			
+				   if((ax2-ax1<=0.2)&&(tdata2==0))
+					   AV_BUF0=tdata2;
+				   if((ax1-ax2<=0.2)&&(tdata2==0))
+					   AV_BUF0=tdata2;				   
+				    tdata2=tdata2*0.1+AV_BUF0*0.9;
+				   if((tdata2<30)&&(tdata2>0.0005))
+						AV_BUF0=tdata2;
+				   if((RTU[channel].Type==mA4_20)&&(AV_BUF0<3.960))
+				   {
+				     tdata2=4.0;
+					   AV_BUF0=0;
+					   RTU[channel].Alarm=0x02; //断线
+				   }
+				   else
+				   {
+				     RTU[channel].Alarm=0x00;
+				   }
+					 #if 0 
+				   tdata2=tdata2/20*30000;
+				   if(tdata2>30000) tdata2=30000;
+					 # endif
+					 
+					  projectval = tdata2/20*30000;
+					  if(projectval>30000) projectval =30000;
+					  if(tdata2>20.0)
+							 tdata2 =20.0;
+					 
+					 if(RTU[channel].Type==mA0_10)    //0-10mA 信号类型
+					 {
+						  if(projectval>15000) 
+						 {
+							  projectval = 15000; 
+							  tdata2 =10.0;
+             }
+						 if(tdata2>10.0)
+						 {
+							 tdata2 =10.0;
+							 projectval =15000;
+						 }
+						 
+						 RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
+						 RTU[channel].value = tdata2;
+           }
+					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
+					 {
+						 if(projectval<6000) 
+						 {
+							  projectval = 6000; 
+							  tdata2 = 4.0;
+							 
+             }
+						 else if(projectval>30000)
+						 {
+							 projectval = 30000;
+               tdata2 =20.0;							 
+             }
+						 if(tdata2<4.0)
+						 {
+							 tdata2 =4.0;
+							 projectval = 6000;
+						 }
+						 else if(tdata2>20.0)
+						 {
+							 projectval = 30000;
+						 }
+						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
+						 RTU[channel].value = tdata2;
+           }
+					 
+					break;
+				default:
+					break;
+				   
+			}
+			break;
+			
+			case CHANNEL1:
+			switch(RTU[channel].Type)
+			{
+				
+				  case V_5:		                                    //电压信号0-5V 或者1-5V
+				  case V_1_5:
+		       bdhigh=(float)RTU[channel].BD.BD_5_HIGH/1000;
+				   bdlow=(float)RTU[channel].BD.BD_5_LOW/100000;
+				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   tdata2=atemp1*bdhigh+bdlow;                    //获取实际的电压值
+				   if(tdata2<0.0005)	tdata2=0;
+				   if(AV_BUF1>10.0)     
+				   {
+					   AV_BUF1=0;	
+				   }		
+				   if((RTU[channel].Type==V_5)&&(AV_BUF1<0.0005))    //0-5V信号
+				   {
+						   AV_BUF1=0;	
+				   }
+				   if((RTU[channel].Type==V_1_5)&&(AV_BUF1<0.0005))  // 1-5V 信号
+				   {
+						   AV_BUF1=1.0;
+				   }				   
+				   ax1=tdata2*1000;
+				   ax2=AV_BUF1*1000;
+				   if(ax1-ax2>=10)
+				     AV_BUF1=tdata2;
+				   if(ax2-ax1>=10)
+				     AV_BUF1=tdata2;	
+				   if((ax2-ax1<=0.2)&&(tdata2==0))
+					   AV_BUF1=tdata2;
+				   if((ax1-ax2<=0.2)&&(tdata2==0))
+					   AV_BUF1=tdata2;				   
+				     tdata2=tdata2*0.1+AV_BUF1*0.9;    //迟滞滤波 0.9*旧值+0.1新值  
+				   if((tdata2<10)&&(tdata2>0.0005))
+						 AV_BUF1=tdata2;
+
+				   if(SAMPLE[channel].sample_Vpoint_1<(SAMPLE[channel].sample_LOW-0x200)) //断线这里不好做
+				   {
+				     tdata2=0;
+					   AV_BUF1=0;
+					   RTU[channel].Alarm=0x02;         //断线标志
+				   }
+				   else
+				   {
+				     RTU[channel].Alarm=0x00;
+				   }
+				   if(RTU[channel].Type==V_1_5)       //信号为1-5V信号  
+				   {
+				     if(tdata2<1.0)
+					   tdata2=1.0;
+						  RTU[channel].Alarm=0x02;         //断线标志
+				   }
+					 
+					 #if 0 
+				   tdata2=tdata2/5*30000;
+				   if(tdata2>30000) tdata2=30000;
+					 #endif
+					 
+					  projectval = tdata2/5*30000;
+					  if(projectval>30000) projectval =30000;
+					
+					   if(tdata2>5.0)
+							 tdata2 =5.0;
+					 
+					 if(RTU[channel].Type==V_5)                   //0-5V 信号类型
+					 {
+						 
+						   RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
+						   RTU[channel].value = tdata2;             //获得实际AV值
+						  
+						 
+           }
+					 else if (RTU[channel].Type==V_1_5)           // 1--5V 信号类型
+					 {
+						 if(tdata2<1.0)
+						 {
+							  tdata2 = 1.0; 
+							  projectval = 6000;
+							  
+             }
+						 else if(projectval>30000)
+						 {
+							 projectval = 30000; 
+							 tdata2 = 5.0;
+             }
+						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
+						 RTU[channel].value = tdata2;
+						 
+           }
+					 
+					break;
+
+				case mA0_10:                                    //0-10mA
+				case mA4_20:                                    //4-20mA
+					
+		       bdhigh=(float)RTU[channel].BD.BD_20mA_HIGH/100;
+				   bdlow=(float)RTU[channel].BD.BD_20mA_LOW;
+				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   atemp2=(((float)SAMPLE[channel].sample_Vpoint_2)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   tdata1=atemp1*((float)RTU[channel].BD.BD_5_HIGH/1000)+((float)RTU[channel].BD.BD_5_LOW/100000);
+				   tdata2=atemp2*((float)RTU[channel].BD.BD_5_HIGH/1000)+((float)RTU[channel].BD.BD_5_LOW/100000);
+				   rang_f=(tdata1-tdata2)/ma_tie*1000;
+				   tdata2=(tdata1-tdata2)/bdhigh*1000;
+				   if(tdata2<0.0005)	tdata2=0;
+				   if((RTU[channel].Type==mA0_10)&&(AV_BUF1<0.0005))
+				   {
+						   AV_BUF1=0;	
+
+				   }
+				   ax1=tdata2*1000;
+				   ax2=AV_BUF1*1000;
+				   if(ax1-ax2>=50)
+				     AV_BUF1=tdata2;
+				   if(ax2-ax1>=50)
+				     AV_BUF1=tdata2;			
+				   if((ax2-ax1<=0.2)&&(tdata2==0))
+					   AV_BUF1=tdata2;
+				   if((ax1-ax2<=0.2)&&(tdata2==0))
+					   AV_BUF1=tdata2;				   
+				    tdata2=tdata2*0.1+AV_BUF1*0.9;
+				   if((tdata2<30)&&(tdata2>0.0005))
+						AV_BUF1=tdata2;
+				   if((RTU[channel].Type==mA4_20)&&(AV_BUF1<3.960))
+				   {
+				     tdata2=4.0;
+					   AV_BUF1=1;
+					   RTU[channel].Alarm=0x02; //断线
+				   }
+				   else
+				   {
+				     RTU[channel].Alarm=0x00;
+				   }
+					 #if 0 
+				   tdata2=tdata2/20*30000;
+				   if(tdata2>30000) tdata2=30000;
+					 # endif
+					 
+					  projectval = tdata2/20*30000;
+					  if(projectval>30000) projectval =30000;
+					  if(tdata2>20.0)
+							 tdata2 =20.0;
+					 
+					 if(RTU[channel].Type==mA0_10)    //0-10mA 信号类型
+					 {
+						  if(projectval>15000) 
+						 {
+							  projectval = 15000; 
+							  tdata2 =10.0;
+             }
+						 if(tdata2>10.0)
+						 {
+							 tdata2 =10.0;
+							 projectval =15000;
+						 }
+						 
+						 RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
+						 RTU[channel].value = tdata2;
+           }
+					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
+					 {
+						 if(projectval<6000) 
+						 {
+							  projectval = 6000; 
+							  tdata2 = 4.0;
+							 
+             }
+						 else if(projectval>30000)
+						 {
+							 projectval = 30000;
+               tdata2 =20.0;							 
+             }
+						 if(tdata2<4.0)
+						 {
+							 tdata2 =4.0;
+							 projectval = 6000;
+						 }
+						 else if(tdata2>20.0)
+						 {
+							 projectval = 30000;
+						 }
+						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
+						 RTU[channel].value = tdata2;
+           }
+					 
+					break;
+				default:
+					break;
+				
+			}	
+			break;
+			
+			case CHANNEL2:
+		  switch(RTU[channel].Type)
+			{
+			 	case V_5:		                                    //电压信号0-5V 或者1-5V
+				case V_1_5:
+		       bdhigh=(float)RTU[channel].BD.BD_5_HIGH/1000;
+				   bdlow=(float)RTU[channel].BD.BD_5_LOW/100000;
+				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   tdata2=atemp1*bdhigh+bdlow;                  //获取实际的电压值
+				   if(tdata2<0.0005)	tdata2=0;
+				   if(AV_BUF2>10.0)     
+				   {
+					   AV_BUF2=0;	
+				   }		
+				   if((RTU[channel].Type==V_5)&&(AV_BUF2<0.0005))    //0-5V信号
+				   {
+						   AV_BUF2=0;	
+
+				   }
+				   if((RTU[channel].Type==V_1_5)&&(AV_BUF2<0.0005))  // 1-5V 信号
+				   {
+						   AV_BUF2=1.0;
+				   }				   
+				   ax1=tdata2*1000;
+				   ax2=AV_BUF2*1000;
+				   if(ax1-ax2>=10)
+				     AV_BUF2=tdata2;
+				   if(ax2-ax1>=10)
+				     AV_BUF2=tdata2;	
+				   if((ax2-ax1<=0.2)&&(tdata2==0))
+					   AV_BUF2=tdata2;
+				   if((ax1-ax2<=0.2)&&(tdata2==0))
+					   AV_BUF2=tdata2;				   
+				     tdata2=tdata2*0.1+AV_BUF2*0.9;    //迟滞滤波 0.9*旧值+0.1新值  
+				   if((tdata2<10)&&(tdata2>0.0005))
+						 AV_BUF2=tdata2;
+
+				   if(SAMPLE[channel].sample_Vpoint_1<(SAMPLE[channel].sample_LOW-0x200)) //断线这里不好做
+				   {
+				     tdata2=0;
+					   AV_BUF2=0;
+					   RTU[channel].Alarm=0x02;         //断线标志
+				   }
+				   else
+				   {
+				     RTU[channel].Alarm=0x00;
+				   }
+				   if(RTU[channel].Type==V_1_5)       //信号为1-5V信号  
+				   {
+				     if(tdata2<1.0)
+					   tdata2=1.0;
+						  RTU[channel].Alarm=0x02;         //断线标志
+				   }
+					 
+					 #if 0 
+				   tdata2=tdata2/5*30000;
+				   if(tdata2>30000) tdata2=30000;
+					 #endif
+					 
+					  projectval = tdata2/5*30000;
+					  if(projectval>30000) projectval =30000;
+					
+					   if(tdata2>5.0)
+							 tdata2 =5.0;
+					 
+					 if(RTU[channel].Type==V_5)                   //0-5V 信号类型
+					 {
+						 
+						   RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
+						   RTU[channel].value = tdata2;             //获得实际AV值
+						  	 
+           }
+					 else if (RTU[channel].Type==V_1_5)           // 1--5V 信号类型
+					 {
+						 if(tdata2<1.0)
+						 {
+							  tdata2 = 1.0; 
+							  projectval = 6000;
+							  
+             }
+						 else if(projectval>30000)
+						 {
+							 projectval = 30000; 
+							 tdata2 = 5.0;
+             }
+						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
+						 RTU[channel].value = tdata2;
+						 
+          }
+					 
+					break;
+
+				case mA0_10:                                    //0-10mA
+				case mA4_20:                                    //4-20mA
+					
+		       bdhigh=(float)RTU[channel].BD.BD_20mA_HIGH/100;
+				   bdlow=(float)RTU[channel].BD.BD_20mA_LOW;
+				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   atemp2=(((float)SAMPLE[channel].sample_Vpoint_2)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
+				   tdata1=atemp1*((float)RTU[channel].BD.BD_5_HIGH/1000)+((float)RTU[channel].BD.BD_5_LOW/100000);
+				   tdata2=atemp2*((float)RTU[channel].BD.BD_5_HIGH/1000)+((float)RTU[channel].BD.BD_5_LOW/100000);
+				   rang_f=(tdata1-tdata2)/ma_tie*1000;
+				   tdata2=(tdata1-tdata2)/bdhigh*1000;
+				   if(tdata2<0.0005)	tdata2=0;
+				
+				   if((RTU[channel].Type==mA0_10)&&(AV_BUF2<0.0005))
+				   {
+						   AV_BUF2=0;	
+				   }
+					 
+				   ax1=tdata2*1000;
+				   ax2=AV_BUF2*1000;
+				   if(ax1-ax2>=50)
+				     AV_BUF2=tdata2;
+				   if(ax2-ax1>=50)
+				     AV_BUF2=tdata2;			
+				   if((ax2-ax1<=0.2)&&(tdata2==0))
+					   AV_BUF2=tdata2;
+				   if((ax1-ax2<=0.2)&&(tdata2==0))
+					   AV_BUF2=tdata2;				   
+				    tdata2=tdata2*0.1+AV_BUF2*0.9;
+				   if((tdata2<30)&&(tdata2>0.0005))
+						AV_BUF2=tdata2;
+				   if((RTU[channel].Type==mA4_20)&&(AV_BUF2<3.960))
+				   {
+				     tdata2=4.0;
+					   AV_BUF2=0;
+					   RTU[channel].Alarm=0x02; //断线
+				   }
+				   else
+				   {
+				     RTU[channel].Alarm=0x00;
+				   }
+					 #if 0 
+				   tdata2=tdata2/20*30000;
+				   if(tdata2>30000) tdata2=30000;
+					 # endif
+					 
+					  projectval = tdata2/20*30000;
+					  if(projectval>30000) projectval =30000;
+					  if(tdata2>20.0)
+							 tdata2 =20.0;
+					 
+					 if(RTU[channel].Type==mA0_10)    //0-10mA 信号类型
+					 {
+						  if(projectval>15000) 
+						 {
+							  projectval = 15000; 
+							  tdata2 =10.0;
+             }
+						 if(tdata2>10.0)
+						 {
+							 tdata2 =10.0;
+							 projectval =15000;
+						 }
+						 
+						 RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
+						 RTU[channel].value = tdata2;
+           }
+					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
+					 {
+						 if(projectval<6000) 
+						 {
+							  projectval = 6000; 
+							  tdata2 = 4.0;
+							 
+             }
+						 else if(projectval>30000)
+						 {
+							 projectval = 30000;
+               tdata2 =20.0;							 
+             }
+						 if(tdata2<4.0)
+						 {
+							 tdata2 =4.0;
+							 projectval = 6000;
+						 }
+						 else if(tdata2>20.0)
+						 {
+							 projectval = 30000;
+						 }
+						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
+						 RTU[channel].value = tdata2;
+           }
+				break;
+					 
+				default: 
+					break;
+	 				
+			}
+			break;
+			
+			default:
+			break;
+	}
+	
+}
+
+//处理采样点的切换过程
+void DealwithCollect(unsigned char channel)
+{
+	 if(BusCheckEN==1)
+	 {
+		  BusCheckEN =0; 
+		  switch(channel)
+			{
+				case CHANNEL0:
+				sampleolddote0 = sampledote0;
+				sampledote0++;
+				sw_select(CHANNEL0);  
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);		
+				Data_Deal(CHANNEL0,sampleolddote0);
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
+				break;
+			  
+				case CHANNEL1:
+				sampleolddote1 = sampledote1;
+				sampledote1++;
+				sw_select(CHANNEL1);
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);	
+				Data_Deal(CHANNEL1,sampleolddote1);
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+				break;
+				
+				case CHANNEL2:
+				sampleolddote2 = sampledote2;
+				sampledote2++;
+				sw_select(CHANNEL2);
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);	
+				Data_Deal(CHANNEL2,sampleolddote1);
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+				break;
+				
+				default:
+				break;
+				
+			}
+		 	 
+	 }
+}
+//判断处理完一个通道的数据采集
+void FinishCollect(void)
+{
+	if((CHannel0finish==1)||(CHannel1finish==1)||(CHannel2finish==1))
+	{
+		 if(CHannel0finish==1)            //通道0采样完成？
+		 {
+			  CHannel0finish =0;
+			  DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
+//			  TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE); 
+			  sampleolddote0 =0;
+			  sampledote0 =0;
+			  Calculate(CHANNEL0);          //处理并转换通道0
+			  if(collectChannel==0)         //采集完当前的输入通道,切换到下一个通道
+				{
+					collectChannel =1;
+					sw_select(CHANNEL1);        //准备采样通道1
+				}
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
+		 }
+		 else if(CHannel1finish ==1)         //通道1 采样完成?
+		 {
+			   CHannel1finish =0;
+			   DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
+//			   TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE); 
+			   sampleolddote1 =0;
+			   sampledote1 =0;
+			   Calculate(CHANNEL1);          //处理并转换通道1
+			   if(collectChannel==1)         //采集完当前的输入通道,切换到下一个通道
+				 {
+					 collectChannel =2;
+					 sw_select(CHANNEL2);        //准备采集通道2 
+				 }
+				 
+				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
+		 }
+		 
+		 else if(CHannel2finish==1)          //通道2 采样完成?
+		 {
+			 CHannel2finish=0;
+			 DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+//			 TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+       sampleolddote2 =0;
+			 sampledote2 =0;	
+       Calculate(CHANNEL2);           //处理并转换通道2
+			 if(collectChannel==2)
+			 {
+				 collectChannel =0;
+				 sw_select(CHANNEL0);         //准备采样通道0
+			 }
+			 DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
+//			 TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+       			 
+		 }
+		 
+	}
+}
 
 int adc_start( void *base, int chn)
 {
@@ -126,7 +1589,8 @@ int adc_test(void *buf, int size)
 	return ERR_OK;
 }
 
-
+//DMA1通道1（ADC）中断
+//接受完64个数据进中断
 void DMA1_Channel1_IRQHandler(void)
 {
   	if(DMA_GetITStatus(DMA1_IT_GL1)!= RESET)
@@ -134,23 +1598,23 @@ void DMA1_Channel1_IRQHandler(void)
 		/* Disable DMA1 channel1 */
   		DMA_Cmd(DMA1_Channel1, DISABLE);
 
-		              		 
-		
-//		BusCheckEN=1;                            //ADC采样完成标志
-		
-		
-		
-		
-		DMA_Cmd(DMA_adc.dma_rx_base, DISABLE);       // 关闭DMA
-		DMA_ClearFlag( DMA_adc.dma_rx_flag );           // 清除DMA标志
 		ADC_SoftwareStartConvCmd(ADC1, DISABLE);  //禁止ADC中断
-		ADC_Cmd(ADC_BASE, DISABLE);	     
-		DMA_adc.dma_rx_base->CNDTR = ADC_BUFLEN;
-		DMA_Cmd( DMA_adc.dma_rx_base, ENABLE);
-		
+
+		ADC_Cmd(ADC1, DISABLE);	                   		 
+		//常规转换序列1：通道10,MCP6S21输出，通道数据 
+    	//ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_239Cycles5); 
+		BusCheckEN=1;                            //ADC采样完成标志
+		// dote0++;
+		// if(dote0>3)
+		//  dote0 = 0;
+		//  sw_select(0);
+		init_adc1DMA();
+		DMA_ClearFlag(DMA1_IT_GL1);
 	}
 
 }
+
+
 
 
 #if 0

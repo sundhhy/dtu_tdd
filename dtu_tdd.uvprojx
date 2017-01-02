@@ -170,12 +170,12 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
-            <DriverSelection>-1</DriverSelection>
+            <Capability>1</Capability>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -418,6 +418,11 @@
               <FileType>1</FileType>
               <FilePath>.\cdma_dtu.c</FilePath>
             </File>
+            <File>
+              <FileName>Thread_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Thread_adc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -432,6 +437,16 @@
               <FileName>gprs.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\class\gprs.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32ADC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\stm32ADC.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32ADC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\stm32ADC.h</FilePath>
             </File>
           </Files>
         </Group>

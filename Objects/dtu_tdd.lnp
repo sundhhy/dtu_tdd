@@ -1,7 +1,9 @@
 --cpu Cortex-M3
 ".\objects\main.o"
 ".\objects\cdma_dtu.o"
+".\objects\thread_adc.o"
 ".\objects\gprs.o"
+".\objects\stm32adc.o"
 ".\objects\hardwareconfig.o"
 ".\objects\chipset.o"
 ".\objects\debug.o"
