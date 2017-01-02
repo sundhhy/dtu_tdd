@@ -15,7 +15,7 @@
 typedef struct {
 	short		type;
 	short		arg;
-	uint8_t 	*data;
+//	uint8_t 	*data;
 }gprs_event_t;
 
 CLASS(gprs_t)
@@ -49,7 +49,7 @@ CLASS(gprs_t)
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
-	int (*get_event)( gprs_t *self, void **event);
+	int (*report_event)( gprs_t *self, void **event, char *buf, int *lsize);
 	void (*free_event)( gprs_t *self, void *event);
 	int (*deal_tcpclose_event)( gprs_t *self, void *event);
 	int (*deal_tcprecv_event)( gprs_t *self, void *event, char *buf, int *len);
@@ -70,6 +70,24 @@ typedef enum {
     TCP_IP_OK,
     TCP_IP_NO,
 }SIM_STATUS ;
+// { |len| data[0]| ... | data[len - 1]|}
+#define EXTRASPACE		1		//维护缓存的额外空间，此处用于保存数据长度的空间
+#define ADD_RECVBUF_WR(recvbuf) { \
+	recvbuf->write ++;	\
+	recvbuf->write &= ( recvbuf->buf_len - 1);\
+}
+
+#define ADD_RECVBUF_RD(recvbuf) { \
+	recvbuf->read ++;	\
+	recvbuf->read &= ( recvbuf->buf_len - 1);\
+}
+typedef struct {
+	uint16_t	read;
+	uint16_t	write;
+	uint16_t	free_size;
+	uint16_t	buf_len;
+	char*		buf;
+}RecvdataBuf;
 
 typedef enum {
 	sms_urc = 1,

@@ -66,7 +66,7 @@ char Test_buf[TEST_BUF_SIZE];
  * main: initialize and start the system
  */
 int main (void) {
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) 
+#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) || defined(TDD_ADC ) 
 	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
 	char c = 0;

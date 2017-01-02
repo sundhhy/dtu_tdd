@@ -33,6 +33,7 @@ static int serial_cmmn( char *buf, int bufsize, int delay_ms);
 void read_event(void *buf, void *arg);
 static int prepare_ip(gprs_t *self);
 static int get_sms_phNO(char *databuf, char *phbuf);
+static int get_seq( char **data);
 
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
@@ -48,7 +49,7 @@ static int get_sms_phNO(char *databuf, char *phbuf);
 #define SMS_CHRC_SET_HEX	3
 
 #define	CMDBUF_LEN		64
-
+#define	TCPDATA_LEN		1024
 
 //ip connect state
 #define CNNT_DISCONNECT		0
@@ -69,7 +70,12 @@ static struct {
 	int8_t	cnn_state[IPMUX_NUM];
 }Ip_cnnState;
 
+
+RecvdataBuf	TcpRecvData;
+
 static char Gprs_cmd_buf[CMDBUF_LEN];
+static char TCP_data[TCPDATA_LEN];
+
 static short	Gprs_currentState = SHUTDOWN;
 static short	FlagSmsReady = 0;
 static int RcvSms_seq = 0;
@@ -89,11 +95,84 @@ int init(gprs_t *self)
 	self->event_cbuf->read = 0;
 	self->event_cbuf->write = 0;
 	self->event_cbuf->size = EVENT_MAX;
+	TcpRecvData.buf = TCP_data;
+	TcpRecvData.buf_len = TCPDATA_LEN;
+	TcpRecvData.read = 0;
+	TcpRecvData.write = 0;
+	TcpRecvData.free_size = TCPDATA_LEN;
 	
 	regRxIrq_cb( read_event, (void *)self);
 	Gprs_state.sms_msgFromt = -1;
 	Gprs_state.sms_chrcSet = -1;
 	return ERR_OK;
+}
+//todo: 没有考虑空洞的情况
+void add_recvdata( RecvdataBuf *recvbuf, char *data, int len)
+{
+	short i = 0;
+	short datalen = 0;
+	if( len > recvbuf->buf_len)
+		return;
+	if( len == 0)
+		return;
+	//buf_len 必须是2的幂
+	while(  len > TcpRecvData.free_size )
+	{
+		//清除未读取的部分
+		datalen = recvbuf->buf[ recvbuf->read];
+		recvbuf->buf[ recvbuf->read] = 0;
+		recvbuf->read += datalen + EXTRASPACE;
+		recvbuf->read &= ( recvbuf->buf_len - 1);
+		TcpRecvData.free_size += datalen + EXTRASPACE;
+		
+		i ++; 
+		if( i > 5)		//超过5次释放都无法满足，就放弃
+			return;
+	}
+	recvbuf->buf[ recvbuf->write] = len + 1;		//在结尾要加上0
+	
+	i = 0;
+	while( len)
+	{
+		ADD_RECVBUF_WR( recvbuf);
+		TcpRecvData.free_size --;
+		recvbuf->buf[ recvbuf->write ] = data[i];
+		i ++;
+		len --;
+	}
+	ADD_RECVBUF_WR( recvbuf);
+	TcpRecvData.free_size --;
+	recvbuf->buf[ recvbuf->write ] = 0;		//以0为结尾
+	ADD_RECVBUF_WR( recvbuf);
+	
+}
+int read_recvdata( RecvdataBuf *recvbuf, char *data, int bufsize)
+{
+	short len = recvbuf->buf[ recvbuf->read];
+	short i = 0;
+	if( len == 0)
+		return 0;
+	//buf_len 必须是2的幂
+	recvbuf->buf[ recvbuf->read] = 0;		//清除长度
+	ADD_RECVBUF_RD( recvbuf);
+	TcpRecvData.free_size ++;
+	while( len )
+	{
+		
+		
+		if( i < bufsize)
+		{
+			data[i++ ] = recvbuf->buf[ recvbuf->read ];
+			
+		}
+		ADD_RECVBUF_RD( recvbuf);
+		TcpRecvData.free_size ++;
+		len --;
+	}
+	if( i < bufsize)
+		return i;
+	return bufsize;
+	
 }
 
 
@@ -578,7 +657,7 @@ int	read_seq_TextSMS( gprs_t *self, char *phnNmbr, int seq, char *buf, int *len)
 					return ERR_OK;
 				}
 				pp = strstr((const char*)buf,"REC");		//当接收的数据中有REC的时候，可能是串口数据没收全，再试几次
-				if( pp && retry)
+				if( pp || retry)
 				{
 					retry --;
 				}
@@ -874,19 +953,47 @@ int deal_smsrecv_event( gprs_t *self, void *event, char *buf, int *lsize, char *
 	}
 	return ERR_FAIL;
 }
+
+	//+RECEIVE,0,6:\0D\0A
+	//123456
 int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 {
 	
 	int tmp = 0;
+	char *pp;
 	gprs_event_t *this_event = (gprs_event_t *)event;
+	*len = read_recvdata( &TcpRecvData, buf, *len);
 	if( CKECK_EVENT( this_event, tcp_receive) )
 	{
-		tmp = strlen( (const char *)this_event->data) + 1;
-		if( *len > tmp)
-			*len = tmp;
-		memcpy( buf, this_event->data, *len);
-		
 		return this_event->arg;
+//		pp = strstr((const char*)buf,"RECEIVE");
+//		if( pp)
+//		{
+
+//			this_event->arg = get_seq(&pp);;
+//			pp = strstr(pp,",");
+//			tmp = get_seq(&pp); 
+//			if( *len > tmp)
+//				*len = tmp;
+//			memcpy( buf, pp + 1, tmp);
+////			event->data = malloc( tmp + 1);
+////			if( event->data)
+////			{
+////				
+////				while( *pp != '\x00A')
+////					pp++;
+////				
+////				memcpy( event->data, pp + 1, tmp);
+////				event->data[tmp] = '\0';
+////	
+////			}	
+////		tmp = strlen( (const char *)this_event->data) + 1;
+////		if( *len > tmp)
+////			*len = tmp;
+////		memcpy( buf, this_event->data, *len);
+//		
+//		return this_event->arg;
+//		}
 		
 	}
 	
@@ -957,20 +1064,23 @@ void read_event(void *buf, void *arg)
 		{
 			
 			event->type = tcp_receive;
-			event->arg = get_seq(&pp);;
+			event->arg = get_seq(&pp);
 			pp = strstr(pp,",");
-			tmp = get_seq(&pp); ;
-			event->data = malloc( tmp + 1);
-			if( event->data)
-			{
-				
-				while( *pp != '\x00A')
-					pp++;
-				
-				memcpy( event->data, pp + 1, tmp);
-				event->data[tmp] = '\0';
-	
-			}
+			tmp = get_seq(&pp); 
+			while( *pp != '\x00A')
+				pp++;
+			add_recvdata( &TcpRecvData, pp + 1, tmp);
+//			event->data = malloc( tmp + 1);
+//			if( event->data)
+//			{
+//				
+//				while( *pp != '\x00A')
+//					pp++;
+//				
+//				memcpy( event->data, pp + 1, tmp);
+//				event->data[tmp] = '\0';
+//	
+//			}
 			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
 			{
 				
@@ -1105,14 +1215,16 @@ void read_event(void *buf, void *arg)
 	return ;
 	
 	CB_WRFAIL:
-		if( event->data)
-			free( event->data);
+		
 		free( event);
 	
 }
 
-int get_event( gprs_t *self, void **event)
+int report_event( gprs_t *self, void **event, char *buf, int *lsize)
 {
+	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
+	UART_RECV( buf, *lsize);
+	gprs_Uart_ioctl( GPRS_UART_CMD_SET_RXBLOCK);
 	
 	return CBRead( self->event_cbuf, event);
 	
@@ -1156,12 +1268,6 @@ int get_event( gprs_t *self, void **event)
 void free_event( gprs_t *self, void *event)
 {
 	gprs_event_t *this_event = (gprs_event_t *)event;
-	if( CKECK_EVENT( this_event, tcp_receive) )
-	{
-		if( this_event->data)
-			free( this_event->data);
-		
-	}
 	free(event);
 }
 
@@ -1836,7 +1942,8 @@ static int get_sms_phNO(char *databuf, char *phbuf)
 {
 	
 	char *pp;
-	int tmp = 0;
+	short tmp = 0;
+	short count = 0;
 	
 	tmp = strcspn( databuf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
 	if( tmp == strlen( databuf))			//找不到数字
@@ -1851,7 +1958,10 @@ static int get_sms_phNO(char *databuf, char *phbuf)
 		phbuf ++;
 		pp ++;
 		tmp ++;
+		count ++;
 	}
+	if( count < 8)
+		return -1;
 	return tmp;
 }
 
@@ -1871,7 +1981,7 @@ FUNCTION_SETTING(sms_test, sms_test);
 
 FUNCTION_SETTING(get_apn, get_apn);
 
-FUNCTION_SETTING(get_event, get_event);
+FUNCTION_SETTING(report_event, report_event);
 FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
 FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
 FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);

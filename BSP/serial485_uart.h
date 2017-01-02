@@ -53,7 +53,7 @@ void s485_Uart_ioctl(int cmd, ...);
 int s485_uart_test(char *buf, int size);
 
 
-#define S485_UART_BUF_LEN		512
+#define S485_UART_BUF_LEN		256
 
 #define S485_UART_CMD_SET_TXBLOCK	1
 #define S485_UART_CMD_CLR_TXBLOCK	2

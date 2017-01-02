@@ -31,3 +31,4 @@
 .\objects\gprs_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\gprs_uart.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\gprs_uart.o: ..\dtu_tdd\def.h
+.\objects\gprs_uart.o: .\sdh_lib\Ping_PongBuf.h

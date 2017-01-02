@@ -196,6 +196,29 @@ void GPIO_Configuration(void)
 #endif
 }
 
+///*! adc Configuration */
+void adc_Configuration(void)
+{
+	
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
+	/*******PB5 PB6 PB7 用于切换模拟开关(输出)*********/
+     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7;		 
+     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;  //推挽输出
+	 GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;  //2M时钟速度
+	 GPIO_Init(GPIOB, &GPIO_InitStructure);
+   /**********************************************/	
+	
+	
+	
+	/*************PC1 PC2 PC3 设置电流 电压MOS****************/
+     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3;
+	 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;  //推挽输出
+	 GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;  //2M时钟速度
+	 GPIO_Init(GPIOC, &GPIO_InitStructure);
+	 /*************************************/
+}
+
 ///*! USART Configuration */
 void USART_Configuration(void)
 {

@@ -1,7 +1,9 @@
 --cpu Cortex-M3
 ".\objects\main.o"
 ".\objects\cdma_dtu.o"
+".\objects\thread_adc.o"
 ".\objects\gprs.o"
+".\objects\stm32adc.o"
 ".\objects\hardwareconfig.o"
 ".\objects\chipset.o"
 ".\objects\debug.o"
@@ -15,6 +17,7 @@
 ".\objects\sw_filesys.o"
 ".\objects\list.o"
 ".\objects\ttextconfprot.o"
+".\objects\ping_pongbuf.o"
 ".\objects\rtx_conf_cm.o"
 "d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Lib\ARM\arm_cortexM3l_math.lib"
 "d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\LIB\ARM\RTX_CM3.lib"
