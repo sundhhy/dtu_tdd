@@ -578,6 +578,16 @@
               <FileType>1</FileType>
               <FilePath>.\sdh_lib\Ping_PongBuf.c</FilePath>
             </File>
+            <File>
+              <FileName>modbusRTU_cli.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\modbusRTU_cli.c</FilePath>
+            </File>
+            <File>
+              <FileName>modbusRTU_cli.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sdh_lib\modbusRTU_cli.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
