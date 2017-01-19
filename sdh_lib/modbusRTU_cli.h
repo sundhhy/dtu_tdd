@@ -14,9 +14,9 @@
 
 
 #define STATE_SIZE 		16//128										//×´Ì¬¼Ä´æÆ÷
-#define INPUT_SIZE 		6//160										//ÊäÈë¼Ä´æÆ÷
+#define INPUT_SIZE 		4//160										//ÊäÈë¼Ä´æÆ÷
 #define COIL_SIZE 		32//256										//ÏßÈ¦¼Ä´æÆ÷
-#define HOLD_SIZE 		6//160										//±£³Ö¼Ä´æÆ÷
+#define HOLD_SIZE 		8//160										//±£³Ö¼Ä´æÆ÷
 
 
 /*????????RAM?  0x20003fc0~0x20003fff 64??---------------------------------------*/
@@ -29,6 +29,24 @@
 #define STATE_ON 	1												//?????
 #define STATE_OFF 	0												//?????
 
+/*MODBUS cmd-------------------------------------------------------------------------*/
+#define READ_COIL			1										//??????
+#define READ_STATE			2										//??????
+#define READ_HOLD			3										//??????
+#define READ_INPUT			4										//??????
+#define WRITE_1_COIL		5										//???????
+#define WRITE_1_HOLD		6										//???????
+#define WRITE_N_COIL		15										//???????
+#define WRITE_N_HOLD		16										//??????? 
 
+uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type);
+uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val);
+uint16_t regType4_read(uint16_t input_address, uint16_t reg_type);
+uint16_t regType4_write(uint16_t input_address, uint16_t reg_type);
+
+uint16_t CRC16(uint8_t *puchMsg, uint16_t usDataLen);			         //16Î»crcÐ£Ñé
+
+uint8_t 	modbusRTU_getID(uint8_t *command_buf);
+uint16_t modbusRTU_data(uint8_t *command_buf, uint8_t *ack_buf, int ackbuf_len);
 
 #endif
