@@ -28,3 +28,8 @@
 .\objects\times.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\times.o: ..\dtu_tdd\sdhError.h
 .\objects\times.o: ..\dtu_tdd\osObjects.h
+.\objects\times.o: .\class\led.h
+.\objects\times.o: .\lw_oopc_v1.2\lw_oopc.h
+.\objects\times.o: .\sdh_lib\CircularBuffer.h
+.\objects\times.o: .\BSP\hardwareConfig.h
+.\objects\times.o: .\BSP\spi.h

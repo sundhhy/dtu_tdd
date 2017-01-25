@@ -89,7 +89,7 @@ static void ledcom_uartcb(void *rxbuf, void *arg)
 {
 	stm32LED	*led_com = ( stm32LED	*)arg;
 	
-	led_com->blink(led_com);
+	led_com->turnon(led_com);
 }
 
 void thrd_dtu (void const *argument) {
@@ -100,7 +100,7 @@ void thrd_dtu (void const *argument) {
 	short i = 0;
 	char ser_confmode = 0;
 	char count = 0;
-	char *pp;
+//	char *pp;
 	void *gprs_event;
 	int retry = 20;
 	
@@ -190,7 +190,7 @@ void thrd_dtu (void const *argument) {
 	
 
 	while (1) {
-		LED_run->blink( LED_run);
+//		LED_run->blink( LED_run);
 		switch( step)
 		{
 			
@@ -637,6 +637,7 @@ static void dtu_conf(void)
 						ack_str( DTU_Buf);
 						goto exit;
 					}
+					
 					i ++;
 					break;
 				case 1:
@@ -955,7 +956,7 @@ static void dtu_conf(void)
 				
 				strcpy( DTU_Buf, Dtu_config.apn);	
 				ack_str( DTU_Buf);
-					
+				return;	
 				
 				
 			}
@@ -1081,14 +1082,17 @@ static void dtu_conf(void)
 			ack_str( DTU_Buf);
 			goto exit;
 		}
-		else if( strcmp(pcmd ,"REST") == 0)
+		else if( strcmp(pcmd ,"RESET") == 0)
 		{
 			
 			strcpy( DTU_Buf, "OK");
 			ack_str( DTU_Buf);
+			
+			LED_run->destory(LED_run);
 			fs_flush();
 			SIM800->shutdown(SIM800);
 			os_reboot();
+			
 			goto exit;
 		}
 		if( parg == NULL)

@@ -6,7 +6,7 @@
 #include "cmsis_os.h"
 #include "sdhError.h"
 #include "osObjects.h"
-
+#include "led.h"
 TIME2_T g_time2;
 
 
@@ -85,10 +85,16 @@ void TIM2_IRQHandler(void)          //定时器中断约10ms
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
     { 
 			g_time2.time_ms += 10;
+			if( g_time2.time_ms % 200 == 0)
+			{
+				LED_run->blink(LED_run);
+				
+			}
 			if( g_time2.time_ms >= 1000)
 			{
 				g_time2.time_s ++;
 				g_time2.time_ms = 0;
+				LED_com->turnoff(LED_com);
 				feed_iwwg();
 			}   
 

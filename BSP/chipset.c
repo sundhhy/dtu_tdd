@@ -83,7 +83,7 @@ void IWDG_Configuration(void)
 	
 	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);   /* 写入0x5555,允许向狗的寄存器写入 */
     IWDG_SetPrescaler(IWDG_Prescaler_256);          /* 时钟分频,40K/256=156HZ(6.4ms)*/
-    IWDG_SetReload(781);                            /* 喂狗时间 5s/6.4MS=781 不得超过0xfff*/
+    IWDG_SetReload(468);                            /* 喂狗时间 3s/6.4MS=468 不得超过0xfff*/
     IWDG_ReloadCounter();                           /* 喂狗*/
     IWDG_Enable();                                  /* 使能狗*/
 	

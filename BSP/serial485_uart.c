@@ -174,6 +174,10 @@ int s485_Uart_read(char *data, uint16_t size)
 		memset( data, 0, size);
 		memcpy( data, S485Uart_buf, len);
 		memset( S485Uart_buf, 0, len);
+		
+		if( T485Rxirq_cb != NULL && len)
+			T485Rxirq_cb->cb( NULL,  T485Rxirq_cb->arg);
+		S485_uart_ctl.recv_size = 0;
 		return len;
 	}
 	
@@ -349,8 +353,7 @@ void USART2_IRQHandler(void)
 	uint8_t clear_idle = clear_idle;
 	if(USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)  // 空闲中断
 	{
-		if( T485Rxirq_cb != NULL)
-			T485Rxirq_cb->cb( NULL,  T485Rxirq_cb->arg);
+		
 		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE);       // 关闭DMA
 		DMA_ClearFlag( DMA_s485_usart.dma_rx_flag );           // 清除DMA标志
 		S485_uart_ctl.recv_size = S485_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_s485_usart.dma_rx_base); //获得接收到的字节

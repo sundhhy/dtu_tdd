@@ -197,13 +197,17 @@ void shutdown(gprs_t *self)
 {
 	
 	char *pp;
-	while(1)
+	int count = 0;
+//	while(1)
 	{
+		count ++;
 		strcpy( Gprs_cmd_buf, "AT+CPOWD=1\r\n" );		//正常关机
-		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,5000);
-		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
-		if( pp)
-			return;
+		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,2000);
+//		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
+//		if( pp)
+//			return;
+//		if( count > 2)
+//			return;
 	}
 }
 

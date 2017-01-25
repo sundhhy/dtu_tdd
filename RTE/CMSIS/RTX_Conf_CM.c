@@ -243,6 +243,7 @@ void feed_iwwg(void)
 {
 	 if( reset == 0)
 		IWDG_ReloadCounter();
+	 
 	
 }
  
