@@ -61,9 +61,9 @@ int Init_ThrdDtu (void) {
 //		}
 //		
 //	}
-	
-	
+	DPRINTF(" get_dtuCfg\n");
 	get_dtuCfg( &Dtu_config);
+	DPRINTF(" get_dtuCfg done\n");
 	clean_time2_flags();
 
 	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
@@ -110,6 +110,7 @@ void thrd_dtu (void const *argument) {
 //	strcpy( DTU_Buf, " wait for signal ...");
 //	s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
 //	osDelay(10);
+	
 	set_alarmclock_s( ALARM_CHGWORKINGMODE, 3);
 	while( 1)
 	{
@@ -134,7 +135,7 @@ void thrd_dtu (void const *argument) {
 				ser_confmode = 1;
 				while( s485_Uart_write(DTU_Buf, strlen(DTU_Buf) ) != ERR_OK)
 					;
-				osDelay(1);
+				osDelay(10);
 			}
 			
 		}
@@ -480,10 +481,11 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	
 	
 	DtuCfg_file	= fs_open( DTUCONF_filename);
-
+	DPRINTF(" fs_open  %p \n", DtuCfg_file);
 	if( DtuCfg_file)
 	{
 		fs_read( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
+		DPRINTF(" fs_read  done \n");
 		if( conf->ver[0] == DTU_CONFGILE_MAIN_VER &&  conf->ver[1] == DTU_CONFGILE_SUB_VER)
 		{
 			
@@ -493,7 +495,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	else
 	{
 		DtuCfg_file	= fs_creator( DTUCONF_filename, sizeof( DtuCfg_t));
-		
+		DPRINTF(" fs_creator  %p \n", DtuCfg_file);
 			
 	}
 	

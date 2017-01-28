@@ -95,7 +95,7 @@ void w25q_info(void *info);
 int w25q_erase(uint32_t offset, uint32_t len);
 int w25q_Write_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
 int w25q_Read_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
-
+int w25q_Read_page_Data(uint8_t *pBuffer, uint16_t num_page);
 
 
 int w25q_Erase_Sector(uint16_t Sector_Number);

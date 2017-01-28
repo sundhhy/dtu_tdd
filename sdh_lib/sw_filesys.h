@@ -4,7 +4,7 @@
 #include "osObjects.h"                      // RTOS object definitions
 #include "stdint.h"
 #include "list.h"
-#define FILESYS_VER	"V2.2"
+#define FILESYS_VER	"V3.2"
 
 ///对外接口 ----------------------------------------------------------------
 #define	TASK_NUM		8			///文件系统使用的时候，为每个任务维护一个管理数据结构
@@ -12,6 +12,7 @@
 #define flash_erase 						w25q_erase
 #define	flash_write_sector			w25q_Write_Sector_Data
 #define	flash_read_sector				w25q_Read_Sector_Data
+#define	flash_read_page				w25q_Read_page_Data
 #define STORAGE_INIT()						w25q_init() 
 #define STORAGE_CLOSE()						w25q_close()	
 #define STORAGE_INFO(info)					w25q_info(info)
@@ -26,8 +27,8 @@ typedef struct {
 	int32_t		page_size;						///一页的长度
 	int32_t		total_pagenum;					///整个存储器的页数量
 	
-	uint16_t		sector_pagenum;
-	uint16_t		block_pagenum;
+	uint16_t		sector_pagenum;			//一个扇区的页数
+	uint16_t		block_pagenum;			//一个块的扇区页数
 	
 //privately
 	uint32_t	sector_size;
