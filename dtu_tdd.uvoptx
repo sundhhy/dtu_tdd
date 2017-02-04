@@ -171,9 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>958</LineNumber>
+          <LineNumber>960</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134229384</Address>
+          <Address>134229724</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -187,9 +187,9 @@
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>1094</LineNumber>
+          <LineNumber>1096</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134229982</Address>
+          <Address>134230322</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -203,15 +203,15 @@
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>1096</LineNumber>
+          <LineNumber>1094</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134230306</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
+          <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\cdma_dtu.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
@@ -219,7 +219,55 @@
         <Bp>
           <Number>3</Number>
           <Type>0</Type>
-          <LineNumber>960</LineNumber>
+          <LineNumber>485</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134233028</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\cdma_dtu.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>159</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134247720</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\cdma_dtu.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>5</Number>
+          <Type>0</Type>
+          <LineNumber>114</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134247594</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\cdma_dtu.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\cdma_dtu.c\114</Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
+          <Type>0</Type>
+          <LineNumber>958</LineNumber>
           <EnabledFlag>0</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -238,6 +286,16 @@
           <count>0</count>
           <WinNumber>1</WinNumber>
           <ItemText>GprsUart_buf</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Dtu_config</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DtuCfg_file</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -305,6 +363,11 @@
           <count>12</count>
           <WinNumber>2</WinNumber>
           <ItemText>len</ItemText>
+        </Ww>
+        <Ww>
+          <count>13</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>Flash_buf</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

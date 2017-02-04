@@ -158,7 +158,7 @@ int filesys_close(void)
 //2. 从文件系统管理缓存起始位置开始查找文件,如果找到就返回结果，如果文件系统信息不对就直接退出文件系统错误.
 //3.如果找不到，就读取页数加1，同时页缓存的位置也偏移一个页的长度
 //4.重复步骤1，2，3，直到找到文件或者文件信息扇区0的数据都被读完了就返回找不到文件
-static int sarch_finleinfo_and_return_curpage( char *name, file_info_t *file_info);
+static int sarch_finleinfo_and_return_curpage( char *name, file_info_t **file_info);
 static sdhFile* rdFilearea_byfileinfo( file_info_t *file_info, int current_page);
 sdhFile * fs_open(char *name)
 {
@@ -186,7 +186,7 @@ sdhFile * fs_open(char *name)
 		return pfd;
 		
 	}
-	cur_page = sarch_finleinfo_and_return_curpage( name,  file_in_storage);
+	cur_page = sarch_finleinfo_and_return_curpage( name,  &file_in_storage);
 	if( file_in_storage )	
 	{
 		//查找文件在存储器中的存储区间
@@ -217,7 +217,7 @@ sdhFile * fs_open(char *name)
 		return NULL;
 	}
 }
-static int sarch_finleinfo_and_return_curpage( char *name, file_info_t *file_info)
+static int sarch_finleinfo_and_return_curpage( char *name, file_info_t **file_info)
 {
 	int 				ret = 0;
 	short 				fileinfo_begin_page = Page_Zone.fileinfo_sector_begin * StrgInfo.sector_pagenum;
@@ -242,7 +242,7 @@ static int sarch_finleinfo_and_return_curpage( char *name, file_info_t *file_inf
 	}
 	while( 1)
 	{
-		file_info = searchfile( Flash_buf, name);
+		*file_info = searchfile( Flash_buf, name);
 		if( file_info)
 		{
 			return rd_page;
@@ -290,6 +290,8 @@ static sdhFile* rdFilearea_byfileinfo( file_info_t *file_info, int current_page)
 		if( src_area->file_id == file_info->file_id)		
 		{
 			j ++;
+//			if( j == file_info->area_total)
+//				break;
 		}
 		local += sizeof(file_info_t);
 		src_area ++;
