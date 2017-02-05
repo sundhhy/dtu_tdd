@@ -37,7 +37,9 @@ typedef struct {
 	
 	char	dns_ip[IP_LEN];
 	char	smscAddr[16];
-	char	apn[IP_ADDR_LEN];
+	char	apn[64];		//由接入点，用户名，密码 三部分组成
+//	char	apn_username[32];
+//	char	apn_passwd[16];
 	char	DateCenter_ip[IPMUX_NUM][IP_ADDR_LEN];
 	int		DateCenter_port[IPMUX_NUM];
 	char	protocol[IPMUX_NUM][4];
