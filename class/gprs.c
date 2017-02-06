@@ -34,7 +34,7 @@ void read_event(void *buf, void *arg);
 static int prepare_ip(gprs_t *self);
 static int get_sms_phNO(char *databuf, char *phbuf);
 static int get_seq( char **data);
-
+static int check_apn(char *apn);
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
 
@@ -196,7 +196,7 @@ void startup(gprs_t *self)
 void shutdown(gprs_t *self)
 {
 	
-	char *pp;
+//	char *pp;
 	int count = 0;
 //	while(1)
 	{
@@ -976,8 +976,8 @@ int deal_smsrecv_event( gprs_t *self, void *event, char *buf, int *lsize, char *
 int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 {
 	
-	int tmp = 0;
-	char *pp;
+//	int tmp = 0;
+//	char *pp;
 	gprs_event_t *this_event = (gprs_event_t *)event;
 	*len = read_recvdata( &TcpRecvData, buf, *len);
 	if( CKECK_EVENT( this_event, tcp_receive) )
@@ -1087,17 +1087,6 @@ void read_event(void *buf, void *arg)
 			while( *pp != '\x00A')
 				pp++;
 			add_recvdata( &TcpRecvData, pp + 1, tmp);
-//			event->data = malloc( tmp + 1);
-//			if( event->data)
-//			{
-//				
-//				while( *pp != '\x00A')
-//					pp++;
-//				
-//				memcpy( event->data, pp + 1, tmp);
-//				event->data[tmp] = '\0';
-//	
-//			}
 			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
 			{
 				
@@ -1128,99 +1117,6 @@ void read_event(void *buf, void *arg)
 		
 		
 	}
-		
-	
-	
-	
-	
-	
-//	while(pp)
-//	{
-//		pp = strstr((const char*)pp,"CLOSED");
-//		if( pp)
-//		{
-//			event = malloc(	sizeof( gprs_event_t));
-//			if( event)
-//			{
-//				event->type = tcp_close;
-//				event->arg = get_seq(&pp);
-//				if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
-//				{
-//					
-//					goto CB_WRFAIL;
-//					
-//				}
-//				continue;
-//			}
-//			else
-//			{
-//				break;
-//			}
-//		}
-//		//+RECEIVE,0,6:\0D\0A
-//		//123456
-//		pp = strstr((const char*)pp,"RECEIVE");
-//		if( pp)
-//		{
-//			event = malloc(	sizeof( gprs_event_t));
-//			if( event)
-//			{
-//				
-//				event->type = tcp_receive;
-//				event->arg = get_seq(&pp);;
-//				pp = strstr(pp,",");
-//				tmp = get_seq(&pp); ;
-//				event->data = malloc( tmp + 1);
-//				if( event->data)
-//				{
-//					
-//					while( *pp != '\x00A')
-//						pp++;
-//					
-//					memcpy( event->data, pp + 1, tmp);
-//					event->data[tmp] = '\0';
-//		
-//				}
-//				if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
-//				{
-//					
-//					goto CB_WRFAIL;
-//					
-//				}
-//				continue;
-//			}
-//			else
-//			{
-//				break;
-//			}
-//			
-//		}
-//		pp = strstr((const char*)pp,"CMTI");
-//		if( pp)
-//		{
-//			
-//			event = malloc(	sizeof( gprs_event_t));
-//			if( event)
-//			{
-//				event->type = sms_urc;
-//				event->arg = get_seq(&pp);
-//				if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
-//				{
-//					
-//					goto CB_WRFAIL;
-//					
-//				}
-//				continue;
-//			}
-//			else
-//			{
-//				break;
-//			}
-//			
-//			
-//		}
-//		
-//	}
 	pp = strstr((const char*)buf,"SMS Ready");
 	if( pp)
 	{
@@ -1284,7 +1180,7 @@ int report_event( gprs_t *self, void **event, char *buf, int *lsize)
 
 void free_event( gprs_t *self, void *event)
 {
-	gprs_event_t *this_event = (gprs_event_t *)event;
+//	gprs_event_t *this_event = (gprs_event_t *)event;
 	free(event);
 }
 
@@ -1354,8 +1250,8 @@ int get_apn( gprs_t *self, char *buf)
 {
 	if( buf == NULL )
 		return ERR_BAD_PARAMETER;
-	if( Dtu_config.apn[0] == 0)
-		strcpy(buf, "CNMT");
+	if( !check_apn( Dtu_config.apn))
+		strcpy(buf, "CMNET, ,");
 	else
 		strcpy(buf,Dtu_config.apn);
 	
@@ -1888,7 +1784,11 @@ static int prepare_ip(gprs_t *self)
 				if( !check_apn( Dtu_config.apn))
 					strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置默认gprs接入点
 				else
+				{
 					sprintf( Gprs_cmd_buf, "AT+CSTT=%s\x00D\x00A", Dtu_config.apn );
+					
+				}
+					
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)

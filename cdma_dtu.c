@@ -61,9 +61,9 @@ int Init_ThrdDtu (void) {
 //		}
 //		
 //	}
-	
-	
+	DPRINTF(" get_dtuCfg\n");
 	get_dtuCfg( &Dtu_config);
+	DPRINTF(" get_dtuCfg done\n");
 	clean_time2_flags();
 
 	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
@@ -110,6 +110,7 @@ void thrd_dtu (void const *argument) {
 //	strcpy( DTU_Buf, " wait for signal ...");
 //	s485_Uart_write(DTU_Buf, strlen(DTU_Buf) );
 //	osDelay(10);
+	
 	set_alarmclock_s( ALARM_CHGWORKINGMODE, 3);
 	while( 1)
 	{
@@ -119,6 +120,7 @@ void thrd_dtu (void const *argument) {
 				break;
 			
 		}
+		osDelay(10);
 		
 		ret = s485_Uart_read( DTU_Buf, DTU_BUF_LEN);
 		if( ret <=  0)
@@ -126,19 +128,7 @@ void thrd_dtu (void const *argument) {
 			continue;
 		}
 			
-		if( ser_confmode == 0)
-		{
-			if( enter_TTCP( DTU_Buf) == ERR_OK)
-			{
-				get_TTCPVer( DTU_Buf);
-				ser_confmode = 1;
-				while( s485_Uart_write(DTU_Buf, strlen(DTU_Buf) ) != ERR_OK)
-					;
-				osDelay(1);
-			}
-			
-		}
-		else
+		if( ser_confmode)
 		{
 			if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
 			{
@@ -146,6 +136,17 @@ void thrd_dtu (void const *argument) {
 				dtu_conf();
 				decodeTTCP_finish();
 				
+			}
+		}
+		else
+		{
+			if( enter_TTCP( DTU_Buf) == ERR_OK)
+			{
+				get_TTCPVer( DTU_Buf);
+				ser_confmode = 1;
+				while( s485_Uart_write(DTU_Buf, strlen(DTU_Buf) ) != ERR_OK)
+					;
+				osDelay(10);
 			}
 			
 		}
@@ -480,10 +481,12 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	
 	
 	DtuCfg_file	= fs_open( DTUCONF_filename);
-
+	DPRINTF(" fs_open  %p \n", DtuCfg_file);
 	if( DtuCfg_file)
 	{
+		//todo: 2017-02-04 21:40:21 ´Ë´¦ºÄÊ±8s
 		fs_read( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
+		DPRINTF(" fs_read  done \n");
 		if( conf->ver[0] == DTU_CONFGILE_MAIN_VER &&  conf->ver[1] == DTU_CONFGILE_SUB_VER)
 		{
 			
@@ -493,7 +496,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 	else
 	{
 		DtuCfg_file	= fs_creator( DTUCONF_filename, sizeof( DtuCfg_t));
-		
+		DPRINTF(" fs_creator  %p \n", DtuCfg_file);
 			
 	}
 	
@@ -615,7 +618,10 @@ static void dtu_conf(void)
 					strcat(DTU_Buf, tmpbuf);
 					strcat(DTU_Buf, Dtu_config.DateCenter_ip[ i]);
 					strcat(DTU_Buf, ",");
-					sprintf(tmpbuf, "%d,", Dtu_config.DateCenter_port[i]);
+					if( Dtu_config.DateCenter_port[i])
+						sprintf(tmpbuf, "%d,", Dtu_config.DateCenter_port[i]);
+					else
+						sprintf(tmpbuf, " ,");
 					strcat(DTU_Buf, tmpbuf);
 					strcat(DTU_Buf, Dtu_config.protocol[i]);
 					strcat(DTU_Buf, ",");
@@ -733,6 +739,7 @@ static void dtu_conf(void)
 				case 0:
 					i_data = atoi( parg);
 					Dtu_config.dtu_id = i_data;
+					memset( Dtu_config.admin_Phone[0], 0, sizeof(Dtu_config.admin_Phone));
 					i++;
 					break;
 				case 1:
@@ -749,7 +756,7 @@ static void dtu_conf(void)
 					}
 					copy_phoneNO( Dtu_config.sim_NO, parg);
 					
-					memset( Dtu_config.admin_Phone[0], 0, sizeof(Dtu_config.admin_Phone));
+					
 					i++;
 					i_data = 0;
 					break;
@@ -942,7 +949,7 @@ static void dtu_conf(void)
 			goto exit;
 		}
 		
-		else if( strcmp(pcmd ,"VAPN") == 0)
+		else if( strncmp(pcmd ,"VAPN",4) == 0)
 		{
 			if( parg == NULL)
 			{
@@ -952,9 +959,11 @@ static void dtu_conf(void)
 			}
 			if( parg[0] == '?')
 			{
-//				SIM800->get_apn( SIM800, DTU_Buf);
-				
-				strcpy( DTU_Buf, Dtu_config.apn);	
+				SIM800->get_apn( SIM800, DTU_Buf);
+//				strcat( DTU_Buf, ", ");
+//				strcat( DTU_Buf, Dtu_config.apn_username);
+//				strcat( DTU_Buf, ", ");
+//				strcat( DTU_Buf, Dtu_config.apn_passwd);
 				ack_str( DTU_Buf);
 				return;	
 				
@@ -967,11 +976,10 @@ static void dtu_conf(void)
 					strcpy( Dtu_config.apn, parg);
 					
 				}
-				else
+				else if( i <= 2)
 				{
-					
 					strcat( Dtu_config.apn, ",");
-					strcat( Dtu_config.apn, parg);
+					strcpy( Dtu_config.apn, parg);
 				}
 				i ++;
 				

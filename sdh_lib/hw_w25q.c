@@ -301,7 +301,28 @@ int w25q_Read_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num)
 	return ERR_OK;
 }
 
-
+int w25q_Read_page_Data(uint8_t *pBuffer, uint16_t num_page)
+{
+	return w25q_rd_data( pBuffer, num_page * PAGE_SIZE, PAGE_SIZE);
+//	uint8_t num_sector = num_page / SECTOR_HAS_PAGES;
+//	uint8_t num_block = num_sector / ( BLOCK_HAS_SECTORS);
+//	if( num_page > W25Q_flash.page_num)
+//		return ERR_BAD_PARAMETER;
+//	memset( pBuffer, 0xff, SECTOR_SIZE);
+//	
+//	W25Q_Enable_CS;
+//	W25Q_tx_buf[0] = W25Q_INSTR_READ_DATA;
+//	W25Q_tx_buf[1] = num_sector;
+//	W25Q_tx_buf[2] = num_sector<<4;
+//	W25Q_tx_buf[3] = num_page;
+//	if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
+//		return ERR_DRI_OPTFAIL;
+//	
+//	if( SPI_READ( pBuffer, PAGE_SIZE) != ERR_OK)
+//		return ERR_DRI_OPTFAIL;
+//	W25Q_Disable_CS;
+//	return ERR_OK;
+}
 
 int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len)
 {

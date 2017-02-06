@@ -70,33 +70,53 @@ int	spi_close( SPI_instance	*spi)
 
 int spi_sendByteForRead( SPI_instance *spi)
 {
-	int count_ms = spi->pctl->rx_waittime_ms;
-	
+//	int count_ms = spi->pctl->rx_waittime_ms;
+	int safe_count = spi->pctl->rx_waittime_ms * 1000;
 		/*! Loop while DR register in not emplty */
 	while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_TXE) == RESET)
 	{
 		if( spi->pctl->rx_block == 0)
 			return ERR_DEV_BUSY;
-		
-		osDelay(1);
-		if( count_ms)
-			count_ms --;
+		if( safe_count)
+		{
+			safe_count --;
+			
+		}
 		else
+		{
 			return ERR_DEV_TIMEOUT;
-		;
+		}
+//		osDelay(1);
+//		if( count_ms)
+//			count_ms --;
+//		else
+//			return ERR_DEV_TIMEOUT;
+//		;
 	}
 	 
 	/*!Send byte through the SPI1 peripheral */
 	SPI_I2S_SendData(spi->spi_base, 0xff);
 	 
 	/*! Wait to receive a byte */
+	safe_count = spi->pctl->rx_waittime_ms * 1000;
 	while (SPI_I2S_GetFlagStatus(spi->spi_base, SPI_I2S_FLAG_RXNE) == RESET)
 	{
-		osDelay(1);
-		if( count_ms)
-			count_ms --;
+		
+		if( safe_count)
+		{
+			safe_count --;
+			
+		}
 		else
+		{
 			return ERR_DEV_TIMEOUT;
+		}
+		
+//		osDelay(1);
+//		if( count_ms)
+//			count_ms --;
+//		else
+//			return ERR_DEV_TIMEOUT;
 		
 	}
 	 
@@ -107,17 +127,26 @@ int spi_sendByteForRead( SPI_instance *spi)
 int spi_write( SPI_instance *spi, uint8_t *data, int len)
 {
 	short i = 0;
-	short count_ms = spi->pctl->tx_waittime_ms;
+//	short count_ms = spi->pctl->tx_waittime_ms;
+	int safe_count = spi->pctl->tx_waittime_ms * 1000;
 	while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_BSY))
 	{
 		if( spi->pctl->tx_block == 0)
 			return ERR_DEV_BUSY;
-		
-		osDelay(1);
-		if( count_ms)
-			count_ms --;
+		if( safe_count)
+		{
+			safe_count --;
+			
+		}
 		else
+		{
 			return ERR_DEV_TIMEOUT;
+		}
+//		osDelay(1);
+//		if( count_ms)
+//			count_ms --;
+//		else
+//			return ERR_DEV_TIMEOUT;
 	}
 	for( i = 0; i < len; i++)
 	{
@@ -133,17 +162,26 @@ int spi_write( SPI_instance *spi, uint8_t *data, int len)
 		}
 		SPI_I2S_ReceiveData( spi->spi_base); 
 	}
-	count_ms = spi->pctl->tx_waittime_ms;
+//	count_ms = spi->pctl->tx_waittime_ms;
+	safe_count = spi->pctl->tx_waittime_ms * 1000;
 	while( SPI_I2S_GetFlagStatus( spi->spi_base, SPI_I2S_FLAG_BSY))
 	{
 		if( spi->pctl->tx_block == 0)
 			return ERR_DEV_BUSY;
-		
-		osDelay(1);
-		if( count_ms)
-			count_ms --;
+		if( safe_count)
+		{
+			safe_count --;
+			
+		}
 		else
+		{
 			return ERR_DEV_TIMEOUT;
+		}
+//		osDelay(1);
+//		if( count_ms)
+//			count_ms --;
+//		else
+//			return ERR_DEV_TIMEOUT;
 	}
 	
 	return ERR_OK;

@@ -171,25 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>958</LineNumber>
+          <LineNumber>631</LineNumber>
           <EnabledFlag>0</EnabledFlag>
-          <Address>134229384</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\cdma_dtu.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>1094</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134229982</Address>
+          <Address>134228304</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -206,6 +190,16 @@
           <count>0</count>
           <WinNumber>1</WinNumber>
           <ItemText>GprsUart_buf</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Dtu_config</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DtuCfg_file</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -273,6 +267,11 @@
           <count>12</count>
           <WinNumber>2</WinNumber>
           <ItemText>len</ItemText>
+        </Ww>
+        <Ww>
+          <count>13</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>Flash_buf</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

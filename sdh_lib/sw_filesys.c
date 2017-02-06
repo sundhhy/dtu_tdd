@@ -49,7 +49,8 @@ static void set_bit(uint8_t *data, int bit);
 static void get_area( int pg_offset, int size, area_t *out_area);
 static int page_malloc( area_t *area, int len);
 static int page_free( area_t *area, int area_num);
-static int read_flash( uint16_t sector);
+static int read_sector( uint16_t sector);
+static int read_page( uint8_t *rd_buf,  uint16_t page);
 static int flush_flash( uint16_t sector);
 static file_info_t	*searchfile( uint8_t* flash_data, char *name);
 static int mach_file(const void *key, const void *data)
@@ -103,8 +104,8 @@ int filesys_init(void)
 	//找到管理内存需要几个扇区
 	while(1)
 	{
-		capacity_pagenum = pageuseinfo_sector * StrgInfo.sector_pagenum * StrgInfo.page_size * 8;			
-		data_pagenum -= pageuseinfo_sector * StrgInfo.sector_pagenum;								///
+		capacity_pagenum = pageuseinfo_sector * StrgInfo.sector_pagenum * StrgInfo.page_size * 8;	//一个扇区能够管理的页面数量		
+		data_pagenum -= pageuseinfo_sector * StrgInfo.sector_pagenum;	//							///
 		if( capacity_pagenum < data_pagenum)
 			pageuseinfo_sector ++;
 		else
@@ -122,15 +123,18 @@ int filesys_init(void)
 int filesys_mount(void)
 {
 	int ret = 0;
+	int suphead_page = Page_Zone.fileinfo_sector_begin * StrgInfo.sector_pagenum;
 	sup_sector_head_t	*sup_head;
 	
-	ret = read_flash( Page_Zone.fileinfo_sector_begin);
+	ret = read_page(Flash_buf, suphead_page);
 	if( ret != ERR_OK)
 		return ERR_DRI_OPTFAIL;
 	
 	sup_head = ( sup_sector_head_t *)Flash_buf;
+	
 	if( strcmp( sup_head->ver, FILESYS_VER) != 0x00 )	//文件系统版本号不一致
 	{
+		printf(" filesys ver = %s \n", sup_head->ver);
 		return fs_format();
 
 	}	
@@ -149,116 +153,193 @@ int filesys_close(void)
 }
 
 //从文件记录扇区0中找到指定名字的文件记录信息
+//0. 设置好启示页和起页缓存位置为文件系统管理内存的起始位置
+//1. 读取页内容到缓存
+//2. 从文件系统管理缓存起始位置开始查找文件,如果找到就返回结果，如果文件系统信息不对就直接退出文件系统错误.
+//3.如果找不到，就读取页数加1，同时页缓存的位置也偏移一个页的长度
+//4.重复步骤1，2，3，直到找到文件或者文件信息扇区0的数据都被读完了就返回找不到文件
+static int sarch_finleinfo_and_return_curpage( char *name, file_info_t **file_info);
+static sdhFile* rdFilearea_byfileinfo( file_info_t *file_info, int current_page);
 sdhFile * fs_open(char *name)
 {
-	int ret = 0;
-	file_info_t	*file_in_storage;
-	sdhFile *pfd;
-	storage_area_t	*src_area;
-	area_t					*dest_area;	
-	sup_sector_head_t	*sup_head;
+	file_info_t			*file_in_storage = NULL;
+	sdhFile 			*pfd;
 	ListElmt			*ele;
-	short 				j;
-	short		end = 0;
-	short step = 0;
+	
+	int 				cur_page = 0;
+	
 	if( Flash_err_flag )
 	{
 		FsErr = ERR_FLASH_UNAVAILABLE;
 		return (NULL);
 	}
-	while(1)
+	Src_sector = INVALID_SECTOR;
+
+	ele = list_get_elmt( &L_File_opened,name);		//先从已经打开的文件中查找是否已经被其他任务打开过
+	if(  ele!= NULL)
 	{
-		switch( step)
+		pfd = list_data(ele);
+		pfd->reference_count ++;
+		pfd->rd_pstn[SYS_GETTID()] = 0;
+		pfd->wr_pstn[SYS_GETTID()] = 0;
+		printf(" list_get_elmt = %p \n",pfd);
+		return pfd;
+		
+	}
+	cur_page = sarch_finleinfo_and_return_curpage( name,  &file_in_storage);
+	if( file_in_storage )	
+	{
+		//查找文件在存储器中的存储区间
+		pfd = rdFilearea_byfileinfo( file_in_storage, cur_page);
+		if( pfd)
 		{
-			case 0:
-				ele = list_get_elmt( &L_File_opened,name);		//先从已经打开的文件中查找是否已经被其他任务打开过
-				if(  ele!= NULL)
-				{
-					pfd = list_data(ele);
-					pfd->reference_count ++;
-					pfd->rd_pstn[SYS_GETTID()] = 0;
-					pfd->wr_pstn[SYS_GETTID()] = 0;
-					return pfd;
+			strcpy( pfd->name, name);
+			pfd->reference_count = 1;
+			memset( pfd->rd_pstn, 0, sizeof( pfd->rd_pstn));
+			memset( pfd->wr_pstn, 0, sizeof( pfd->wr_pstn));
+			list_ins_next( &L_File_opened, L_File_opened.tail, pfd);
+			FsErr = ERR_OK;
+			return pfd;
+			
+		}
+		else
+		{
+			FsErr =  ERR_FILE_ERROR;
+			printf(" file %s can\'t find sotre area \n", file_in_storage->name);
+			return NULL;
+		}
+	
+	}
+	else
+	{
+		
+		FsErr =  ERR_NON_EXISTENT;
+		return NULL;
+	}
+}
+static int sarch_finleinfo_and_return_curpage( char *name, file_info_t **file_info)
+{
+	int 				ret = 0;
+	short 				fileinfo_begin_page = Page_Zone.fileinfo_sector_begin * StrgInfo.sector_pagenum;
+	short 				fileinfo_end_page = Page_Zone.fileinfo_sector_end * StrgInfo.sector_pagenum;
+	short 				rd_page = fileinfo_begin_page;
+	uint8_t 			*p_rdpage_buf = Flash_buf + ( rd_page - fileinfo_begin_page) * StrgInfo.page_size;
+	sup_sector_head_t	*sup_head;
+
+	ret = read_page( p_rdpage_buf, rd_page);
+	if( ret != ERR_OK)
+	{
+		printf(" read_page FIALED %d \n", ret);
+		FsErr =  ERR_DRI_OPTFAIL;
+		return ERR_FAIL;
+	}
+	sup_head = ( sup_sector_head_t *)Flash_buf;
+	if( strcmp( sup_head->ver, FILESYS_VER) != 0x00 )	//文件系统版本号不一致
+	{
+		FsErr =  ERR_FILESYS_ERROR;
+		printf(" ERR_FILESYS_ERROR \n");
+		return ERR_FAIL;
+	}
+	while( 1)
+	{
+		*file_info = searchfile( Flash_buf, name);
+		if( file_info)
+		{
+			return rd_page;
+		}
+		else
+		{
+			rd_page ++;
+		}
+		if( rd_page >= fileinfo_end_page)
+			break;
+		ret = read_page( p_rdpage_buf, rd_page);
+		if( ret != ERR_OK)
+		{
+			printf(" read_page FIALED %d \n", ret);
+			FsErr =  ERR_DRI_OPTFAIL;
+			break;
+		}
+	}
+	
+	return ERR_FAIL;
 					
-				}
-				step ++;
-				break;
-			case 1:
-				ret = read_flash( Page_Zone.fileinfo_sector_begin);
-				if( ret == ERR_OK)
-					step ++;
-				else
+	
+}
+static sdhFile* rdFilearea_byfileinfo( file_info_t *file_info, int current_page)
+{
+	int 				ret = 0;
+	sdhFile 			*pfd;
+	storage_area_t		*src_area;
+	area_t				*dest_area;	
+	short 				j;
+	short 				fileinfo_begin_page = Page_Zone.fileinfo_sector_begin * StrgInfo.sector_pagenum;
+	short 				fileinfo_end_page = Page_Zone.fileinfo_sector_end * StrgInfo.sector_pagenum;
+	short 				rd_page = current_page;
+	short 				local = 0;
+	short				end = 0;
+	uint8_t 			*p_rdpage_buf = Flash_buf + ( rd_page - fileinfo_begin_page) * StrgInfo.page_size;
+	
+
+	src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));		
+	//检查文件存储区间信息是否已经读到缓存中了
+	local = sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t);
+	for( j = 0; j < file_info->area_total ; )
+	{
+		end = ( rd_page - fileinfo_begin_page + 1) * StrgInfo.page_size;
+		if( src_area->file_id == file_info->file_id)		
+		{
+			j ++;
+//			if( j == file_info->area_total)
+//				break;
+		}
+		local += sizeof(file_info_t);
+		src_area ++;
+		if( local > end)			//故意多读取一页，来避免数据不全
+		{
+			rd_page ++;					
+			if( rd_page < fileinfo_end_page)
+			{
+				p_rdpage_buf += StrgInfo.page_size;
+				ret = read_page( p_rdpage_buf, rd_page);
+
+				if( ret != ERR_OK)
 				{
+					printf(" read_page FIALED %d \n", ret);
 					FsErr =  ERR_DRI_OPTFAIL;
 					return NULL;
 				}
-			case 2:
-				sup_head = ( sup_sector_head_t *)Flash_buf;
-				if( strcmp( sup_head->ver, FILESYS_VER) != 0x00 )	//文件系统版本号不一致
-				{
-					FsErr =  ERR_FILESYS_ERROR;
-					return NULL;
-					
-				}	
 				
-				file_in_storage = searchfile( Flash_buf, name);
-
 				
-				if( file_in_storage )	
-				{
-					//找到了文件
-					pfd = (sdhFile *)malloc(sizeof( sdhFile));
-					dest_area = malloc( file_in_storage->area_total * sizeof( area_t));
-				
-					pfd->area = dest_area;
-					//把文件的存储区间赋值给文件描述符
-					src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));
-					end = sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t);
-					for( j = 0; j < file_in_storage->area_total ;)
-					{
-						if( src_area->file_id == file_in_storage->file_id)		
-						{
-							
-							pfd->area[src_area->seq].start_pg = src_area->area.start_pg;
-							pfd->area[src_area->seq].pg_number = src_area->area.pg_number;
-							j ++;
-						}
-						
-
-						end += sizeof(file_info_t);
-						if( end > StrgInfo.sector_size)
-						{
-							
-							//当查询的位置超过扇区的大小，还没有找到文件的存储区就认为文件是错误的
-							
-							free( dest_area);
-							free( pfd);
-							
-							FsErr =  ERR_FILE_ERROR;
-							return NULL;
-		
-						}
-						src_area ++;	
-						
-					}				
-					
-					strcpy( pfd->name, name);
-					pfd->reference_count = 1;
-					pfd->area_total = j;
-					memset( pfd->rd_pstn, 0, sizeof( pfd->rd_pstn));
-					memset( pfd->wr_pstn, 0, sizeof( pfd->wr_pstn));
-					step = 0;
-					list_ins_next( &L_File_opened, L_File_opened.tail, pfd);
-					FsErr = ERR_OK;
-					return pfd;
-				}
-					
-				FsErr =  ERR_NON_EXISTENT;
+			}
+			else
+			{
 				return NULL;
-		}		//switch
-		
-	}		//while(1)
+			}
 
+		}	
+		
+	}
+	//读取文件存储区
+	src_area = ( storage_area_t *)( Flash_buf + sizeof(sup_sector_head_t) + FILE_NUMBER_MAX * sizeof(file_info_t));		
+	
+	pfd = (sdhFile *)malloc(sizeof( sdhFile));
+	dest_area = malloc( file_info->area_total * sizeof( area_t));
+	pfd->area = dest_area;
+	//把文件的存储区间赋值给文件描述符
+	for( j = 0; j < file_info->area_total ;)
+	{
+		if( src_area->file_id == file_info->file_id)		
+		{
+			
+			pfd->area[src_area->seq].start_pg = src_area->area.start_pg;
+			pfd->area[src_area->seq].pg_number = src_area->area.pg_number;
+			j ++;
+		}
+		src_area ++;					
+	}	
+	pfd->area_total = j;	
+	return 	pfd;
 }
 int fs_get_error(void)
 {
@@ -310,7 +391,7 @@ int fs_format(void)
 	
 	strcpy( sup_head->ver, FILESYS_VER);
 	Buf_chg_flag = 1;
-	
+	fs_flush();
 	return ERR_OK;
 	
 }
@@ -371,7 +452,7 @@ sdhFile * fs_creator(char *name,  int len)
 		goto err2;
 	}
 	
-	ret = read_flash( Page_Zone.fileinfo_sector_begin);
+	ret = read_sector( Page_Zone.fileinfo_sector_begin);
 
 	if( ret != ERR_OK)
 	{
@@ -393,6 +474,7 @@ sdhFile * fs_creator(char *name,  int len)
 
 	if( file_in_storage )	
 	{	
+		printf(" file %s EXISTS!\n", name);
 		FsErr =  ERR_FILESYS_FILE_EXIST;
 		goto err2;
 	}
@@ -532,7 +614,7 @@ int fs_write( sdhFile *fd, uint8_t *data, int len)
 			return (ERR_FILE_ERROR);
 			
 		}
-		ret = read_flash(wr_sector);
+		ret = read_sector(wr_sector);
 		if( ret != ERR_OK)
 			return ret;
 		
@@ -591,7 +673,7 @@ int fs_read( sdhFile *fd, uint8_t *data, int len)
 		}
 		
 		rd_sector = 	rd_page/StrgInfo.sector_pagenum;
-		ret = read_flash(rd_sector);
+		ret = read_sector(rd_sector);
 		if( ret != ERR_OK)
 			return ret;
 		
@@ -687,7 +769,7 @@ int fs_close( sdhFile *fd)
 	fd->wr_pstn[ myid] = 0;
 	if( fd->reference_count > 0)
 		return ERR_OK;
-	ret = read_flash( Page_Zone.fileinfo_sector_begin);
+	ret = read_sector( Page_Zone.fileinfo_sector_begin);
 	if( ret != ERR_OK)
 		return ret;
 	
@@ -731,7 +813,7 @@ int fs_delete( sdhFile *fd)
 	fd->reference_count --;
 	if( fd->reference_count > 0)
 		return ERR_FILE_OCCUPY;
-	ret = read_flash(Page_Zone.fileinfo_sector_begin);
+	ret = read_sector(Page_Zone.fileinfo_sector_begin);
 	if( ret != ERR_OK)
 		return ret;
 	sup_head = ( sup_sector_head_t *)Flash_buf;
@@ -809,10 +891,14 @@ int fs_flush( void)
 
 
 
+static int read_page( uint8_t *rd_buf,  uint16_t page)
+{
+	return flash_read_page(rd_buf,page);
+	
+}
 
 
-
-static int read_flash( uint16_t sector)
+static int read_sector( uint16_t sector)
 {
 	int ret = 0;
 	if( Src_sector == sector )		
@@ -905,7 +991,7 @@ static int page_malloc( area_t *area, int size)
 	while(1)
 	{
 		
-		ret = read_flash(mem_manger_sector);
+		ret = read_sector(mem_manger_sector);
 		if( ret != ERR_OK)
 			return ret;
 		//从数据存储区的空闲页中找到能够符合长度要求的起始页地址
@@ -968,7 +1054,7 @@ static int page_free( area_t *area, int area_num)
 		
 		sector_offset = area->start_pg / sector_bit;
 		mem_manger_sector = Page_Zone.pguseinfo_sector_begin + sector_offset;	
-		ret = read_flash(mem_manger_sector);
+		ret = read_sector(mem_manger_sector);
 		if( ret != ERR_OK)
 			return ret;	
 		
