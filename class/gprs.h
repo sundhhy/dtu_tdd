@@ -9,6 +9,9 @@
 #define IPMUX_NUM	4		//支持4路连接
 #define EVENT_MAX	16		//最大缓存事件数
 
+#define COPS_CHINA_MOBILE		0x33
+#define COPS_CHINA_UNICOM		0x55
+#define COPS_UNKOWN				0xaa
 //SIM900 ATCMD
 #define AT_SET_DNSIP  "AT+CDNSCFG=" 
 
@@ -22,6 +25,7 @@ CLASS(gprs_t)
 {
 
 	sCircularBuffer		*event_cbuf;
+	int					operator;
 	// public
 	int ( *init)( gprs_t *self);
 	

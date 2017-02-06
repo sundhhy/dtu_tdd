@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sun Feb 05 21:47:32 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Mon Feb 06 21:29:25 2017
 <BR><P>
 <H3>Maximum Stack Usage =        280 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1442,7 +1442,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 </UL>
 
-<P><STRONG><a name="[3f]"></a>init</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, gprs.o(i.init))
+<P><STRONG><a name="[3f]"></a>init</STRONG> (Thumb, 128 bytes, Stack size 8 bytes, gprs.o(i.init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = init &rArr; gprs_uart_init &rArr; USART_Init &rArr; RCC_GetClocksFreq
 </UL>
 <BR>[Calls]<UL><LI><a href="#[110]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;regRxIrq_cb
@@ -2480,7 +2480,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[53]"></a>tcpip_cnnt</STRONG> (Thumb, 338 bytes, Stack size 40 bytes, gprs.o(i.tcpip_cnnt))
+<P><STRONG><a name="[53]"></a>tcpip_cnnt</STRONG> (Thumb, 350 bytes, Stack size 40 bytes, gprs.o(i.tcpip_cnnt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = tcpip_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
@@ -2719,7 +2719,7 @@ Local Symbols
 <LI><a href="#[44]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
 </UL>
 
-<P><STRONG><a name="[120]"></a>prepare_ip</STRONG> (Thumb, 362 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
+<P><STRONG><a name="[120]"></a>prepare_ip</STRONG> (Thumb, 492 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn

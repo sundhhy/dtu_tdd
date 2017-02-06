@@ -92,6 +92,7 @@ int init(gprs_t *self)
 		DPRINTF("gprs malloc event buf failed !\n");
 		return ERR_MEM_UNAVAILABLE;
 	}
+	self->operator = COPS_UNKOWN;
 	self->event_cbuf->read = 0;
 	self->event_cbuf->write = 0;
 	self->event_cbuf->size = EVENT_MAX;
@@ -738,6 +739,9 @@ int delete_sms( gprs_t *self, int seq)
 	int ret = 0;
 	char *pp = NULL;
 
+	//短信为准备好，说明还没有入网
+	if( FlagSmsReady == 0)
+		return ERR_UNINITIALIZED; 
 	if( cnnt_num > IPMUX_NUM)
 		return ERR_BAD_PARAMETER;
 	while(1)
@@ -1755,7 +1759,50 @@ static int prepare_ip(gprs_t *self)
 	{
 		switch( step )
 		{
-			case 0:
+			case 0:		//确定运营商
+				if( self->operator != COPS_UNKOWN)
+				{
+					retry = RETRY_TIMES;
+					step ++;
+					break;
+					
+				}
+				
+				strcpy( Gprs_cmd_buf, "AT+COPS?\x00D\x00A" );		
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");
+				if(!pp)
+				{
+					retry --;
+					if( retry == 0)
+						return ERR_FAIL;
+					osDelay(100);
+					break;
+				}
+				
+				pp = strstr((const char*)Gprs_cmd_buf,"MOBILE");
+				if(pp)
+				{
+					self->operator = COPS_CHINA_MOBILE;
+					retry = RETRY_TIMES;
+					step ++;
+					break;
+					
+				}
+				pp = strstr((const char*)Gprs_cmd_buf,"UNICOM");
+				if(pp)
+				{
+					self->operator = COPS_CHINA_UNICOM;
+					retry = RETRY_TIMES;
+					step ++;
+					break;
+					
+				}
+				
+				break;
+				
+				
+			case 1:
 				strcpy( Gprs_cmd_buf, "AT+CIPMUX=1\x00D\x00A" );		//设置连接为多连接
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
@@ -1780,9 +1827,14 @@ static int prepare_ip(gprs_t *self)
 				osDelay(100);
 				break;
 			
-			case 1:
+			case 2:
 				if( !check_apn( Dtu_config.apn))
-					strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置默认gprs接入点
+				{
+					if( self->operator == COPS_CHINA_UNICOM)
+						strcpy( Gprs_cmd_buf, "AT+CSTT=\"UNINET\"\x00D\x00A" );		//设置默认gprs接入点
+					else
+						strcpy( Gprs_cmd_buf, "AT+CSTT=\"CMNET\"\x00D\x00A" );		//设置默认gprs接入点
+				}
 				else
 				{
 					sprintf( Gprs_cmd_buf, "AT+CSTT=%s\x00D\x00A", Dtu_config.apn );
@@ -1803,7 +1855,7 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
-			case 2:
+			case 3:
 				strcpy( Gprs_cmd_buf, "AT+CIICR\x00D\x00A" );		//激活移动场景
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
@@ -1819,7 +1871,7 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
-			case 3:
+			case 4:
 				strcpy( Gprs_cmd_buf, "AT+CIFSR\x00D\x00A" );			//获取ip地址
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,".");
@@ -1834,7 +1886,7 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
-			case 4:
+			case 5:
 				
 					
 				self->set_dns_ip( self, Dtu_config.dns_ip);
