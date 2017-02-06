@@ -1251,7 +1251,7 @@ int get_apn( gprs_t *self, char *buf)
 	if( buf == NULL )
 		return ERR_BAD_PARAMETER;
 	if( !check_apn( Dtu_config.apn))
-		strcpy(buf, "CNMT, ,");
+		strcpy(buf, "CMNET, ,");
 	else
 		strcpy(buf,Dtu_config.apn);
 	

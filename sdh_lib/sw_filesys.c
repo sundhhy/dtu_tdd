@@ -295,7 +295,7 @@ static sdhFile* rdFilearea_byfileinfo( file_info_t *file_info, int current_page)
 		}
 		local += sizeof(file_info_t);
 		src_area ++;
-		if( local > end)
+		if( local > end)			//故意多读取一页，来避免数据不全
 		{
 			rd_page ++;					
 			if( rd_page < fileinfo_end_page)
