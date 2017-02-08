@@ -22,6 +22,10 @@
 #define DEF_PORTNUM 18897
 #define	DTUCONF_filename	"sys.cfg"
 
+#define SIGTYPE_0_5_V			10
+#define SIGTYPE_1_5_V			11
+#define SIGTYPE_4_20_MA			9
+
 #define PHONENO_LEN				16
 #define ADMIN_PHNOE_NUM			4
 #define REGPACKAGE_LEN			32

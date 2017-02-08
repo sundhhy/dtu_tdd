@@ -461,9 +461,9 @@ static void set_default( DtuCfg_t *conf)
 	conf->heatbeat_package[0] = '$';
 	conf->heatbeat_package[1] = '\0';
 	conf->output_mode = 0;
-	conf->chn_type[0] = 1;
-	conf->chn_type[1] = 1;
-	conf->chn_type[2] = 1;
+	conf->chn_type[0] = SIGTYPE_4_20_MA;
+	conf->chn_type[1] = SIGTYPE_4_20_MA;
+	conf->chn_type[2] = SIGTYPE_4_20_MA;
 	memcpy( &conf->the_485cfg, &Conf_S485Usart_default, sizeof( Conf_S485Usart_default));
 	
 	for( i = 0; i < IPMUX_NUM; i++)
@@ -655,18 +655,21 @@ static void dtu_conf(void)
 					i++;
 					break;
 				case 3:
-					if( strcmp(parg ,"TCP") == 0 || strcmp(parg ,"UDP") == 0)
-					{
-						strcpy( Dtu_config.protocol[ i_data], parg);
-						strcpy( DTU_Buf, "OK");
-						ack_str( DTU_Buf);
-					}
-					else
-					{
-						strcpy( DTU_Buf, "ERROR");
-						ack_str( DTU_Buf);
-						
-					}
+//					if( strcmp(parg ,"TCP") == 0 || strcmp(parg ,"UDP") == 0)
+//					{
+//						strcpy( Dtu_config.protocol[ i_data], parg);
+//						
+//					}
+//					else
+//					{
+//						strcpy( Dtu_config.protocol[ i_data], " ");
+//						
+//					}
+					strcpy( Dtu_config.protocol[ i_data], parg);
+					
+					strcpy( DTU_Buf, "OK");
+					ack_str( DTU_Buf);
+					
 					goto exit;
 				default:
 					strcpy( DTU_Buf, "ERROR");
@@ -993,21 +996,25 @@ static void dtu_conf(void)
 			if( *parg == '?')
 			{
 //				SIM800->read_smscAddr( SIM800, Dtu_config.smscAddr);
-				ack_str( Dtu_config.smscAddr);
+				if( check_phoneNO( Dtu_config.smscAddr) == ERR_OK)
+					ack_str( Dtu_config.smscAddr);
+				else
+					ack_str( " ");
 			}
 			else
 			{
 				if( check_phoneNO( parg) == ERR_OK)
 				{
 					strcpy( Dtu_config.smscAddr, parg);
-					strcpy( DTU_Buf, "OK");
-					ack_str( DTU_Buf);
+					
 				}
 				else
 				{
-					strcpy( DTU_Buf, "ERROR");
-					ack_str( DTU_Buf);
+					memset( Dtu_config.smscAddr, 0, sizeof( Dtu_config.smscAddr));
 				}
+				
+				strcpy( DTU_Buf, "OK");
+				ack_str( DTU_Buf);
 				
 			}
 			
@@ -1040,17 +1047,19 @@ static void dtu_conf(void)
 		}
 		else if( strcmp(pcmd ,"SIGN") == 0)
 		{
+			
 			if( *parg == '?')
 			{
 				sprintf( DTU_Buf, "%d,%d,%d", Dtu_config.chn_type[0],Dtu_config.chn_type[1],Dtu_config.chn_type[2] );
 				ack_str( DTU_Buf);
+				goto exit;
 			}
 			else
 			{
 				switch(i)
 				{
 					case 0:
-						j = atoi( parg);
+						j = atoi( parg) - 1;
 						if( j >2 || j < 0)
 						{
 							strcpy( DTU_Buf, "ERROR");
@@ -1061,12 +1070,6 @@ static void dtu_conf(void)
 						break;
 					case 1:
 						i_data = atoi( parg);
-						if( i_data != 1 && i_data != 2)
-						{
-							strcpy( DTU_Buf, "ERROR");
-							ack_str( DTU_Buf);
-							goto exit;
-						}
 						Dtu_config.chn_type[j] = i_data;
 						strcpy( DTU_Buf, "OK");
 						ack_str( DTU_Buf);
@@ -1079,9 +1082,7 @@ static void dtu_conf(void)
 				}		//switch
 				
 				
-				
 			}
-			goto exit;
 		}
 		else if( strcmp(pcmd ,"FACT") == 0)
 		{

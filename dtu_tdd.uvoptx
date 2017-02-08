@@ -171,25 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>631</LineNumber>
-          <EnabledFlag>0</EnabledFlag>
-          <Address>134228304</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\cdma_dtu.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
           <LineNumber>1783</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134236634</Address>
+          <Address>134236582</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -198,7 +182,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\class\gprs.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\dtu_tdd\class/gprs.c\1783</Expression>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
