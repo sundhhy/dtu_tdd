@@ -173,7 +173,7 @@
           <Type>0</Type>
           <LineNumber>1783</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134236582</Address>
+          <Address>134237014</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -183,6 +183,38 @@
           <Filename>.\class\gprs.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>1123</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134230454</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\cdma_dtu.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\cdma_dtu.c\1123</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>1097</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134230252</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\cdma_dtu.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\cdma_dtu.c\1097</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -778,7 +810,7 @@
 
   <Group>
     <GroupName>::CMSIS</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>1</RteFlg>

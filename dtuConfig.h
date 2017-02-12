@@ -33,6 +33,14 @@
 #define IP_LEN		16
 #define IP_ADDR_LEN		64
 
+
+
+typedef struct {
+	uint16_t		rangeH;
+	uint16_t		rangeL;
+	uint16_t		alarmH;
+	uint16_t		alarmL;
+}signRange_t;
 typedef struct {
 	
 	char	multiCent_mode;			//多中心模式
@@ -64,7 +72,7 @@ typedef struct {
 			
 	ser_485Cfg	the_485cfg;
 	
-	
+	signRange_t		sign_range[3];
 }DtuCfg_t;
 
 extern DtuCfg_t	Dtu_config;

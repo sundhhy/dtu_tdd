@@ -461,9 +461,16 @@ static void set_default( DtuCfg_t *conf)
 	conf->heatbeat_package[0] = '$';
 	conf->heatbeat_package[1] = '\0';
 	conf->output_mode = 0;
-	conf->chn_type[0] = SIGTYPE_4_20_MA;
-	conf->chn_type[1] = SIGTYPE_4_20_MA;
-	conf->chn_type[2] = SIGTYPE_4_20_MA;
+	for( i = 0; i < 3; i ++)
+	{
+		Dtu_config.chn_type[i] = SIGTYPE_4_20_MA;
+		Dtu_config.sign_range[i].rangeH = 0xFFFF;
+		Dtu_config.sign_range[i].rangeL = 0;
+		Dtu_config.sign_range[i].alarmH = 0xFFFF;
+		Dtu_config.sign_range[i].alarmL = 0;
+		
+		
+	}
 	memcpy( &conf->the_485cfg, &Conf_S485Usart_default, sizeof( Conf_S485Usart_default));
 	
 	for( i = 0; i < IPMUX_NUM; i++)
@@ -1084,6 +1091,84 @@ static void dtu_conf(void)
 				
 			}
 		}
+		else if( strcmp(pcmd ,"RANG") == 0)
+		{
+			
+			if( *parg == '?')
+			{
+				memset( DTU_Buf, 0 ,sizeof( DTU_Buf));
+				
+				for( i = 0; i < 3; i ++)
+				{
+					sprintf(tmpbuf, "%d,", i +1);
+					strcat( DTU_Buf, tmpbuf);
+					sprintf(tmpbuf, "%d,", Dtu_config.chn_type[i]);
+					strcat( DTU_Buf, tmpbuf);
+					sprintf(tmpbuf, "%d,", Dtu_config.sign_range[i].rangeH);
+					strcat( DTU_Buf, tmpbuf);
+					sprintf(tmpbuf, "%d,", Dtu_config.sign_range[i].rangeL);
+					strcat( DTU_Buf, tmpbuf);
+					sprintf(tmpbuf, "%d,", Dtu_config.sign_range[i].alarmH);
+					strcat( DTU_Buf, tmpbuf);
+					sprintf(tmpbuf, "%d,", Dtu_config.sign_range[i].alarmL);
+					strcat( DTU_Buf, tmpbuf);
+					
+				}
+				DTU_Buf[ strlen( DTU_Buf) -1] = '\0';		//去除最后一个逗号
+				ack_str( DTU_Buf);
+				goto exit;
+			}
+			else
+			{
+				switch(i)
+				{
+					case 0:
+						j = atoi( parg) - 1;
+						if( j >2 || j < 0)
+						{
+							strcpy( DTU_Buf, "ERROR");
+							ack_str( DTU_Buf);
+							goto exit;
+						}
+						i++;
+						break;
+					case 1:
+						i_data = atoi( parg);
+						Dtu_config.chn_type[j] = i_data;
+						i++;
+						break;
+					case 2:
+						i_data = atoi( parg);
+						Dtu_config.sign_range[j].rangeH = i_data;
+						i++;
+						break;
+					case 3:
+						i_data = atoi( parg);
+						Dtu_config.sign_range[j].rangeL = i_data;
+						i++;
+						break;
+					case 4:
+						i_data = atoi( parg);
+						Dtu_config.sign_range[j].alarmH = i_data;
+						i++;
+						break;
+					case 5:
+						i_data = atoi( parg);
+						Dtu_config.sign_range[j].alarmL = i_data;
+						i++;
+						strcpy( DTU_Buf, "OK");
+						ack_str( DTU_Buf);
+						goto exit;
+					default:
+						strcpy( DTU_Buf, "ERROR");
+						ack_str( DTU_Buf);
+						goto exit;
+						
+				}		//switch
+				
+				
+			}
+		}
 		else if( strcmp(pcmd ,"FACT") == 0)
 		{
 			set_default(&Dtu_config);
@@ -1118,5 +1203,5 @@ static void dtu_conf(void)
 	fs_lseek( DtuCfg_file, WR_SEEK_SET, 0);
 	fs_write( DtuCfg_file, (uint8_t *)&Dtu_config, sizeof( DtuCfg_t));
 	fs_flush();
-	
+	osDelay(10);
 }

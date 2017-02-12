@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Wed Feb 08 21:51:16 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sun Feb 12 17:43:57 2017
 <BR><P>
 <H3>Maximum Stack Usage =        280 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1577,6 +1577,7 @@ Global Symbols
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 <LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
 <LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;thrd_dtu
+<LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 <LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Write
 <LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_waitbusy
 </UL>
@@ -2626,10 +2627,11 @@ Global Symbols
 <H3>
 Local Symbols
 </H3>
-<P><STRONG><a name="[d2]"></a>dtu_conf</STRONG> (Thumb, 2492 bytes, Stack size 64 bytes, cdma_dtu.o(i.dtu_conf))
+<P><STRONG><a name="[d2]"></a>dtu_conf</STRONG> (Thumb, 2914 bytes, Stack size 64 bytes, cdma_dtu.o(i.dtu_conf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 256<LI>Call Chain = dtu_conf &rArr; fs_write &rArr; read_sector &rArr; flush_flash &rArr; w25q_Write_Sector_Data &rArr; w25q_Write &rArr; w25q_ReadSR &rArr; spi_read &rArr; spi_sendByteForRead
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_reboot
+<LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_firstarg
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_cmdtype
 <LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_cmd
@@ -2684,7 +2686,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;thrd_dtu
 </UL>
 
-<P><STRONG><a name="[de]"></a>set_default</STRONG> (Thumb, 190 bytes, Stack size 16 bytes, cdma_dtu.o(i.set_default))
+<P><STRONG><a name="[de]"></a>set_default</STRONG> (Thumb, 232 bytes, Stack size 16 bytes, cdma_dtu.o(i.set_default))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = set_default &rArr; __2sprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
