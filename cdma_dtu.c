@@ -10,15 +10,19 @@
 #include "TTextConfProt.h"
 #include "times.h"
 #include "led.h"
+#include "modbusRTU_cli.h"
+
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
  *---------------------------------------------------------------------------*/
 #define DTU_BUF_LEN		256
-
+#define TMP_BUF_LEN		32
 
 static int get_dtuCfg(DtuCfg_t *conf);
 static void dtu_conf(void);
 static void ledcom_uartcb(void *rxbuf, void *arg);
+
+static void Init_rtuReg(void);
 
 void thrd_dtu (void const *argument);                             // thread function
 osThreadId tid_ThrdDtu;                                          // thread id
@@ -29,7 +33,7 @@ DtuCfg_t	Dtu_config;
 sdhFile *DtuCfg_file;
 
 char	DTU_Buf[DTU_BUF_LEN];
-char	Recv_PhnoeNo[16];
+char	Temp_buf[TMP_BUF_LEN];
 
 
 #define TTEXTSRC_485 0
@@ -82,6 +86,34 @@ static void prnt_485( char *data)
 	}
 	
 	DPRINTF(" %s \n", data);
+	
+}
+static void Init_rtuReg(void)
+{
+	uint16_t u32_half ;
+	uint16_t val16;
+	uint8_t stopbits[4] = { 1, 0, 2, 0};
+	u32_half = Dtu_config.the_485cfg.USART_BaudRate & 0xffff;
+	regType3_write( 0, REG_LINE, u32_half);
+	u32_half = ( Dtu_config.the_485cfg.USART_BaudRate & 0xffff0000) >> 16;
+	regType3_write( 1, REG_LINE, u32_half);
+	
+	if( Dtu_config.the_485cfg.USART_WordLength == USART_WordLength_8b)
+		regType3_write( 2, REG_LINE, 8);
+	else if( Dtu_config.the_485cfg.USART_WordLength == USART_WordLength_9b)
+		regType3_write( 2, REG_LINE, 9);
+	else
+		regType3_write( 2, REG_LINE, 0);
+	val16 = ( Dtu_config.the_485cfg.USART_StopBits >> 12) & 0x3;
+	regType3_write( 3, REG_LINE, stopbits[ val16]);
+	
+	if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Odd)
+		regType3_write( 4, REG_LINE, 2);
+	else if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Even)
+		regType3_write( 4, REG_LINE, 1);
+	else
+		regType3_write( 4, REG_LINE, 0);
+	
 	
 }
 
@@ -185,7 +217,7 @@ void thrd_dtu (void const *argument) {
 	
 	
 
-
+	Init_rtuReg();
 	sprintf(DTU_Buf, "Begain DTU thread ...");
 	prnt_485( DTU_Buf);
 	
@@ -288,13 +320,13 @@ void thrd_dtu (void const *argument) {
 					}
 					
 					lszie = DTU_BUF_LEN;
-					memset( Recv_PhnoeNo, 0, sizeof( Recv_PhnoeNo));
-					ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Recv_PhnoeNo);				
+					memset( Temp_buf, 0, sizeof( Temp_buf));
+					ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Temp_buf);				
 					if( ret > 0)
 					{
 						for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 						{
-							if( compare_phoneNO( Recv_PhnoeNo, Dtu_config.admin_Phone[i]) == 0)
+							if( compare_phoneNO( Temp_buf, Dtu_config.admin_Phone[i]) == 0)
 							{
 								TText_source = TTEXTSRC_SMS( i);
 								if( decodeTTCP_begin( DTU_Buf) == ERR_OK)
@@ -333,8 +365,15 @@ void thrd_dtu (void const *argument) {
 				}
 				
 				if( Dtu_config.work_mode == MODE_LOCALRTU)
+				{
+					if( modbusRTU_getID( DTU_Buf) != Dtu_config.rtu_addr)
+						break;
+					lszie = modbusRTU_data( DTU_Buf, Temp_buf, sizeof( Temp_buf));
+					s485_Uart_write( Temp_buf, lszie);
+					
 					break;
 
+				}
 				for( i = 0; i < IPMUX_NUM; i ++)
 				{
 					SIM800->sendto_tcp( SIM800, i, DTU_Buf, ret);

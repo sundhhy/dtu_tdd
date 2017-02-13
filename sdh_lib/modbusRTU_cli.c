@@ -84,11 +84,13 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 	return *(INPUT_ADDRESS + input_address);
 }
 
-uint16_t regType4_write(uint16_t input_address, uint16_t reg_type)
+uint16_t regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val)
 {
 	
-	  
-	return ERR_FAIL;
+	if(reg_type==REG_MODBUS)
+		return ERR_FAIL;
+	*(INPUT_ADDRESS + input_address) = val;
+	return ERR_OK;
 }
 
 
@@ -145,7 +147,7 @@ uint16_t modbusRTU_data(uint8_t *command_buf, uint8_t *ack_buf, int ackbuf_len)
 	/*¶ÁÊäÈë¼Ä´æÆ÷ 4Çø£¬±£³Ö¼Ä´æÆ÷------------------------------------------------------------------*/
 		case READ_HOLD:	
 																				//data_num=127;	  ??????
-			if((data_start >= INPUT_SIZE) || (data_num >= 125) || ((data_start + data_num) > INPUT_SIZE) ) 
+			if((data_start >= HOLD_SIZE) || (data_num >= 125) || ((data_start + data_num) > HOLD_SIZE) ) 
 			{
 				err=2;	
 				break;

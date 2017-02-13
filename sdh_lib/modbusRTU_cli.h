@@ -22,7 +22,7 @@
 /*????????RAM?  0x20003fc0~0x20003fff 64??---------------------------------------*/
 
 /*MODBUS ??????-----------------------------------------------------------------------*/
-#define REG_LINE 	0												//?????? ??0?
+#define REG_LINE 	0												//线性地址
 #define REG_MODBUS 	1												//MODBUD???? ???0?00001,1?10001,3?30001,4?40001
 #define COIL_ON  	PIO_ON											//?????
 #define COIL_OFF 	PIO_OFF											//?????
@@ -42,7 +42,7 @@
 uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type);
 uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val);
 uint16_t regType4_read(uint16_t input_address, uint16_t reg_type);
-uint16_t regType4_write(uint16_t input_address, uint16_t reg_type);
+uint16_t regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val);
 
 uint16_t CRC16(uint8_t *puchMsg, uint16_t usDataLen);			         //16位crc校验
 
