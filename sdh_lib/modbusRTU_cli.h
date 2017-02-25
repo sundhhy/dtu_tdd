@@ -39,10 +39,14 @@
 #define WRITE_N_COIL		15										//???????
 #define WRITE_N_HOLD		16										//??????? 
 
+
+typedef void (*Reg3_write_cb)(void);
+
 uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type);
 uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val);
 uint16_t regType4_read(uint16_t input_address, uint16_t reg_type);
 uint16_t regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val);
+int Regist_reg3_wrcb( Reg3_write_cb cb);
 
 uint16_t CRC16(uint8_t *puchMsg, uint16_t usDataLen);			         //16Œªcrc–£—È
 

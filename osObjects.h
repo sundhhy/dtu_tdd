@@ -30,6 +30,9 @@ osThreadDef (sample_name, osPriorityNormal, 1, 0);      // thread object
 */
 int Init_ThrdDtu (void);
 extern osThreadId tid_ThrdDtu;
+
+int Init_Thread_adc (void) ;
+extern osThreadId tid_Thread_adc;
 // global 'semaphores' ----------------------------------------------------------
 /* 
 Example:

@@ -268,6 +268,7 @@ int main (void) {
 	printf(" mount filesystem succeed! \n");
 	
 	Init_ThrdDtu();
+	Init_Thread_adc();
   // create 'thread' functions that start executing,
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 

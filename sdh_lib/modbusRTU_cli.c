@@ -13,7 +13,10 @@
 */
 #include "modbusRTU_cli.h"
 #include "sdhError.h"
-
+#include "stdint.h"
+#include "string.h"
+#include "sdhError.h"
+#include "string.h"
 //uint16_t coil_buf[COIL_SIZE/16];
 //static uint16_t state_buf[STATE_SIZE/16];			//2区数据内存
 uint16_t input_buf[INPUT_SIZE];
@@ -24,6 +27,7 @@ uint16_t hold_buf[HOLD_SIZE];
 uint16_t *INPUT_ADDRESS=input_buf;
 uint16_t *HOLD_ADDRESS=hold_buf;
 
+static Reg3_write_cb	g_rg3_wr_cb = NULL;
 
 /* 寄存器访问接口			*/
 #if 0
@@ -52,6 +56,12 @@ int regType2_write(uint16_t addr, uint16_t reg_type, int val)
 
 
 #endif
+
+int Regist_reg3_wrcb( Reg3_write_cb cb)
+{
+	g_rg3_wr_cb = cb;
+	return ERR_OK;
+}
 uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type)
 {
 	if(reg_type==REG_MODBUS)
@@ -64,12 +74,18 @@ uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type)
 
 uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
 {
+	char chn_flag = 0;
 	if(reg_type==REG_MODBUS)
 	{
 		hold_address-=40001;
 	}
+	
+	if( *(HOLD_ADDRESS + hold_address) != val)
+		chn_flag = 1;
 
 	*(HOLD_ADDRESS + hold_address) = val;
+	if( g_rg3_wr_cb && chn_flag)
+		g_rg3_wr_cb();
 	return ERR_OK;
 }
 

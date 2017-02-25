@@ -419,9 +419,14 @@
               <FilePath>.\cdma_dtu.c</FilePath>
             </File>
             <File>
-              <FileName>Thread_adc.c</FileName>
+              <FileName>Thread_rtu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Thread_adc.c</FilePath>
+              <FilePath>.\Thread_rtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>dtuConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\dtuConfig.h</FilePath>
             </File>
           </Files>
         </Group>
