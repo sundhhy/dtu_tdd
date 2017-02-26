@@ -463,6 +463,16 @@
               <FileType>5</FileType>
               <FilePath>.\class\led.h</FilePath>
             </File>
+            <File>
+              <FileName>rtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\rtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\rtu.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

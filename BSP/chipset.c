@@ -74,6 +74,11 @@ void RCC_Configuration(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 	
+	RCC_ADCCLKConfig(RCC_PCLK2_Div8);	     //2014.5.18 
+	// ADC Periph clock enable 
+
+  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);   //2014.5.18
+	
 	
 }
 
@@ -143,7 +148,7 @@ void NVIC_Configuration(void)
 
 	NVIC_InitStructure.NVIC_IRQChannel = DMA_adc.dma_rx_irq;   // ADC接收
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
@@ -198,6 +203,17 @@ void GPIO_Configuration(void)
 //    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 //    GPIO_Init(GPIOC, &GPIO_InitStructure);
 
+	//ADC pins
+	
+	GPIO_InitStructure.GPIO_Pin = ADC_pins_4051A1.pin|ADC_pins_4051B1.pin|ADC_pins_4051C1.pin;		 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;  //推挽输出
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;  //2M时钟速度
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = ADC_pins_control0.pin | ADC_pins_control1.pin | ADC_pins_control2.pin;	
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;  //推挽输出
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; //2M时钟速度
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 #ifdef USE_STM3210E_EVAL
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOF | RCC_APB2Periph_GPIOG, ENABLE);
 

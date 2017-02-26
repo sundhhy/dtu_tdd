@@ -116,11 +116,43 @@ Dma_source DMA_adc ={
 	
 };
 
-gpio_pins ADC_pins = {
-	GPIOA,
+gpio_pins ADC_pins_4051A1 = {
+	GPIOB,
+	GPIO_Pin_5
+	
+};
+
+gpio_pins ADC_pins_4051B1 = {
+	GPIOB,
+	GPIO_Pin_6
+	
+};
+
+gpio_pins ADC_pins_4051C1 = {
+	GPIOB,
+	GPIO_Pin_7
+	
+};
+
+gpio_pins ADC_pins_control0 = {
+	GPIOC,
 	GPIO_Pin_1
 	
 };
+
+gpio_pins ADC_pins_control1 = {
+	GPIOC,
+	GPIO_Pin_2
+	
+};
+
+gpio_pins ADC_pins_control2 = {
+	GPIOC,
+	GPIO_Pin_3
+	
+};
+
+
 
 int32_t ADC_chn = ADC_Channel_1;		//ADC的通道和ADC的引脚是有对应关系的，PA_1对应的通道是ADC1
 

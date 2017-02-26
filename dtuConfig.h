@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "gprs.h"
 #include "serial485_uart.h"
+#include "sw_filesys.h"
 
 
 
@@ -76,5 +77,7 @@ typedef struct {
 }DtuCfg_t;
 
 extern DtuCfg_t	Dtu_config;
+extern sdhFile *DtuCfg_file;
+
 
 #endif

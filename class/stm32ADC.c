@@ -17,7 +17,6 @@
 
 static int init( stm32ADC *self, void *arg)
 {
-	init_stm32adc( arg);
 	
 }
 

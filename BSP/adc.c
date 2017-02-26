@@ -2,6 +2,7 @@
 #include "adc.h"
 #include "hardwareConfig.h"
 #include "sdhError.h"
+#include <string.h>
 #define ADC_BUFLEN	200
 
 
@@ -41,9 +42,106 @@ struct  _RemoteRTU_Module_  RTU[3];
 struct  _SampleValue_     SAMPLE[3];
 struct  _BDSampleVal_     BDSAMPLE[3];
 
+get_realVAl I_get_val = NULL;
+get_rsv I__get_rsv = NULL;
+get_alarm I_get_alarm = NULL;
 static uint16_t ADCConvertedValue[ADC_BUFLEN];	//采样数据采样200个(滤除50HZ干扰)
-static void init_adc1DMA(void);
-void init_stm32adc(void *arg)
+static void DMA1_Configuration(void);
+static void DealwithCollect(unsigned char channel);
+static void init_stm32adc(void *arg);
+static void FinishCollect(void);
+static void system_para_init(void);
+
+void Regist_get_val( get_realVAl get_val)
+{
+	
+	I_get_val = get_val;
+}
+
+void Regist_get_rsv( get_rsv get_rsv)
+{
+	
+	I__get_rsv = get_rsv;
+}
+
+void Regist_get_alarm( get_alarm get_alarm)
+{
+	
+	I_get_alarm = get_alarm;
+}
+
+void Collect_job(void)
+{
+	
+	DealwithCollect(collectChannel);
+	FinishCollect();  
+}
+
+
+void ADC_50ms()
+{
+	ADC_SoftwareStartConvCmd(ADC1, ENABLE);		//启动ADC
+	ADC_Cmd(ADC1, ENABLE);                    //ADC转换使能
+}
+
+void up( char chn)
+{
+	if( I_get_val)
+		I_get_val( CHANNEL0, RTU[chn].value);
+	if( I__get_rsv)
+		I__get_rsv( CHANNEL0, RTU[chn].RSV);
+	if( I_get_alarm)
+		I_get_alarm( CHANNEL0, RTU[chn].Alarm);
+	
+}
+
+void Set_chnType( char chn, uint8_t type)
+{
+	if( chn > 2) 
+		return;
+	
+	RTU[chn].Type = type;
+	
+}
+void Set_rangH( char chn, uint16_t rang)
+{
+	if( chn > 2) 
+		return;
+	
+	RTU[chn].RangeH = rang;
+}
+void Set_rangL( char chn, uint16_t rang)
+{
+	if( chn > 2) 
+		return;
+	
+	RTU[chn].RangeL = rang;
+}
+void Set_alarmH( char chn, uint16_t alarm)
+{
+	if( chn > 2) 
+		return;
+	
+	RTU[chn].HiAlm = alarm;
+	
+}
+void Set_alarmL( char chn, uint16_t alarm)
+{
+	if( chn > 2) 
+		return;
+	
+	RTU[chn].LowAlm = alarm;
+	
+}
+
+int create_adc(void)
+{
+	init_stm32adc(NULL);
+	system_para_init();
+}
+
+
+static void init_stm32adc(void *arg)
 {   
 	ADC_InitTypeDef ADC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -83,12 +181,12 @@ void init_stm32adc(void *arg)
 	
 	
 	
-	init_adc1DMA();                        
+	DMA1_Configuration();                        
 	
 }
 
 
-static void init_adc1DMA( )
+static void DMA1_Configuration( )
 {
 	DMA_InitTypeDef DMA_InitStructure;
 	//DMA1 channel1 configuration ---------------------------------------------	
@@ -110,6 +208,8 @@ static void init_adc1DMA( )
 	// Enable DMA1 channel1 
   	DMA_Cmd( DMA_adc.dma_rx_base, ENABLE);			 
 }
+
+
 
 /********************************************************************************************************
 ** Function name:        void series_se(unsigned char data)         
@@ -536,17 +636,19 @@ static void BD_sw_select(unsigned char channel,unsigned signaltype)
 void Data_Deal(unsigned char ch_temp,unsigned char pred)
 {
 	unsigned char  i_temp,j_temp,m_temp;
-	unsigned int	data_temp;
+	unsigned long	data_temp;
 	data_temp=0;
+	
+	
 	switch(ch_temp)
 	{
 
         //通道0
 
 		case CHANNEL0:
-			for(j_temp=0;j_temp<200;j_temp++) 	  //排序算法
+			for(j_temp=0;j_temp<199;j_temp++) 	  //排序算法
 			{
-				for(m_temp=0;m_temp<200-j_temp;m_temp++)
+				for(m_temp=0;m_temp<199-j_temp;m_temp++)
 				{
 					if(ADCConvertedValue[m_temp]>ADCConvertedValue[m_temp+1])
 					{
@@ -573,7 +675,7 @@ void Data_Deal(unsigned char ch_temp,unsigned char pred)
 										
 						 SAMPLE[ch_temp].sample_Vpoint_2=(unsigned short) data_temp;
 								
-				    }
+				  }
 
 				
 					else if(RTU[ch_temp].Type==V_5||RTU[ch_temp].Type==V_1_5)              //若是电压信号,则采样VX11
@@ -615,7 +717,7 @@ void Data_Deal(unsigned char ch_temp,unsigned char pred)
 				   
 				break;
 
-				case Samplepoint3:	                                                                     //若为电流信号采样VR0
+				case Samplepoint3:	                                                        //若为电流信号采样VR0
 					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)
 					{
 						SAMPLE[ch_temp].sample_HIGH=(unsigned short) data_temp;
@@ -631,15 +733,16 @@ void Data_Deal(unsigned char ch_temp,unsigned char pred)
 				default :
 					break;
 			}
+			
 			break;
 
       //通道1
 
 			case CHANNEL1:
 
-				for(j_temp=0;j_temp<200;j_temp++) 	  //排序算法
+				for(j_temp=0;j_temp<199;j_temp++) 	  //排序算法
 				{
-					for(m_temp=0;m_temp<200-j_temp;m_temp++)
+					for(m_temp=0;m_temp<199-j_temp;m_temp++)
 					{
 						if(ADCConvertedValue[m_temp]>ADCConvertedValue[m_temp+1])
 						{
@@ -661,7 +764,7 @@ void Data_Deal(unsigned char ch_temp,unsigned char pred)
 				{
 				case Samplepoint0:		                                                    //若为电流信号则采样VX22
 
-					if(RTU[ch_temp].Type==mA0_10||RTU[ch_temp].Type==mA4_20)  
+					if(RTU[ch_temp].Type== mA0_10||RTU[ch_temp].Type== mA4_20)  
 					{
 
 						SAMPLE[ch_temp].sample_Vpoint_2=(unsigned short) data_temp;
@@ -735,9 +838,9 @@ void Data_Deal(unsigned char ch_temp,unsigned char pred)
 
 			case CHANNEL2:
 
-				for(j_temp=0;j_temp<200;j_temp++) 	  //排序算法
+				for(j_temp=0;j_temp<199;j_temp++) 	  //排序算法
 				{
-					for(m_temp=0;m_temp<200-j_temp;m_temp++)
+					for(m_temp=0;m_temp<199-j_temp;m_temp++)
 					{
 						if(ADCConvertedValue[m_temp]>ADCConvertedValue[m_temp+1])
 						{
@@ -1427,45 +1530,88 @@ void Calculate(unsigned char channel)
 	
 }
 
-//处理采样点的切换过程
-void DealwithCollect(unsigned char channel)
+static void system_para_init(void)
 {
-	 if(BusCheckEN==1)
+
+   /**********ADC采样相关变量初始化*********/
+	  AV_BUF0 = 0; 
+	  AV_BUF1 = 0;
+	  AV_BUF2 = 0;
+    
+   /****************************************/
+	  memset(&RTU[0],0,sizeof(RTU[0]));
+	  memset(&RTU[1],0,sizeof(RTU[1]));
+	  memset(&RTU[2],0,sizeof(RTU[2]));
+    sec_10 =0;
+	  RUNorBD =0;
+	  collectChannel =0;   //当前采集通道初始化为0 
+	  BusCheckEN =0;
+	  RTU[CHANNEL0].Type = V_5;
+	  RTU[CHANNEL1].Type = V_5;
+	  RTU[CHANNEL2].Type = V_5;
+	  RTU[CHANNEL0].BD.BD_5_HIGH = 5075;  
+	  RTU[CHANNEL0].BD.BD_5_LOW = 911; 
+	  RTU[CHANNEL1].BD.BD_5_HIGH = 5082;  
+	  RTU[CHANNEL1].BD.BD_5_LOW = 788; 	
+	  RTU[CHANNEL2].BD.BD_5_HIGH = 5082;  
+	  RTU[CHANNEL2].BD.BD_5_LOW = 788; 
+	  sampledote0 = 0;
+    sampledote1 = 0;
+    sampledote2 = 0;
+	  sampleolddote0 =0;
+	  sampleolddote1 =0;
+   	sampleolddote2 =0;
+	  CHannel0finish =0;
+	  CHannel1finish =0; 
+	  CHannel2finish =0;
+	
+    	
+	  
+   /****************************************/
+	 /****************************************/
+
+}
+
+//处理采样点的切换过程
+static void DealwithCollect(unsigned char channel)
+{
+	if(BusCheckEN==1)
 	 {
+		  
 		  BusCheckEN =0; 
 		  switch(channel)
 			{
 				case CHANNEL0:
 				sampleolddote0 = sampledote0;
-				sampledote0++;
+				sampledote0++;   
 				sw_select(CHANNEL0);  
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);		
+        DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,DISABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);		
 				Data_Deal(CHANNEL0,sampleolddote0);
 				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
+				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
 				break;
 			  
 				case CHANNEL1:
 				sampleolddote1 = sampledote1;
 				sampledote1++;
 				sw_select(CHANNEL1);
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);	
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,DISABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);	
 				Data_Deal(CHANNEL1,sampleolddote1);
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
 				break;
 				
 				case CHANNEL2:
 				sampleolddote2 = sampledote2;
 				sampledote2++;
 				sw_select(CHANNEL2);
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);	
-				Data_Deal(CHANNEL2,sampleolddote1);
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,DISABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);	
+				Data_Deal(CHANNEL2,sampleolddote2);
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
 				break;
 				
 				default:
@@ -1475,64 +1621,72 @@ void DealwithCollect(unsigned char channel)
 		 	 
 	 }
 }
+
+
+
 //判断处理完一个通道的数据采集
-void FinishCollect(void)
+static void FinishCollect(void)
 {
 	if((CHannel0finish==1)||(CHannel1finish==1)||(CHannel2finish==1))
 	{
 		 if(CHannel0finish==1)            //通道0采样完成？
 		 {
 			  CHannel0finish =0;
-			  DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
-//			  TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE); 
+			  DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,DISABLE);
+			  TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE); 
 			  sampleolddote0 =0;
 			  sampledote0 =0;
 			  Calculate(CHANNEL0);          //处理并转换通道0
+			 up( CHANNEL0);
 			  if(collectChannel==0)         //采集完当前的输入通道,切换到下一个通道
 				{
 					collectChannel =1;
 					sw_select(CHANNEL1);        //准备采样通道1
 				}
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
 		 }
 		 else if(CHannel1finish ==1)         //通道1 采样完成?
 		 {
 			   CHannel1finish =0;
-			   DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,DISABLE);
-//			   TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE); 
+			   DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,DISABLE);
+			   TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE); 
 			   sampleolddote1 =0;
 			   sampledote1 =0;
 			   Calculate(CHANNEL1);          //处理并转换通道1
+			 up( CHANNEL1);
 			   if(collectChannel==1)         //采集完当前的输入通道,切换到下一个通道
 				 {
 					 collectChannel =2;
 					 sw_select(CHANNEL2);        //准备采集通道2 
 				 }
 				 
-				DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
-//				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
+				DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
+				TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); 
 		 }
 		 
 		 else if(CHannel2finish==1)          //通道2 采样完成?
 		 {
 			 CHannel2finish=0;
-			 DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
-//			 TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
-       sampleolddote2 =0;
+			 DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,DISABLE);
+			 TIM_ITConfig(TIM2, TIM_IT_Update, DISABLE);
+			sampleolddote2 =0;
 			 sampledote2 =0;	
-       Calculate(CHANNEL2);           //处理并转换通道2
+			Calculate(CHANNEL2);           //处理并转换通道2
+			 up( CHANNEL2);
 			 if(collectChannel==2)
 			 {
 				 collectChannel =0;
 				 sw_select(CHANNEL0);         //准备采样通道0
 			 }
-			 DMA_ITConfig(DMA_adc.dma_rx_base,DMA_IT_TC,ENABLE);
-//			 TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+			 DMA_ITConfig(DMA1_Channel1,DMA_IT_TC,ENABLE);
+			 TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
        			 
 		 }
 		 
 	}
+				 
+				
 }
 
 int adc_start( void *base, int chn)
@@ -1608,7 +1762,7 @@ void DMA1_Channel1_IRQHandler(void)
 		// if(dote0>3)
 		//  dote0 = 0;
 		//  sw_select(0);
-		init_adc1DMA();
+		DMA1_Configuration();
 		DMA_ClearFlag(DMA1_IT_GL1);
 	}
 
@@ -2057,6 +2211,31 @@ void Calculate(unsigned char ch_temp)
 }
 
 
+
+//DMA1通道1（ADC）中断
+//接受完64个数据进中断
+void DMA1_Channel1_IRQHandler(void)
+{
+  	if(DMA_GetITStatus(DMA1_IT_GL1)!= RESET)
+	{
+		/* Disable DMA1 channel1 */
+  		DMA_Cmd(DMA1_Channel1, DISABLE);
+
+		ADC_SoftwareStartConvCmd(ADC1, DISABLE);  //禁止ADC中断
+
+		ADC_Cmd(ADC1, DISABLE);	                   		 
+		//常规转换序列1：通道10,MCP6S21输出，通道数据 
+    	//ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_239Cycles5); 
+		BusCheckEN=1;                            //ADC采样完成标志
+		// dote0++;
+		// if(dote0>3)
+		//  dote0 = 0;
+		//  sw_select(0);
+		DMA1_Configuration();
+		DMA_ClearFlag(DMA1_IT_GL1);
+	}
+
+}
 #endif
 
 

@@ -2,6 +2,7 @@
 #define __MODBUSRTU_CLI_H_
 #include <stdint.h>
 
+#define CPU_LITTLE_END	1  
 
 /*------------------------------------------------------------------------------------------*/
 /*??RAM????  ??????1K  0x20003c00~0x20003fff                                    */
@@ -14,9 +15,9 @@
 
 
 #define STATE_SIZE 		16//128										//×´Ì¬¼Ä´æÆ÷
-#define INPUT_SIZE 		4//160										//ÊäÈë¼Ä´æÆ÷
+#define INPUT_SIZE 		12//160										//ÊäÈë¼Ä´æÆ÷
 #define COIL_SIZE 		32//256										//ÏßÈ¦¼Ä´æÆ÷
-#define HOLD_SIZE 		8//160										//±£³Ö¼Ä´æÆ÷
+#define HOLD_SIZE 		18//160										//±£³Ö¼Ä´æÆ÷
 
 
 /*????????RAM?  0x20003fc0~0x20003fff 64??---------------------------------------*/

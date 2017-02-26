@@ -20,6 +20,9 @@
 #include "stdio.h"
 #include "times.h"
 #include "led.h"
+#include "adc.h"
+#include "rtu.h"
+
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
      set to 'Yes') calls __io_putchar() */
@@ -268,10 +271,22 @@ int main (void) {
 	printf(" mount filesystem succeed! \n");
 	
 	Init_ThrdDtu();
-	Init_Thread_adc();
+//	Init_Thread_adc();
   // create 'thread' functions that start executing,
   // example: tid_name = osThreadCreate (osThread(name), NULL);
 
 	osKernelStart (); 
+	
+	create_adc();
+	regist_timejob( 50, ADC_50ms);
+
+	Init_rtu();
+
+	while(1)
+	{
+		osDelay(50);
+		Collect_job();
+		
+	}
 	
 }

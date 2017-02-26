@@ -11,8 +11,17 @@ typedef struct TIME2_T
     uint32_t    time_s;
    
 }TIME2_T;
+typedef void (*time_job)(void);
+typedef struct  
+{
+	void 		*next;
+	uint16_t 	period_ms;
+	uint16_t	count_ms;
+	time_job 	my_job;
+	
+}time_task_manager;
 
-
+void regist_timejob( uint16_t period_ms, time_job job);
 void clean_time2_flags(void);
 uint32_t get_time_s(void);
 uint32_t get_time_ms(void);

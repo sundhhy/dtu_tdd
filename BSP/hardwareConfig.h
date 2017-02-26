@@ -69,4 +69,12 @@ extern Dma_source DMA_gprs_usart;
 extern Dma_source DMA_s485_usart;
 extern Dma_source DMA_adc;
 
+
+extern gpio_pins ADC_pins_4051A1;
+extern gpio_pins ADC_pins_4051B1;
+extern gpio_pins ADC_pins_4051C1;
+extern gpio_pins ADC_pins_control0;
+extern gpio_pins ADC_pins_control1;
+extern gpio_pins ADC_pins_control2;
+
 #endif

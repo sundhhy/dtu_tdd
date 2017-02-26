@@ -15,6 +15,8 @@ static char	Set_AlarmClock_flag[MAX_ALARM_TOP] = {0};
 static uint32_t	Alarmtims_ms[MAX_ALARM_TOP] = {0};
 static uint32_t	AlarmStart_ms[MAX_ALARM_TOP] = {0};
 
+static time_task_manager *List_time_job_head;
+
 uint32_t get_time_s(void)
 {
 	return g_time2.time_s ;
@@ -25,6 +27,36 @@ uint32_t get_time_ms(void)
 {
 	return g_time2.time_ms ;
 	
+}
+
+void regist_timejob( uint16_t period_ms, time_job job)
+{
+	time_task_manager *current_job;
+	time_task_manager *next_job;
+	if( List_time_job_head == NULL)
+	{
+		List_time_job_head = malloc( sizeof( time_task_manager));
+		memset( List_time_job_head, 0, sizeof( time_task_manager));
+	}
+	current_job = List_time_job_head;
+	next_job = (time_task_manager *)current_job->next;
+	while( next_job)
+	{
+		current_job = next_job;
+		next_job = (time_task_manager *)current_job->next;
+	}
+	
+	//本节点已经被占用就新申请一个节点
+	if( current_job->period_ms)
+	{
+		current_job->next = malloc( sizeof( time_task_manager));
+		current_job = (time_task_manager *)current_job->next;
+		memset( current_job, 0, sizeof( time_task_manager));
+	}
+	
+	current_job->period_ms = period_ms;
+	current_job->my_job = job;
+	current_job->next = NULL;
 }
 
 //一次只允许3设置一个闹钟
@@ -82,9 +114,23 @@ int Ringing(int alarm_id)
 
 void TIM2_IRQHandler(void)          //定时器中断约10ms
 {
+	time_task_manager *current_job = List_time_job_head;
+	
+
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
     { 
 			g_time2.time_ms += 10;
+		
+			while( current_job)
+			{
+				current_job->count_ms += 10;
+				if( current_job->count_ms >= current_job->period_ms)
+				{
+					current_job->count_ms = 0;
+					current_job->my_job();
+				}
+				current_job = (time_task_manager *)current_job->next;
+			}
 			if( g_time2.time_ms % 200 == 0)
 			{
 				LED_run->blink(LED_run);

@@ -29,6 +29,26 @@ uint16_t *HOLD_ADDRESS=hold_buf;
 
 static Reg3_write_cb	g_rg3_wr_cb = NULL;
 
+#ifdef CPU_LITTLE_END
+static void Little_end_to_Big_end( uint16_t *p_val16)
+{
+	uint8_t u16_h = ( *p_val16 & 0xff) >> 16;
+	uint8_t u16_l =  *p_val16 & 0xff;
+	
+	*p_val16 = 0;
+	*p_val16 = ( u16_l << 16) | u16_h;
+}
+
+static void Big_end_to_Little_end( uint16_t *p_val16)
+{
+	uint8_t u16_h = ( *p_val16 & 0xff) >> 16;
+	uint8_t u16_l =  *p_val16 & 0xff;
+	
+	*p_val16 = 0;
+	*p_val16 = ( u16_h << 16) | u16_l;
+}
+#endif
+
 /* ¼Ä´æÆ÷·ÃÎÊ½Ó¿Ú			*/
 #if 0
 uint16_t regTyppe2_read(uint16_t addr, uint16_t reg_type)
@@ -64,27 +84,46 @@ int Regist_reg3_wrcb( Reg3_write_cb cb)
 }
 uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type)
 {
+	uint16_t tmp;
 	if(reg_type==REG_MODBUS)
 	{
 		hold_address-=40001;
+		tmp = *(HOLD_ADDRESS + hold_address);
+#ifdef CPU_LITTLE_END
+		Little_end_to_Big_end( &tmp);
+#endif	
+	}
+	else
+	{
+		tmp = *(HOLD_ADDRESS + hold_address);
 	}
 
-	return *(HOLD_ADDRESS + hold_address);
+	return tmp;
 }
 
 uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
 {
 	char chn_flag = 0;
+	uint16_t tmp = val;
 	if(reg_type==REG_MODBUS)
 	{
 		hold_address-=40001;
+#ifdef CPU_LITTLE_END
+		Big_end_to_Little_end( &tmp);
+#endif
+		
+		if( *(HOLD_ADDRESS + hold_address) != tmp)
+			chn_flag = 1;
+	}
+	else
+	{
+
 	}
 	
-	if( *(HOLD_ADDRESS + hold_address) != val)
-		chn_flag = 1;
+	
 
-	*(HOLD_ADDRESS + hold_address) = val;
-	if( g_rg3_wr_cb && chn_flag)
+	*(HOLD_ADDRESS + hold_address) = tmp;
+	if( g_rg3_wr_cb && chn_flag )
 		g_rg3_wr_cb();
 	return ERR_OK;
 }
@@ -92,20 +131,31 @@ uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
 
 uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 {
+	
+	uint16_t tmp;
 	if(reg_type==REG_MODBUS)
 	{
-	  input_address-=30001;
+		input_address-=30001;
+		tmp = *(HOLD_ADDRESS + input_address);
+#ifdef CPU_LITTLE_END
+		Little_end_to_Big_end( &tmp);
+#endif	
+	}
+	else
+	{
+		tmp = *(HOLD_ADDRESS + input_address);
 	}
 	  
-	return *(INPUT_ADDRESS + input_address);
+	return tmp;
 }
 
 uint16_t regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val)
 {
-	
+	uint16_t tmp = val;
 	if(reg_type==REG_MODBUS)
 		return ERR_FAIL;
-	*(INPUT_ADDRESS + input_address) = val;
+
+	*(INPUT_ADDRESS + input_address) = tmp;
 	return ERR_OK;
 }
 

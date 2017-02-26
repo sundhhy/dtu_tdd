@@ -115,6 +115,10 @@ extern float ma_tie;
 extern unsigned short ADCConvertedValue[200];
 
 
+
+
+
+
 struct _RemoteRTU_Module_
 {
 	uint8_t		Type;			 //节点类型			 	
@@ -197,8 +201,23 @@ extern struct  _BDSampleVal_     BDSAMPLE[3];
 /*****************单通道——PI结构体定义******************/
 typedef enum { FAILED = 0, PASSED = !FAILED} TestStatus;
 
-void init_stm32adc(void *arg);
 int adc_test(void *buf, int size);
 
 
+
+int create_adc(void);
+void Collect_job(void);
+typedef void (*get_realVAl)( char chn, float realval);
+typedef void (*get_rsv)( char chn, uint16_t sv);
+typedef void (*get_alarm)( char chn, uint16_t alarm);
+
+void Regist_get_val( get_realVAl get_val);
+void Regist_get_rsv( get_rsv get_rsv);
+void Regist_get_alarm( get_alarm get_alarm);
+void Set_chnType( char chn, uint8_t type);
+void Set_rangH( char chn, uint16_t rang);
+void Set_rangL( char chn, uint16_t rang);
+void Set_alarmH( char chn, uint16_t alarm);
+void Set_alarmL( char chn, uint16_t alarm);
+void ADC_50ms();
 #endif

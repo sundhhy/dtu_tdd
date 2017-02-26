@@ -36,3 +36,7 @@
 .\objects\gprs.o: ..\dtu_tdd\def.h
 .\objects\gprs.o: ..\dtu_tdd\dtuConfig.h
 .\objects\gprs.o: .\BSP\serial485_uart.h
+.\objects\gprs.o: .\sdh_lib\sw_filesys.h
+.\objects\gprs.o: .\sdh_lib\hw_w25q.h
+.\objects\gprs.o: ..\dtu_tdd\osObjects.h
+.\objects\gprs.o: .\sdh_lib\list.h
