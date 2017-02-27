@@ -131,11 +131,7 @@ void TIM2_IRQHandler(void)          //定时器中断约10ms
 				}
 				current_job = (time_task_manager *)current_job->next;
 			}
-			if( g_time2.time_ms % 200 == 0)
-			{
-				LED_run->blink(LED_run);
-				LED_com->turnoff(LED_com);
-			}
+
 			if( g_time2.time_ms >= 1000)
 			{
 				g_time2.time_s ++;

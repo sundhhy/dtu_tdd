@@ -23,6 +23,8 @@
 #include "adc.h"
 #include "rtu.h"
 
+static void Led_job();
+
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
      set to 'Yes') calls __io_putchar() */
@@ -93,7 +95,7 @@ int main (void) {
 	LED_com = stm32LED_new();
 	LED_run->init( LED_run, &PinLED_run);
 	LED_com->init( LED_com, &PinLED_com);
-	
+	regist_timejob( 200, Led_job);
 #ifdef TDD_LED
 	LED_run->test( LED_run);
 	LED_com->test( LED_com);
@@ -289,4 +291,11 @@ int main (void) {
 		
 	}
 	
+}
+
+
+static void Led_job()
+{
+	LED_run->blink(LED_run);
+	LED_com->turnoff(LED_com);
 }
