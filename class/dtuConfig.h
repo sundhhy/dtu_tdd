@@ -80,4 +80,7 @@ extern DtuCfg_t	Dtu_config;
 extern sdhFile *DtuCfg_file;
 
 
+int Init_system_config(void);
+void set_default( DtuCfg_t *conf);
+
 #endif

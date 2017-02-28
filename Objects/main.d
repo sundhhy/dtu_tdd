@@ -42,3 +42,4 @@
 .\objects\main.o: .\BSP\times.h
 .\objects\main.o: .\class\led.h
 .\objects\main.o: .\class\rtu.h
+.\objects\main.o: .\class\dtuConfig.h

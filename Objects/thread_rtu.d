@@ -3,7 +3,7 @@
 .\objects\thread_rtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\thread_rtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\thread_rtu.o: sdhError.h
-.\objects\thread_rtu.o: dtuConfig.h
+.\objects\thread_rtu.o: .\class\dtuConfig.h
 .\objects\thread_rtu.o: .\class\gprs.h
 .\objects\thread_rtu.o: .\lw_oopc_v1.2\lw_oopc.h
 .\objects\thread_rtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

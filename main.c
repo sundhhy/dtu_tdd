@@ -22,6 +22,7 @@
 #include "led.h"
 #include "adc.h"
 #include "rtu.h"
+#include "dtuConfig.h"
 
 static void Led_job();
 
@@ -271,6 +272,7 @@ int main (void) {
 		
 	}
 	printf(" mount filesystem succeed! \n");
+	Init_system_config();
 	
 	Init_ThrdDtu();
 //	Init_Thread_adc();

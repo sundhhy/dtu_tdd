@@ -17,7 +17,7 @@
 #define DTU_BUF_LEN		256
 #define TMP_BUF_LEN		32
 
-static int get_dtuCfg(DtuCfg_t *conf);
+//static int get_dtuCfg(DtuCfg_t *conf);
 static void dtu_conf(void);
 static void ledcom_uartcb(void *rxbuf, void *arg);
 
@@ -27,8 +27,6 @@ osThreadId tid_ThrdDtu;                                          // thread id
 osThreadDef (thrd_dtu, osPriorityNormal, 1, 0);                   // thread object
 
 gprs_t *SIM800 ;
-DtuCfg_t	Dtu_config;
-sdhFile *DtuCfg_file;
 
 char	DTU_Buf[DTU_BUF_LEN];
 char	Temp_buf[TMP_BUF_LEN];
@@ -47,25 +45,6 @@ int Init_ThrdDtu (void) {
 	T485cb.arg = LED_com;
 	s485_uart_init( &Conf_S485Usart_default, &T485cb);
 	
-	//这里尝试启动SIM是为了能够获取默认的短信中心号码
-	//todo  :如果只是工作在本地模式并且没有焊SIM900或者没有插入SIM卡的时候，这里就会导致一直死循环，需要处理掉这个问题
-//	while(retry)
-//	{
-//		SIM800->startup(SIM800);
-//		if( SIM800->check_simCard(SIM800) == ERR_OK)
-//		{	
-//			
-//			break;
-//		}
-//		else {
-//			retry --;
-//			osDelay(1000);
-//		}
-//		
-//	}
-	DPRINTF(" get_dtuCfg\n");
-	get_dtuCfg( &Dtu_config);
-	DPRINTF(" get_dtuCfg done\n");
 	clean_time2_flags();
 
 	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
@@ -448,89 +427,6 @@ void thrd_dtu (void const *argument) {
 	  osThreadYield ();                                           // suspend thread
 	}
 }
-
-
-static void set_default( DtuCfg_t *conf)
-{
-	//默认的配置
-	int i = 0;
-	memset( conf, 0, sizeof( DtuCfg_t));
-		 
-	conf->ver[0] = DTU_CONFGILE_MAIN_VER;
-	conf->ver[1] = DTU_CONFGILE_SUB_VER;
-	conf->multiCent_mode = 1;
-	conf->hartbeat_timespan_s = 5;
-	conf->work_mode = MODE_DTU;
-	conf->dtu_id = 1;
-	conf->rtu_addr = 1;
-	strcpy( conf->sim_NO,"13888888888");
-	strcpy( conf->apn," ");
-	strcpy( conf->smscAddr," ");
-	sprintf( conf->registry_package,"XMYN%09d%s",conf->dtu_id, conf->sim_NO);
-	conf->heatbeat_package[0] = '$';
-	conf->heatbeat_package[1] = '\0';
-	conf->output_mode = 0;
-	for( i = 0; i < 3; i ++)
-	{
-		Dtu_config.chn_type[i] = SIGTYPE_4_20_MA;
-		Dtu_config.sign_range[i].rangeH = 0xFFFF;
-		Dtu_config.sign_range[i].rangeL = 0;
-		Dtu_config.sign_range[i].alarmH = 0xFFFF;
-		Dtu_config.sign_range[i].alarmL = 0;
-		
-		
-	}
-	memcpy( &conf->the_485cfg, &Conf_S485Usart_default, sizeof( Conf_S485Usart_default));
-	
-	for( i = 0; i < IPMUX_NUM; i++)
-	{
-		strcpy( conf->DateCenter_ip[i], DEF_IPADDR);
-		strcpy( conf->protocol[i], DEF_PROTOTOCOL);
-		conf->DateCenter_port[i] = DEF_PORTNUM;
-		
-	}
-	
-}
-
-static int get_dtuCfg(DtuCfg_t *conf)
-{
-	
-	
-	DtuCfg_file	= fs_open( DTUCONF_filename);
-	DPRINTF(" fs_open  %p \n", DtuCfg_file);
-	if( DtuCfg_file)
-	{
-		//todo: 2017-02-04 21:40:21 此处耗时8s
-		fs_read( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
-		DPRINTF(" fs_read  done \n");
-		if( conf->ver[0] == DTU_CONFGILE_MAIN_VER &&  conf->ver[1] == DTU_CONFGILE_SUB_VER)
-		{
-			
-			return ERR_OK;
-		}
-	}
-	else
-	{
-		DtuCfg_file	= fs_creator( DTUCONF_filename, sizeof( DtuCfg_t));
-		DPRINTF(" fs_creator  %p \n", DtuCfg_file);
-			
-	}
-	
-	
-	
-	set_default( conf);
-	
-	if( DtuCfg_file)
-	{
-		fs_lseek( DtuCfg_file, WR_SEEK_SET, 0);
-		fs_write( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
-		fs_flush();
-	}
-	
-	return ERR_OK;
-	
-}
-
 
 void ack_str( char *str)
 {

@@ -6,6 +6,7 @@
 ".\objects\stm32adc.o"
 ".\objects\led.o"
 ".\objects\rtu.o"
+".\objects\dtuconfig.o"
 ".\objects\hardwareconfig.o"
 ".\objects\chipset.o"
 ".\objects\debug.o"

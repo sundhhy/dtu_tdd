@@ -8,7 +8,7 @@
 .\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\cdma_dtu.o: .\sdh_lib\CircularBuffer.h
 .\objects\cdma_dtu.o: sdhError.h
-.\objects\cdma_dtu.o: dtuConfig.h
+.\objects\cdma_dtu.o: .\class\dtuConfig.h
 .\objects\cdma_dtu.o: .\BSP\serial485_uart.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\cdma_dtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include\stm32f10x.h

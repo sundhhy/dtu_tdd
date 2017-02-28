@@ -7,8 +7,8 @@
 .\objects\rtu.o: .\lw_oopc_v1.2\lw_oopc.h
 .\objects\rtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\rtu.o: ..\dtu_tdd\sdhError.h
-.\objects\rtu.o: ..\dtu_tdd\dtuConfig.h
-.\objects\rtu.o: .\class\gprs.h
+.\objects\rtu.o: class\dtuConfig.h
+.\objects\rtu.o: class\gprs.h
 .\objects\rtu.o: .\sdh_lib\CircularBuffer.h
 .\objects\rtu.o: .\BSP\serial485_uart.h
 .\objects\rtu.o: d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h

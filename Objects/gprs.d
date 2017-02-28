@@ -34,7 +34,7 @@
 .\objects\gprs.o: ..\dtu_tdd\sdhError.h
 .\objects\gprs.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\gprs.o: ..\dtu_tdd\def.h
-.\objects\gprs.o: ..\dtu_tdd\dtuConfig.h
+.\objects\gprs.o: class\dtuConfig.h
 .\objects\gprs.o: .\BSP\serial485_uart.h
 .\objects\gprs.o: .\sdh_lib\sw_filesys.h
 .\objects\gprs.o: .\sdh_lib\hw_w25q.h

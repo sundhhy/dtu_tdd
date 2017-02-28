@@ -423,11 +423,6 @@
               <FileType>1</FileType>
               <FilePath>.\Thread_rtu.c</FilePath>
             </File>
-            <File>
-              <FileName>dtuConfig.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\dtuConfig.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -472,6 +467,16 @@
               <FileName>rtu.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\class\rtu.h</FilePath>
+            </File>
+            <File>
+              <FileName>dtuConfig.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\dtuConfig.c</FilePath>
+            </File>
+            <File>
+              <FileName>dtuConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\dtuConfig.h</FilePath>
             </File>
           </Files>
         </Group>
