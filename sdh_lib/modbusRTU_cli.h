@@ -40,6 +40,12 @@
 #define WRITE_N_COIL		15										//???????
 #define WRITE_N_HOLD		16										//??????? 
 
+/* Modbus err ************************************************************************/
+#define MB_CMD_ERR		1
+#define MB_ADDR_ERR		2
+#define MB_DATA_ERR		3
+#define MB_MB_ERR		4
+
 
 typedef void (*Reg3_write_cb)(void);
 
@@ -52,6 +58,6 @@ int Regist_reg3_wrcb( Reg3_write_cb cb);
 uint16_t CRC16(uint8_t *puchMsg, uint16_t usDataLen);			         //16Œªcrc–£—È
 
 uint8_t 	modbusRTU_getID(uint8_t *command_buf);
-uint16_t modbusRTU_data(uint8_t *command_buf, uint8_t *ack_buf, int ackbuf_len);
+uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int ackbuf_len);
 
 #endif

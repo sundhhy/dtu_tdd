@@ -22,7 +22,7 @@
 #include "def.h"
 #include "led.h"
 
-static u485RxirqCB *T485Rxirq_cb;
+//static u485RxirqCB *T485Rxirq_cb;
 
 osSemaphoreId SemId_s485txFinish;                         // Semaphore ID
 uint32_t os_semaphore_cb_Sem_s485txFinish[2] = { 0 }; 
@@ -69,7 +69,7 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 	}
 	
 
-	T485Rxirq_cb = cb;
+//	T485Rxirq_cb = cb;
 	USART_DeInit( SER485_USART);
 	
 	DMA_s485Uart_Init();
@@ -174,9 +174,9 @@ int s485_Uart_read(char *data, uint16_t size)
 		memset( data, 0, size);
 		memcpy( data, S485Uart_buf, len);
 		memset( S485Uart_buf, 0, len);
-		
-		if( T485Rxirq_cb != NULL && len)
-			T485Rxirq_cb->cb( NULL,  T485Rxirq_cb->arg);
+		LED_com->turnon(LED_com);
+//		if( T485Rxirq_cb != NULL && len)
+//			T485Rxirq_cb->cb( NULL,  T485Rxirq_cb->arg);
 		S485_uart_ctl.recv_size = 0;
 		return len;
 	}

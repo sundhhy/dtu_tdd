@@ -35,15 +35,14 @@ char	Temp_buf[TMP_BUF_LEN];
 #define TTEXTSRC_485 0
 #define TTEXTSRC_SMS(n)	( n + 1)
 static int TText_source = TTEXTSRC_485;	
-static u485RxirqCB T485cb;
+//static u485RxirqCB T485cb;
 
 int Init_ThrdDtu (void) {
-//	int retry = 20;
 	SIM800 = gprs_t_new();
 	SIM800->init(SIM800);
-	T485cb.cb = ledcom_uartcb;
-	T485cb.arg = LED_com;
-	s485_uart_init( &Conf_S485Usart_default, &T485cb);
+//	T485cb.cb = ledcom_uartcb;
+//	T485cb.arg = LED_com;
+	s485_uart_init( &Conf_S485Usart_default, NULL);
 	
 	clean_time2_flags();
 
@@ -139,20 +138,27 @@ void thrd_dtu (void const *argument) {
 	
 	sprintf(DTU_Buf, "starting up gprs ...");
 	prnt_485( DTU_Buf);
-	while(retry)
+	if( Dtu_config.work_mode != MODE_LOCALRTU)
 	{
-		SIM800->startup(SIM800);
-		if( SIM800->check_simCard(SIM800) == ERR_OK)
-		{	
-			sprintf(DTU_Buf, "succeed !\n");
-			break;
+		while(retry)
+		{
+			SIM800->startup(SIM800);
+			if( SIM800->check_simCard(SIM800) == ERR_OK)
+			{	
+				sprintf(DTU_Buf, "succeed !\n");
+				break;
+			}
+			else {
+				retry --;
+				osDelay(1000);
+			}
+			
 		}
-		else {
-			retry --;
-			osDelay(1000);
-		}
-		
 	}	
+	else
+	{
+		step = 4 ;
+	}
 	
 	
 	//使用用户的配置来重新启动485串口
@@ -166,13 +172,11 @@ void thrd_dtu (void const *argument) {
 	
 	
 
-//	Init_rtu();
 	sprintf(DTU_Buf, "Begain DTU thread ...");
 	prnt_485( DTU_Buf);
 	
 
 	while (1) {
-//		LED_run->blink( LED_run);
 		switch( step)
 		{
 			
@@ -190,11 +194,7 @@ void thrd_dtu (void const *argument) {
 					
 				}
 				
-				if( Dtu_config.work_mode == MODE_LOCALRTU)
-				{
-					step = 4 ;
 				
-				}
 				break;
 			case 1:
 				SIM800->startup(SIM800);
@@ -317,7 +317,7 @@ void thrd_dtu (void const *argument) {
 				{
 					if( modbusRTU_getID( DTU_Buf) != Dtu_config.rtu_addr)
 						break;
-					lszie = modbusRTU_data( DTU_Buf, Temp_buf, sizeof( Temp_buf));
+					lszie = modbusRTU_data( DTU_Buf, ret, Temp_buf, sizeof( Temp_buf));
 					s485_Uart_write( Temp_buf, lszie);
 					
 					break;

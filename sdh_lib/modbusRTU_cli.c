@@ -32,20 +32,20 @@ static Reg3_write_cb	g_rg3_wr_cb = NULL;
 #ifdef CPU_LITTLE_END
 static void Little_end_to_Big_end( uint16_t *p_val16)
 {
-	uint8_t u16_h = ( *p_val16 & 0xff) >> 16;
+	uint8_t u16_h = ( *p_val16 ) >> 8;
 	uint8_t u16_l =  *p_val16 & 0xff;
 	
 	*p_val16 = 0;
-	*p_val16 = ( u16_l << 16) | u16_h;
+	*p_val16 = ( u16_l << 8) | u16_h;
 }
 
 static void Big_end_to_Little_end( uint16_t *p_val16)
 {
-	uint8_t u16_h = ( *p_val16 & 0xff) >> 16;
-	uint8_t u16_l =  *p_val16 & 0xff;
+	uint8_t u16_h = ( *p_val16 ) ;
+	uint8_t u16_l =  *p_val16 >> 8;
 	
 	*p_val16 = 0;
-	*p_val16 = ( u16_h << 16) | u16_l;
+	*p_val16 = ( u16_h << 8) | u16_l;
 }
 #endif
 
@@ -57,7 +57,8 @@ uint16_t regTyppe2_read(uint16_t addr, uint16_t reg_type)
 
 	if(reg_type == REG_MODBUS)
 	{
-	  addr-=10001;
+		if( addr > 10000)
+			addr-=10001;
 	}
 	 
 	i = addr/16;
@@ -87,7 +88,8 @@ uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type)
 	uint16_t tmp;
 	if(reg_type==REG_MODBUS)
 	{
-		hold_address-=40001;
+		if( hold_address > 40000)
+			hold_address-=40001;
 		tmp = *(HOLD_ADDRESS + hold_address);
 #ifdef CPU_LITTLE_END
 		Little_end_to_Big_end( &tmp);
@@ -107,7 +109,8 @@ uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
 	uint16_t tmp = val;
 	if(reg_type==REG_MODBUS)
 	{
-		hold_address-=40001;
+		if( hold_address > 40000)
+			hold_address-=40001;
 #ifdef CPU_LITTLE_END
 		Big_end_to_Little_end( &tmp);
 #endif
@@ -135,7 +138,9 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 	uint16_t tmp;
 	if(reg_type==REG_MODBUS)
 	{
-		input_address-=30001;
+		if( input_address > 30000)
+			input_address-=30001;
+		
 		tmp = *(HOLD_ADDRESS + input_address);
 #ifdef CPU_LITTLE_END
 		Little_end_to_Big_end( &tmp);
@@ -144,6 +149,7 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 	else
 	{
 		tmp = *(HOLD_ADDRESS + input_address);
+		
 	}
 	  
 	return tmp;
@@ -165,103 +171,122 @@ uint8_t 	modbusRTU_getID(uint8_t *command_buf)
 {
 	return command_buf[0];
 }
-uint16_t modbusRTU_data(uint8_t *command_buf, uint8_t *ack_buf, int ackbuf_len)
+uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int ackbuf_len)
 {
 	uint16_t i, data_start, data_num, data, ack_num;
-	uint8_t  err=0;
+	uint16_t crc16 = 0;
+	uint16_t *p_playload = NULL;
+	uint8_t  err = 0;
 	for(i=0; i<6; i++) 
 	{
 		ack_buf[i] = command_buf[i];											//?????
 	}	
-	
-	data_start = command_buf[3] + (command_buf[2] << 8);						//??????
-	data_num = command_buf[5] + (command_buf[4] << 8);							//???????
-	
-	switch(command_buf[1])
+	crc16 = CRC16( 	command_buf, 	( cmd_len - 2));
+	//todo 协议上规定CRC是低字节在前，然而实际测试中却是高字节在前，需要再次确认（测试软件是ModbuScan）
+	data = command_buf[ cmd_len - 1 ] + ( command_buf[ cmd_len - 2] << 8);		//read crc 
+	if( crc16 != data)
 	{
-		/*读取多Coil状态 读0区			-------------------------------------------*/
-		case READ_COIL:		//无效操作码
-			err=1;
-			break;
-		/*读书如状态 读1区----------------------------------------------------------------------*/
-		case READ_STATE:														
-			
-			break;
+		err = MB_DATA_ERR;
+	}
+	else
+	{
+		data_start = command_buf[3] + (command_buf[2] << 8);						//??????
+		data_num = command_buf[5] + (command_buf[4] << 8);							//???????
+		switch(command_buf[1])
+		{
+			/*读取多Coil状态 读0区			-------------------------------------------*/
+			case READ_COIL:		//无效操作码
+				err=MB_CMD_ERR;
+				break;
+			/*读书如状态 读1区----------------------------------------------------------------------*/
+			case READ_STATE:														
+				
+				break;
 
-		/*读输入寄存器 3区------------------------------------------------------------------*/
-		case READ_INPUT:	
-																				//data_num=127;	  ??????
-			if((data_start >= INPUT_SIZE) || (data_num >= 125) || ((data_start + data_num) > INPUT_SIZE) ) 
-			{
-				err=2;	
-				break;
-			}
+			/*读输入寄存器 3区------------------------------------------------------------------*/
+			case READ_INPUT:	
+																					//data_num=127;	  ??????
+				if((data_start >= INPUT_SIZE) || (data_num >= 125) || ((data_start + data_num) > INPUT_SIZE) ) 
+				{
+					err= MB_ADDR_ERR;	
+					break;
+				}
+							
+				ack_buf[2] = data_num*2;
+				ack_num = 3;
+				for(i=0; i<data_num; i++)
+				{
+					data = regType4_read(data_start, REG_MODBUS);	
+					data_start++;
 						
-			ack_buf[2] = data_num*2;
-			ack_num = 3;
-			for(i=0; i<data_num; i++)
-			{
-				data = regType4_read(data_start, REG_LINE);	
-				data_start++;
-					
-				ack_buf[ack_num] = data>>8; 			
-				ack_num++; 
-				ack_buf[ack_num] = data;				
-				ack_num++;	
-			}
-		break;
-	/*读输入寄存器 4区，保持寄存器------------------------------------------------------------------*/
-		case READ_HOLD:	
-																				//data_num=127;	  ??????
-			if((data_start >= HOLD_SIZE) || (data_num >= 125) || ((data_start + data_num) > HOLD_SIZE) ) 
-			{
-				err=2;	
-				break;
-			}
+					ack_buf[ack_num] = data; 			
+					ack_num++; 
+					ack_buf[ack_num] = data >>8;				
+					ack_num++;	
+				}
+			break;
+		/*读输入寄存器 4区，保持寄存器------------------------------------------------------------------*/
+			case READ_HOLD:	
+																					//data_num=127;	  ??????
+				if((data_start >= HOLD_SIZE) || (data_num >= 125) || ((data_start + data_num) > HOLD_SIZE) ) 
+				{
+					err = MB_ADDR_ERR;	
+					break;
+				}
+							
+				ack_buf[2] = data_num*2;
+				ack_num = 3;
+				for(i=0; i<data_num; i++)
+				{
+					data = regType3_read(data_start, REG_MODBUS);	
+					data_start++;
 						
-			ack_buf[2] = data_num*2;
-			ack_num = 3;
-			for(i=0; i<data_num; i++)
-			{
-				data = regType3_read(data_start, REG_LINE);	
-				data_start++;
-					
-				ack_buf[ack_num] = data>>8; 			
+					ack_buf[ack_num] = data; 			
+					ack_num++; 
+					ack_buf[ack_num] = data >>8;				
+					ack_num++;	
+				}
+			break;
+			/*写输入寄存器 4区，保持寄存器------------------------------------------------------------------*/
+			case WRITE_1_HOLD:	
+																					//data_num=127;	  ??????
+				if((data_start >= HOLD_SIZE) || (data_num >= 125) || ((data_start + data_num) > HOLD_SIZE) ) 
+				{
+					err = MB_ADDR_ERR;	
+					break;
+				}
+							
+				p_playload = (uint16_t *)(command_buf + 4);
+				regType3_write(data_start, REG_MODBUS, *p_playload);
+				data = regType3_read(data_start, REG_MODBUS);
+				ack_num = 4;
+				ack_buf[ack_num] = data; 			
 				ack_num++; 
-				ack_buf[ack_num] = data;				
+				ack_buf[ack_num] = data >>8 ;				
 				ack_num++;	
-			}
-		break;
-		
-			
-		default:
-			err = 1; 
-		break;
+				
+				break;
+				
+			default:
+				err = MB_CMD_ERR; 
+			break;
+		}
 	}
 	
 	//todo:将crc校验码也要加在结尾处	
-	if (err == 1)
+	if (err )
     {
 		ack_buf[1] = ack_buf[1] | 0x80;											 //无效操作码
-		ack_buf[2] = 0x01;            
+		ack_buf[2] = err;            
 		ack_num = 3;
-		err = 0;
-
-		return ack_num;	
 	}	
-	else 
-	{
-		if (err == 2)
-	    {
-			ack_buf[1] = ack_buf[1] | 0x80;											 //地址无效
-			ack_num = 3;
-			ack_buf[2] = 0x02;             										
-			err = 0;
-
-			return ack_num;	
-		}	
-	}
-				
+	
+	
+	crc16 = CRC16( 	ack_buf, 	ack_num);
+	ack_buf[ack_num] = crc16 >>8; 	
+	ack_num++;
+	ack_buf[ack_num] = crc16 ; 	
+	ack_num ++;	
 	return ack_num;
 	
 }
