@@ -23,8 +23,15 @@
 #include "adc.h"
 #include "rtu.h"
 #include "dtuConfig.h"
+#include "TTextConfProt.h"
+
+
+#define APPTYPE_NORMAL			0x25		//正常工作
+#define APPTYPE_CONFIG			0x37		//配置任务	
+#define APPTYPE_CALIBRATION		0xa9		//标定任务
 
 static void Led_job();
+static int Select_apptype();		//选择工作类型
 
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
@@ -77,6 +84,7 @@ int main (void) {
 	int i = 0;
 	char c = 0;
 #endif
+	int u32_val = 0;
 	
 	osKernelInitialize ();                    // initialize CMSIS-RTOS
 
@@ -273,24 +281,32 @@ int main (void) {
 	}
 	printf(" mount filesystem succeed! \n");
 	Init_system_config();
-	
-	Init_ThrdDtu();
-//	Init_Thread_adc();
-  // create 'thread' functions that start executing,
-  // example: tid_name = osThreadCreate (osThread(name), NULL);
-
-	osKernelStart (); 
-	
-	create_adc();
-	regist_timejob( 50, ADC_50ms);
-
-	Init_rtu();
-
-	while(1)
+	clean_time2_flags();
+	s485_uart_init( &Conf_S485Usart_default, NULL);
+	u32_val = Select_apptype();
+	if( u32_val == APPTYPE_CONFIG)
 	{
-		osDelay(50);
-		Collect_job();
 		
+		Config_job();
+	}
+	else
+	{
+		Init_ThrdDtu();
+
+
+		osKernelStart (); 
+		
+		create_adc();
+		regist_timejob( 50, ADC_50ms);
+
+		Init_rtu();
+
+		while(1)
+		{
+			osDelay(50);
+			Collect_job();
+			
+		}
 	}
 	
 }
@@ -300,4 +316,38 @@ static void Led_job()
 {
 	LED_run->blink(LED_run);
 	LED_com->turnoff(LED_com);
+}
+
+static int Select_apptype()
+{
+	int i = 30;
+	int ret = 0;
+	char	uart_buf[32] = {0};
+	while(i)
+	{
+		
+		ret = s485_Uart_read( uart_buf, 32);
+		if( ret <=  0)
+		{
+			i --;
+			osDelay(100);
+			continue;
+		}
+		if( enter_TTCP( uart_buf) == ERR_OK)
+		{
+			get_TTCPVer( uart_buf);
+			while( s485_Uart_write(uart_buf, strlen(uart_buf) ) != ERR_OK)
+					;
+//			osDelay(100);
+			return APPTYPE_CONFIG;
+		}
+		else
+		{
+			
+		}
+		
+	}
+	
+	return APPTYPE_NORMAL;
+	
 }

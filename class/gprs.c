@@ -117,6 +117,8 @@ void add_recvdata( RecvdataBuf *recvbuf, char *data, int len)
 	if( len == 0)
 		return;
 	//buf_len 必须是2的幂
+	
+	//空间不足时，清除未读取的数据来获得足够的空间
 	while(  len > TcpRecvData.free_size )
 	{
 		//清除未读取的部分
@@ -171,7 +173,7 @@ int read_recvdata( RecvdataBuf *recvbuf, char *data, int bufsize)
 		len --;
 	}
 	if( i < bufsize)
-		return i;
+		return ( i - 1);		//在写入时加了一个0作为结尾，所以实际长度要减1
 	return bufsize;
 	
 }
@@ -469,12 +471,44 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				break;
 			case 1:		///获取短信的总数量
 				strcpy( Gprs_cmd_buf, "AT+CPMS?\x00D\x00A" );
-//				strcpy( Gprs_cmd_buf, "AT+CNMI?\x00D\x00A" );
+			
+//				+CPMS: <mem1>,<used1>,<total1>,<mem2>,<used2>,<total2>,
+//						<mem3>,<used3>,<total3>
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
-				tmp = strcspn( Gprs_cmd_buf, "0123456789");			///查找接受到的字符串中的第一个字符串中的偏移	
-				number = atoi( Gprs_cmd_buf + tmp);			///第一个数字就是短信的数量
+			
+			
+				//找到总数
+				pp = strstr(Gprs_cmd_buf,",");
+				if( pp)
+				{
+					pp ++;
+					
+					//没有短信就返回
+					number = atoi( pp);	
+					if( number == 0)
+						return -1;
+				}
+				else
+				{
+					return -1;
+				}
+				pp = strstr(pp,",");
+				if( pp)
+				{
+					pp ++;
+				}
+				else
+				{
+					return -1;
+				}
+//				tmp = strcspn( pp, "0123456789");			
+//				pp = Gprs_cmd_buf + tmp;
+//				tmp = strcspn( pp, ",");	
+				number = atoi( pp);			
 				if( number < 1)
 					return 0;	
+				if( RcvSms_seq > number)
+					RcvSms_seq = 0;
 				i = RcvSms_seq;		///短信从短信CMIT通知开始读取
 				step ++;
 				retry = RETRY_TIMES;
@@ -482,6 +516,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
 				sprintf( in_buf, "AT+CMGR=%d\x00D\x00A", i);
+				RcvSms_seq = i;
 				serial_cmmn( in_buf, *len, 1000);
 			
 				pp = in_buf;			///假定pp的值是正常的
@@ -510,6 +545,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 						{
 							if( text_begin == 0) {
 								text_begin = 1;
+								
 								pp ++;
 								continue;
 							}
@@ -538,7 +574,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 					}		// while( *pp != '\0')
 					
 //todo  如果出现接收到的数据没有结尾怎么办？
-					return 0;
+					return i;
 				}
 				pp = strstr((const char*)in_buf,"REC");		//当接收的数据中有REC的时候，可能是串口数据没收全，再试几次
 				if( pp && retry)
@@ -548,7 +584,9 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				else
 				{
 					retry = RETRY_TIMES;
+					
 					i ++;
+					
 				}
 				if( i > number)
 					return ERR_FAIL;
@@ -744,6 +782,8 @@ int delete_sms( gprs_t *self, int seq)
 		return ERR_UNINITIALIZED; 
 	if( cnnt_num > IPMUX_NUM)
 		return ERR_BAD_PARAMETER;
+	if( portnum == 0)
+		return ERR_BAD_PARAMETER;
 	while(1)
 	{
 		switch( step)
@@ -776,7 +816,7 @@ int delete_sms( gprs_t *self, int seq)
 				DPRINTF("  %s ", Gprs_cmd_buf);
 				UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
 				osDelay(10);
-				retry = RETRY_TIMES * 10;
+				retry = RETRY_TIMES * 4;
 				step++;
 			case 4:
 				
@@ -809,7 +849,7 @@ int delete_sms( gprs_t *self, int seq)
 				}
 				retry --;
 				if( retry == 0)
-					return ERR_DEV_TIMEOUT;
+					return ERR_OK;
 //				osDelay(1000);
 				
 				
@@ -1847,7 +1887,13 @@ static int prepare_ip(gprs_t *self)
 				{
 					retry = RETRY_TIMES;
 					step ++;
-					break;;
+					break;
+				}
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
+				if(pp)
+				{
+					step ++;
+					break;
 				}
 				
 				retry --;
@@ -1929,7 +1975,7 @@ static int get_sms_phNO(char *databuf, char *phbuf)
 		tmp ++;
 		count ++;
 	}
-	if( count < 8)
+	if( count < 4)
 		return -1;
 	return tmp;
 }

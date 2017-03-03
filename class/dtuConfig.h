@@ -76,11 +76,15 @@ typedef struct {
 	signRange_t		sign_range[3];
 }DtuCfg_t;
 
+typedef void (* other_ack)( char *data, void *arg);
+
 extern DtuCfg_t	Dtu_config;
 extern sdhFile *DtuCfg_file;
 
 
 int Init_system_config(void);
 void set_default( DtuCfg_t *conf);
+void Config_job(void);
 
+void Config_server( char *data, other_ack ack, void * arg);
 #endif

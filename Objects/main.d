@@ -43,3 +43,4 @@
 .\objects\main.o: .\class\led.h
 .\objects\main.o: .\class\rtu.h
 .\objects\main.o: .\class\dtuConfig.h
+.\objects\main.o: .\sdh_lib\TTextConfProt.h

@@ -35,6 +35,7 @@ uint32_t os_semaphore_cb_Sem_s485rxFrame[2] = { 0 };
 const osSemaphoreDef_t os_semaphore_def_Sem_s485rxFrame = { (os_semaphore_cb_Sem_s485rxFrame) };
 
 char	S485Uart_buf[S485_UART_BUF_LEN];			//用于DMA接收缓存
+char	S485Uart_Txbuf[S485_UART_BUF_LEN];			//用于DMA接收缓存
 static struct usart_control_t {
 	short	tx_block;		//阻塞标志
 	short	rx_block;
@@ -89,7 +90,7 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 	S485_uart_ctl.rx_block = 1;
 	S485_uart_ctl.tx_block = 1;
 	S485_uart_ctl.rx_waittime_ms = 100;
-	S485_uart_ctl.tx_waittime_ms = 100;
+	S485_uart_ctl.tx_waittime_ms = 1000;
 	
 	return ERR_OK;
 }
@@ -107,7 +108,10 @@ int s485_Uart_write(char *data, uint16_t size)
 	int ret;
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
-	DMA_s485_usart.dma_tx_base->CMAR = (uint32_t)data;
+	if( size > S485_UART_BUF_LEN)
+		size = S485_UART_BUF_LEN ;
+	memcpy( S485Uart_Txbuf, data, size);
+	DMA_s485_usart.dma_tx_base->CMAR = (uint32_t)S485Uart_Txbuf;
 	DMA_s485_usart.dma_tx_base->CNDTR = (uint16_t)size; 
 	DMA_Cmd( DMA_s485_usart.dma_tx_base, ENABLE);        //开始DMA发送
 
