@@ -35,6 +35,7 @@ static int prepare_ip(gprs_t *self);
 static int get_sms_phNO(char *databuf, char *phbuf);
 static int get_seq( char **data);
 static int check_apn(char *apn);
+static gprs_event_t *malloc_event();
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
 
@@ -1100,7 +1101,7 @@ void read_event(void *buf, void *arg)
 	pp = strstr((const char*)buf,"CLOSED");
 	if( pp)
 	{
-		event = malloc(	sizeof( gprs_event_t));
+		event = malloc_event();
 		if( event)
 		{
 			event->type = tcp_close;
@@ -1120,7 +1121,7 @@ void read_event(void *buf, void *arg)
 	pp = strstr((const char*)buf,"RECEIVE");
 	if( pp)
 	{
-		event = malloc(	sizeof( gprs_event_t));
+		event = malloc_event();
 		if( event)
 		{
 			
@@ -1145,7 +1146,7 @@ void read_event(void *buf, void *arg)
 	if( pp)
 	{
 		
-		event = malloc(	sizeof( gprs_event_t));
+		event = malloc_event();
 		if( event)
 		{
 			event->type = sms_urc;
@@ -1221,11 +1222,42 @@ int report_event( gprs_t *self, void **event, char *buf, int *lsize)
 //	return sms_urc;
 }
 
-
+#define EVENT_NUM   8
+static gprs_event_t *malloc_event()
+{
+	static gprs_event_t *p_event = NULL;
+	int i = 0;
+	
+	if( p_event == NULL)
+	{
+		p_event = malloc( EVENT_NUM * sizeof( gprs_event_t));
+		memset( p_event, 0, EVENT_NUM * sizeof( gprs_event_t));
+		
+	}
+	
+	for( i = 0; i < EVENT_NUM; i ++)
+	{
+		if( p_event[i].used == 0)
+		{
+			p_event[i].used = 1;
+			return p_event + i;
+			
+		}
+		
+	}
+	
+	return NULL;
+	
+	
+		
+		
+	
+}
 void free_event( gprs_t *self, void *event)
 {
-//	gprs_event_t *this_event = (gprs_event_t *)event;
-	free(event);
+	gprs_event_t *this_event = (gprs_event_t *)event;
+//	free(event);
+	this_event->used = 0;
 }
 
 //返回第一个未处于连接状态的序号

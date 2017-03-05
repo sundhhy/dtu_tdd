@@ -16,7 +16,8 @@
 #define AT_SET_DNSIP  "AT+CDNSCFG=" 
 
 typedef struct {
-	short		type;
+	char 		used;
+	char		type;
 	short		arg;
 //	uint8_t 	*data;
 }gprs_event_t;
