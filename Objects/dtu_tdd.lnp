@@ -1,6 +1,6 @@
 --cpu Cortex-M3
-".\objects\main.o"
 ".\objects\cdma_dtu.o"
+".\objects\main.o"
 ".\objects\thread_rtu.o"
 ".\objects\gprs.o"
 ".\objects\stm32adc.o"

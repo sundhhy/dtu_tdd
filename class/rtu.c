@@ -64,15 +64,15 @@ static void ModbusRTURegTpye3_wrCB(void)
 static void Read_rtuval( char chn, float f_val)
 {
 	
-	uint32_t temp = (uint32_t)f_val;
+	uint32_t *temp = (uint32_t *)&f_val;
 	uint16_t float_h ;
 	uint16_t float_l ;
 	
 	chn = chn * 2;
-	float_l =  temp & 0xffff;
+	float_l =  *temp & 0xffff;
 	regType4_write( chn, REG_LINE, float_l);
 	
-	float_h = ( temp & 0xffff0000) >> 16;
+	float_h = ( *temp & 0xffff0000) >> 16;
 	regType4_write( chn + 1, REG_LINE, float_h);
 }
 

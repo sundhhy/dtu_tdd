@@ -141,14 +141,14 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 		if( input_address > 30000)
 			input_address-=30001;
 		
-		tmp = *(HOLD_ADDRESS + input_address);
+		tmp = *(INPUT_ADDRESS + input_address);
 #ifdef CPU_LITTLE_END
 		Little_end_to_Big_end( &tmp);
 #endif	
 	}
 	else
 	{
-		tmp = *(HOLD_ADDRESS + input_address);
+		tmp = *(INPUT_ADDRESS + input_address);
 		
 	}
 	  

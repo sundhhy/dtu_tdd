@@ -51,7 +51,7 @@ int Init_ThrdDtu (void) {
 	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
 	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
 	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
-	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 2000);
+	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
 	
 
 	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
@@ -271,7 +271,12 @@ void thrd_dtu (void const *argument) {
 						continue;
 					}
 					
-					SIM800->deal_tcpclose_event( SIM800, gprs_event);
+					ret = SIM800->deal_tcpclose_event( SIM800, gprs_event);
+					if( ret >= 0)
+					{
+						sprintf( DTU_Buf, "tcp close : %d ", ret);
+						prnt_485( DTU_Buf);
+					}
 					SIM800->free_event( SIM800, gprs_event);
 				
 				}	//while(1)
@@ -399,8 +404,7 @@ void thrd_dtu (void const *argument) {
 			  
 	  }
 	  
-	  
-	  osThreadYield ();                                           // suspend thread
+	  osThreadYield();                                           // suspend thread
 	}
 }
 

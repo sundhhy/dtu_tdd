@@ -115,7 +115,7 @@ int s485_Uart_write(char *data, uint16_t size)
 	DMA_s485_usart.dma_tx_base->CNDTR = (uint16_t)size; 
 	DMA_Cmd( DMA_s485_usart.dma_tx_base, ENABLE);        //开始DMA发送
 
-	osDelay(1);
+//	osDelay(1);
 	if( S485_uart_ctl.tx_block)
 	{
 		if( S485_uart_ctl.tx_waittime_ms == 0)
@@ -286,7 +286,7 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据宽度1B
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址宽度1B
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // 单次传输模式
-    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;                 // 优先级
+    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
     DMA_Init(DMA_s485_usart.dma_tx_base, &DMA_InitStructure);               // 
 
@@ -334,10 +334,10 @@ void DMA1_Channel7_IRQHandler(void)
 
     if(DMA_GetITStatus(DMA1_FLAG_TC7))
     {
-
+		osSemaphoreRelease( SemId_s485txFinish);
         DMA_ClearFlag(DMA_s485_usart.dma_tx_flag);         // 清除标志
 		DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
-		osSemaphoreRelease( SemId_s485txFinish);
+		
     }
 }
 
