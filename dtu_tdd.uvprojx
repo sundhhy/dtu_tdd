@@ -478,6 +478,16 @@
               <FileType>5</FileType>
               <FilePath>.\class\dtuConfig.h</FilePath>
             </File>
+            <File>
+              <FileName>dtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\dtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>dtu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\dtu.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

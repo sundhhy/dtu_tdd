@@ -77,7 +77,7 @@ void set_default( DtuCfg_t *conf)
 	conf->ver[1] = DTU_CONFGILE_SUB_VER;
 	conf->multiCent_mode = 1;
 	conf->hartbeat_timespan_s = 5;
-	conf->work_mode = MODE_DTU;
+	conf->work_mode = MODE_PASSTHROUGH;
 	conf->dtu_id = 1;
 	conf->rtu_addr = 1;
 	strcpy( conf->sim_NO,"13888888888");

@@ -8,7 +8,7 @@
 
 
 
-#define MODE_DTU					0			//
+#define MODE_PASSTHROUGH					0			//
 #define MODE_SMS					1			//
 #define MODE_REMOTERTU		2
 #define MODE_LOCALRTU			3
