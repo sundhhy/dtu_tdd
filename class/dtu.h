@@ -26,7 +26,7 @@ INTERFACE( Builder)
 
 ABS_CLASS( StateContext)
 {
-	Builder *stateBuilder;
+//	Builder *stateBuilder;
 	gprs_t *gprs;
 	WorkState *gprsSelfTestState;
 	WorkState *gprsConnectStatee;
@@ -69,6 +69,23 @@ CLASS( StateContextFactory)
 	StateContextFactory* (*getInstance)(void);
 	StateContext *( *createContext)( int mode);
 	
+};
+
+CLASS( LocalRTUModeBuilder)
+{
+	IMPLEMENTS( Builder);
+};
+CLASS( SMSModeBuilder)
+{
+	IMPLEMENTS( Builder);
+};
+CLASS( RemoteRTUModeBuilder)
+{
+	IMPLEMENTS( Builder);
+};
+CLASS( PassThroughModeBuilder)
+{
+	IMPLEMENTS( Builder);
 };
 
 

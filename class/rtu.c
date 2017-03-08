@@ -19,7 +19,6 @@ static void ModbusRTURegTpye3_wrCB(void)
 {
 	uint16_t u32_h, u32_l ;
 	uint16_t val16, i;
-	uint8_t stopbits[4] = { 1, 0, 2, 0};
 	Dtu_config.rtu_addr = regType3_read( 0, REG_LINE);
 	
 	u32_l = regType3_read( 1, REG_LINE);

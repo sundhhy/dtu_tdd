@@ -103,7 +103,7 @@ uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type)
 	return tmp;
 }
 
-uint16_t regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
+int regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
 {
 	char chn_flag = 0;
 	uint16_t tmp = val;
@@ -155,7 +155,7 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 	return tmp;
 }
 
-uint16_t regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val)
+int regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val)
 {
 	uint16_t tmp = val;
 	if(reg_type==REG_MODBUS)

@@ -23,7 +23,8 @@ static void dtu_conf(char *data);
 int Init_system_config(void)
 {
 	get_dtuCfg( &Dtu_config);
-	
+	return ERR_OK;
+
 }
 
 

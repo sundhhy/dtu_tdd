@@ -444,7 +444,6 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 	short number = 0;
 	char  text_begin = 0, text_end = 0;
 			
-	short tmp = 0;
 	short legal_phno = 0;
 	int	phnoend_offset = 0;
 	

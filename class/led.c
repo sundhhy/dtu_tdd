@@ -12,6 +12,8 @@ static int init_led(  stm32LED *self, gpio_pins *pin)
 	//ÃğµÆ
 	GPIO_SetBits( self->pin->Port, self->pin->pin);
 	self->led_status = LED_OFF;
+	return 0;
+
 }
 
 

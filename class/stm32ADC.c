@@ -15,8 +15,8 @@
 #include "sdhError.h"
 #include "adc.h"
 
-static int init( stm32ADC *self, void *arg)
-{
-	
-}
+//static int init( stm32ADC *self, void *arg)
+//{
+//	
+//}
 
