@@ -170,12 +170,12 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
-            <DriverSelection>-1</DriverSelection>
+            <Capability>1</Capability>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -409,14 +409,19 @@
           <GroupName>Source Group 1</GroupName>
           <Files>
             <File>
+              <FileName>cdma_dtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\cdma_dtu.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
             </File>
             <File>
-              <FileName>cdma_dtu.c</FileName>
+              <FileName>Thread_rtu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\cdma_dtu.c</FilePath>
+              <FilePath>.\Thread_rtu.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -432,6 +437,56 @@
               <FileName>gprs.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\class\gprs.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32ADC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\stm32ADC.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32ADC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\stm32ADC.h</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\led.h</FilePath>
+            </File>
+            <File>
+              <FileName>rtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\rtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\rtu.h</FilePath>
+            </File>
+            <File>
+              <FileName>dtuConfig.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\dtuConfig.c</FilePath>
+            </File>
+            <File>
+              <FileName>dtuConfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\dtuConfig.h</FilePath>
+            </File>
+            <File>
+              <FileName>dtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\class\dtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>dtu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\class\dtu.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -548,6 +603,21 @@
               <FileType>1</FileType>
               <FilePath>.\sdh_lib\TTextConfProt.c</FilePath>
             </File>
+            <File>
+              <FileName>Ping_PongBuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\Ping_PongBuf.c</FilePath>
+            </File>
+            <File>
+              <FileName>modbusRTU_cli.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\modbusRTU_cli.c</FilePath>
+            </File>
+            <File>
+              <FileName>modbusRTU_cli.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sdh_lib\modbusRTU_cli.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -619,6 +689,12 @@
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="GPIO" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH RCC">
+        <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.1.0"/>
+        <targetInfos>
+          <targetInfo name="Target 1"/>
+        </targetInfos>
+      </component>
+      <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="IWDG" Cvendor="Keil" Cversion="3.5.0" condition="STM32F1xx STDPERIPH">
         <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.1.0"/>
         <targetInfos>
           <targetInfo name="Target 1"/>
