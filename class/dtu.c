@@ -51,7 +51,7 @@ StateContext *createContext( int mode)
 }
 
 CTOR(StateContextFactory)
-FUNCTION_SETTING(getInstance, SCFGetInstance);
+//FUNCTION_SETTING(getInstance, SCFGetInstance);
 FUNCTION_SETTING(createContext, createContext);
 END_CTOR
 
@@ -62,26 +62,35 @@ void setCurState( StateContext *this, WorkState *state)
 		this->curState = state;
 }
 
+int Construct( StateContext *this, Builder *state_builder)
+{
+	
+	
+	this->gprsSelfTestState = state_builder->buildGprsSelfTestState( this);
+	this->gprsConnectState = state_builder->buildGprsConnectState( this);
+	this->gprsEventHandleState = state_builder->buildGprsEventHandleState( this);
+	this->gprsDealSMSState = state_builder->buildGprsDealSMSState( this);
+	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState( this);
+	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState( this);
+	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState( this);
+	
+	
+	return ERR_OK;
+}
+
 ABS_CTOR( StateContext)
 FUNCTION_SETTING(setCurState, setCurState);
+FUNCTION_SETTING(construct, Construct);
 END_ABS_CTOR
 
 
 
 
 
-int LRTUConstruct( StateContext *this)
+int LRTUInitState( StateContext *this)
 {
 	Builder *state_builder = ( Builder *)LocalRTUModeBuilder_new();
-	
-	this->gprsSelfTestState = state_builder->buildGprsSelfTestState();
-	this->gprsConnectStatee = state_builder->buildGprsConnectState();
-	this->gprsEventHandleState = state_builder->buildGprsEventHandleState();
-	this->gprsDealSMSState = state_builder->buildGprsDealSMSState();
-	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState();
-	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState();
-	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState();
-	
+	this->construct( this, state_builder);
 	this->curState = this->gprsSer485ProcessState;
 	
 	lw_oopc_delete( state_builder);
@@ -89,22 +98,16 @@ int LRTUConstruct( StateContext *this)
 }
 
 CTOR(LocalRTUModeContext)
-FUNCTION_SETTING(StateContext.construct, LRTUConstruct);
+SUPER_CTOR(StateContext);
+FUNCTION_SETTING(StateContext.initState, LRTUInitState);
 END_CTOR
 
-int SMSConstruct( StateContext *this)
+int SMSInitState( StateContext *this)
 {
 	
 	Builder *state_builder = ( Builder *)SMSModeBuilder_new();
 	
-	this->gprsSelfTestState = state_builder->buildGprsSelfTestState();
-	this->gprsConnectStatee = state_builder->buildGprsConnectState();
-	this->gprsEventHandleState = state_builder->buildGprsEventHandleState();
-	this->gprsDealSMSState = state_builder->buildGprsDealSMSState();
-	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState();
-	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState();
-	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState();
-	
+	this->construct( this, state_builder);
 	this->curState = this->gprsSer485ProcessState;
 	
 	lw_oopc_delete( state_builder);
@@ -114,21 +117,16 @@ int SMSConstruct( StateContext *this)
 
 
 CTOR(SMSModeContext)
-FUNCTION_SETTING(StateContext.construct, SMSConstruct);
+SUPER_CTOR(StateContext);
+FUNCTION_SETTING(StateContext.initState, SMSInitState);
 END_CTOR
 
 
-int RRTUConstruct( StateContext *this)
+int RRTUInitState( StateContext *this)
 {
 	Builder *state_builder = ( Builder *)RemoteRTUModeBuilder_new();
 	
-	this->gprsSelfTestState = state_builder->buildGprsSelfTestState();
-	this->gprsConnectStatee = state_builder->buildGprsConnectState();
-	this->gprsEventHandleState = state_builder->buildGprsEventHandleState();
-	this->gprsDealSMSState = state_builder->buildGprsDealSMSState();
-	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState();
-	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState();
-	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState();
+	this->construct( this, state_builder);
 	
 	this->curState = this->gprsSer485ProcessState;
 	
@@ -138,20 +136,15 @@ int RRTUConstruct( StateContext *this)
 }
 
 CTOR(RemoteRTUModeContext)
-FUNCTION_SETTING(StateContext.construct, RRTUConstruct);
+SUPER_CTOR(StateContext);
+FUNCTION_SETTING(StateContext.initState, RRTUInitState);
 END_CTOR
 
-int PThrConstruct( StateContext *this)
+int PThrInitState( StateContext *this)
 {
 	Builder *state_builder = ( Builder *)PassThroughModeBuilder_new();
 	
-	this->gprsSelfTestState = state_builder->buildGprsSelfTestState();
-	this->gprsConnectStatee = state_builder->buildGprsConnectState();
-	this->gprsEventHandleState = state_builder->buildGprsEventHandleState();
-	this->gprsDealSMSState = state_builder->buildGprsDealSMSState();
-	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState();
-	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState();
-	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState();
+	this->construct( this, state_builder);
 	
 	this->curState = this->gprsSer485ProcessState;
 	
@@ -163,42 +156,53 @@ int PThrConstruct( StateContext *this)
 
 CTOR(PassThroughModeContext)
 SUPER_CTOR(StateContext);
-FUNCTION_SETTING(StateContext.construct, PThrConstruct);
+FUNCTION_SETTING(StateContext.initState, PThrInitState);
 END_CTOR
 
 
-WorkState* LRTUBuildGprsSelfTestState(void )
+
+//建造者
+
+WorkState* LRTUBuildGprsSelfTestState( StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState*  LRTUBuildGprsConnectState(void )
+WorkState*  LRTUBuildGprsConnectState( StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState* LRTUBuildGprsEventHandleState(void )
+WorkState* LRTUBuildGprsEventHandleState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* LRTUBuildGprsDealSMSState(void )
+WorkState* LRTUBuildGprsDealSMSState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* LRTUBuilderSer485ProcessState(void )
+WorkState* LRTUBuilderSer485ProcessState(StateContext *this )
+{
+	WorkState *state = ( WorkState *)Ser485ProcessState_new();
+	state->forwardNet = ( BusinessProcess*)EmptyProcess_new();
+	state->forwardSMS = ( BusinessProcess*)EmptyProcess_new();
+	state->forwardSer485 = ( BusinessProcess*)EmptyProcess_new();
+	state->configSystem = ( BusinessProcess*)EmptyProcess_new();
+	state->modbusProcess = ( BusinessProcess*)ModbusBusiness_new();
+	state->init( state, this->gprs, this->dataBuf, this->bufLen);
+	return state;
+}
+WorkState* LRTUBuilderGprsHeatBeatState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* LRTUBuilderGprsHeatBeatState(void )
-{
-	return NULL;
-}
-WorkState* LRTUBuilderGprsCnntManagerState(void )
+WorkState* LRTUBuilderGprsCnntManagerState(StateContext *this )
 {
 	return NULL;
 }
 
 CTOR( LocalRTUModeBuilder)
+
 FUNCTION_SETTING(Builder.buildGprsSelfTestState, LRTUBuildGprsSelfTestState);
 FUNCTION_SETTING(Builder.builderGprsCnntManagerState, LRTUBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, LRTUBuildGprsEventHandleState);
@@ -209,33 +213,33 @@ FUNCTION_SETTING(Builder.builderGprsHeatBeatState, LRTUBuilderGprsCnntManagerSta
 END_CTOR
 
 
-WorkState* SMSModeBuildGprsSelfTestState(void )
+WorkState* SMSModeBuildGprsSelfTestState(StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState*  SMSModeBuildGprsConnectState(void )
+WorkState*  SMSModeBuildGprsConnectState(StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState* SMSModeBuildGprsEventHandleState(void )
+WorkState* SMSModeBuildGprsEventHandleState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* SMSModeBuildGprsDealSMSState(void )
+WorkState* SMSModeBuildGprsDealSMSState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* SMSModeBuilderSer485ProcessState(void )
+WorkState* SMSModeBuilderSer485ProcessState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* SMSModeBuilderGprsHeatBeatState(void )
+WorkState* SMSModeBuilderGprsHeatBeatState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* SMSModeBuilderGprsCnntManagerState(void )
+WorkState* SMSModeBuilderGprsCnntManagerState(StateContext *this )
 {
 	return NULL;
 }
@@ -251,33 +255,33 @@ FUNCTION_SETTING(Builder.builderGprsHeatBeatState, SMSModeBuilderGprsHeatBeatSta
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, SMSModeBuilderGprsCnntManagerState);
 END_CTOR
 
-WorkState* RRTUBuildGprsSelfTestState(void )
+WorkState* RRTUBuildGprsSelfTestState(StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState*  RRTUBuildGprsConnectState(void )
+WorkState*  RRTUBuildGprsConnectState(StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState* RRTUBuildGprsEventHandleState(void )
+WorkState* RRTUBuildGprsEventHandleState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* RRTUBuildGprsDealSMSState(void )
+WorkState* RRTUBuildGprsDealSMSState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* RRTUBuilderSer485ProcessState(void )
+WorkState* RRTUBuilderSer485ProcessState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* RRTUBuilderGprsHeatBeatState(void )
+WorkState* RRTUBuilderGprsHeatBeatState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* RRTUBuilderGprsCnntManagerState(void )
+WorkState* RRTUBuilderGprsCnntManagerState(StateContext *this )
 {
 	return NULL;
 }
@@ -293,33 +297,33 @@ FUNCTION_SETTING(Builder.builderGprsHeatBeatState, RRTUBuilderGprsCnntManagerSta
 END_CTOR
 
 
-WorkState* PassThroughModeBuildGprsSelfTestState(void )
+WorkState* PassThroughModeBuildGprsSelfTestState(StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState*  PassThroughModeBuildGprsConnectState(void )
+WorkState*  PassThroughModeBuildGprsConnectState(StateContext *this )
 {
 	return NULL;
 	
 }
-WorkState* PassThroughModeBuildGprsEventHandleState(void )
+WorkState* PassThroughModeBuildGprsEventHandleState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* PassThroughModeBuildGprsDealSMSState(void )
+WorkState* PassThroughModeBuildGprsDealSMSState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* PassThroughModeBuilderSer485ProcessState(void )
+WorkState* PassThroughModeBuilderSer485ProcessState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* PassThroughModeBuilderGprsHeatBeatState(void )
+WorkState* PassThroughModeBuilderGprsHeatBeatState(StateContext *this )
 {
 	return NULL;
 }
-WorkState* PassThroughModeBuilderGprsCnntManagerState(void )
+WorkState* PassThroughModeBuilderGprsCnntManagerState(StateContext *this )
 {
 	return NULL;
 }
@@ -334,3 +338,162 @@ FUNCTION_SETTING(Builder.builderGprsHeatBeatState, PassThroughModeBuilderGprsHea
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, PassThroughModeBuilderGprsCnntManagerState);
 END_CTOR
 
+
+//工作状态
+
+static void Debug_485( char *data)
+{
+	if( Dtu_config.output_mode)
+	{
+		
+		s485_Uart_write(data, strlen(data) );
+	}
+	
+	DPRINTF(" %s \n", data);
+	
+}
+
+int WorkStateTestInit( WorkState *this, gprs_t *myGprs, char *buf, int bufLen)
+{
+	if( myGprs == NULL || buf == NULL)
+		return ERR_BAD_PARAMETER;
+	this->gprs = myGprs;
+	this->dataBuf = buf;
+	this->bufLen = bufLen;
+	return ERR_OK;
+	
+}
+
+void WorkStatePrint( WorkState *this, char *str)
+{
+	
+	Debug_485( str);
+}
+
+ABS_CTOR( WorkState)
+FUNCTION_SETTING(init, WorkStateTestInit);
+FUNCTION_SETTING(print, WorkStatePrint);
+END_ABS_CTOR
+
+
+
+
+
+
+int GprsSelfTestRun( WorkState *this, StateContext *context)
+{
+	gprs_t	*this_gprs = this->gprs;
+	
+	
+	if( this_gprs->check_simCard(this_gprs) == ERR_OK)
+	{
+		sprintf( this->dataBuf, "detected sim succeed! ...");
+		this->print( this, this->dataBuf);
+		
+	}
+	else 
+	{
+		
+		this_gprs->startup(this_gprs);
+	}
+				
+	context->setCurState( context, context->gprsConnectState);	
+	return 	ERR_OK;
+				
+}
+
+CTOR( GprsSelfTestState)
+SUPER_CTOR( WorkState);
+FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
+END_CTOR
+
+int Ser485ModbusAckCB( char *data, int len, void *arg)
+{
+	
+	return s485_Uart_write( data, len);
+}
+int Ser485ProcessStateRun( WorkState *this, StateContext *context)
+{
+	GprsSelfTestState *self = SUB_PTR( this, WorkState, GprsSelfTestState);
+	gprs_t	*this_gprs = this->gprs;
+	int ret = 0;
+	
+	ret = s485_Uart_read( this->dataBuf, this->bufLen);
+				
+				
+	if( ret <= 0)
+	{
+		context->setCurState( context, context->gprsEventHandleState);	
+		return ERR_OK;
+	}
+	this->modbusProcess->process( this->dataBuf, ret, Ser485ModbusAckCB	, NULL) ;
+	this->forwardNet->process( this->dataBuf, ret, NULL	, this_gprs) ;
+	this->forwardSMS->process( this->dataBuf, ret, NULL	, this_gprs) ;
+			
+	context->setCurState( context, context->gprsHeatBeatState);	
+	return 	ERR_OK;
+				
+}
+
+CTOR( Ser485ProcessState)
+SUPER_CTOR( WorkState);
+FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
+END_CTOR
+
+
+
+//业务处理
+
+int Emptyprocess( char *data, int len, hookFunc cb, void *cbArg)
+{
+	return ERR_UNKOWN;
+}
+
+CTOR( EmptyProcess)
+FUNCTION_SETTING( BusinessProcess.process, Emptyprocess);
+END_CTOR
+
+int ModbusBusinessProcess( char *data, int len, hookFunc cb, void *cbArg)
+{
+	return ERR_OK;
+}
+
+CTOR( ModbusBusiness)
+FUNCTION_SETTING( BusinessProcess.process, ModbusBusinessProcess);
+END_CTOR
+
+int ConfigSystemProcess( char *data, int len, hookFunc cb, void *cbArg)
+{
+	return ERR_OK;
+}
+
+CTOR( ConfigSystem)
+FUNCTION_SETTING( BusinessProcess.process, ConfigSystemProcess);
+END_CTOR
+
+int ForwardSer485Process( char *data, int len, hookFunc cb, void *cbArg)
+{
+	return ERR_OK;
+}
+
+CTOR( ForwardSer485)
+FUNCTION_SETTING( BusinessProcess.process, ForwardSer485Process);
+END_CTOR
+
+int ForwardNetProcess( char *data, int len, hookFunc cb, void *cbArg)
+{
+	return ERR_OK;
+}
+
+CTOR( ForwardNet)
+FUNCTION_SETTING( BusinessProcess.process, ForwardNetProcess);
+END_CTOR
+
+int ForwardSMSProcess( char *data, int len, hookFunc cb, void *cbArg)
+{
+	return ERR_OK;
+}
+
+CTOR( ForwardSMS)
+FUNCTION_SETTING( BusinessProcess.process, ForwardSMSProcess);
+END_CTOR

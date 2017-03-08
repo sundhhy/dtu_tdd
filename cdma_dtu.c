@@ -9,6 +9,8 @@
 #include "TTextConfProt.h"
 #include "times.h"
 #include "led.h"
+#include "dtu.h"
+
 #include "modbusRTU_cli.h"
 //#include "adc.h"
 /*----------------------------------------------------------------------------
@@ -30,32 +32,44 @@ char	DTU_Buf[DTU_BUF_LEN];
 char	Temp_buf[TMP_BUF_LEN];
 static void Config_ack( char *data, void *arg);
 
-
 #define TTEXTSRC_485 0
 #define TTEXTSRC_SMS(n)	( n + 1)
 static int TText_source = TTEXTSRC_485;	
 
+
+
+StateContext *MyContext;
+
 int Init_ThrdDtu (void) {
 	
-	if( Dtu_config.work_mode != MODE_LOCALRTU)
-	{
-		SIM800 = gprs_t_new();
-		SIM800->init(SIM800);
-	}
 	
+	StateContextFactory* factory = SCFGetInstance();
+	MyContext = factory->createContext( Dtu_config.work_mode);
+	
+	
+	
+	MyContext->init( MyContext, SIM800, DTU_Buf, DTU_BUF_LEN);
+	MyContext->initState( MyContext);
+	
+//	if( Dtu_config.work_mode != MODE_LOCALRTU)
+//	{
+//		SIM800 = gprs_t_new();
+//		SIM800->init(SIM800);
+//	}
+//	
 
-	
-	
-	//使用用户的配置来重新启动485串口
-	s485_uart_init( &Dtu_config.the_485cfg, NULL);
-	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
-	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
-	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
-	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
-	
+//	
+//	
+//	//使用用户的配置来重新启动485串口
+//	s485_uart_init( &Dtu_config.the_485cfg, NULL);
+//	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
+//	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
+//	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
+//	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
+//	
 
-	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
-	if (!tid_ThrdDtu) return(-1);
+//	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
+//	if (!tid_ThrdDtu) return(-1);
 
 	return(0);
 }
@@ -80,11 +94,22 @@ void thrd_dtu (void const *argument) {
 	int ret = 0;
 	int lszie = 0;
 	short i = 0;
-	char ser_confmode = 0;
+//	char ser_confmode = 0;
 	char count = 0;
 	void *gprs_event;
 	int retry = 20;
 	sprintf(DTU_Buf, "starting up gprs ...");
+	
+	
+	while(1)
+	{
+		MyContext->curState->run( MyContext->curState, MyContext);
+		osThreadYield();         
+		
+	}
+	
+#if 0	
+	
 	prnt_485( DTU_Buf);
 	if( Dtu_config.work_mode != MODE_LOCALRTU)
 	{
@@ -231,9 +256,9 @@ void thrd_dtu (void const *argument) {
 						
 						if( Dtu_config.work_mode == MODE_REMOTERTU)
 						{
-							if( modbusRTU_getID( DTU_Buf) != Dtu_config.rtu_addr)
+							if( modbusRTU_getID( (uint8_t *)DTU_Buf) != Dtu_config.rtu_addr)
 								break;
-							lszie = modbusRTU_data( DTU_Buf, lszie, Temp_buf, sizeof( Temp_buf));
+							lszie = modbusRTU_data( (uint8_t *)DTU_Buf, lszie, (uint8_t *)Temp_buf, sizeof( Temp_buf));
 							SIM800->sendto_tcp( SIM800, ret, Temp_buf, lszie);
 						}
 						else
@@ -296,9 +321,9 @@ void thrd_dtu (void const *argument) {
 				
 				if( Dtu_config.work_mode == MODE_LOCALRTU || Dtu_config.work_mode == MODE_REMOTERTU)
 				{
-					if( modbusRTU_getID( DTU_Buf) != Dtu_config.rtu_addr)
+					if( modbusRTU_getID( (uint8_t *)DTU_Buf) != Dtu_config.rtu_addr)
 						break;
-					lszie = modbusRTU_data( DTU_Buf, ret, Temp_buf, sizeof( Temp_buf));
+					lszie = modbusRTU_data( (uint8_t *)DTU_Buf, ret, (uint8_t *)Temp_buf, sizeof( Temp_buf));
 					s485_Uart_write( Temp_buf, lszie);
 					
 					break;
@@ -406,6 +431,8 @@ void thrd_dtu (void const *argument) {
 	  
 	  osThreadYield();                                           // suspend thread
 	}
+	
+#endif
 }
 
 static void Config_ack( char *data, void *arg)
