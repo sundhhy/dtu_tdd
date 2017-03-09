@@ -84,14 +84,14 @@ void ADC_50ms()
 	ADC_Cmd(ADC1, ENABLE);                    //ADC转换使能
 }
 
-void up( char chn)
+void ADCValUpdate( char chn)
 {
 	if( I_get_val)
-		I_get_val( CHANNEL0, RTU[chn].value);
+		I_get_val( chn, RTU[chn].value);
 	if( I__get_rsv)
-		I__get_rsv( CHANNEL0, RTU[chn].RSV);
+		I__get_rsv( chn, RTU[chn].RSV);
 	if( I_get_alarm)
-		I_get_alarm( CHANNEL0, RTU[chn].Alarm);
+		I_get_alarm( chn, RTU[chn].Alarm);
 	
 }
 
@@ -1637,7 +1637,7 @@ static void FinishCollect(void)
 			  sampleolddote0 =0;
 			  sampledote0 =0;
 			  Calculate(CHANNEL0);          //处理并转换通道0
-			 up( CHANNEL0);
+				ADCValUpdate( CHANNEL0);
 			  if(collectChannel==0)         //采集完当前的输入通道,切换到下一个通道
 				{
 					collectChannel =1;
@@ -1654,7 +1654,7 @@ static void FinishCollect(void)
 			   sampleolddote1 =0;
 			   sampledote1 =0;
 			   Calculate(CHANNEL1);          //处理并转换通道1
-			 up( CHANNEL1);
+				ADCValUpdate( CHANNEL1);
 			   if(collectChannel==1)         //采集完当前的输入通道,切换到下一个通道
 				 {
 					 collectChannel =2;
@@ -1673,7 +1673,7 @@ static void FinishCollect(void)
 			sampleolddote2 =0;
 			 sampledote2 =0;	
 			Calculate(CHANNEL2);           //处理并转换通道2
-			 up( CHANNEL2);
+			 ADCValUpdate( CHANNEL2);
 			 if(collectChannel==2)
 			 {
 				 collectChannel =0;

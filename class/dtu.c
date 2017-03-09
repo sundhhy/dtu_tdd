@@ -588,12 +588,12 @@ WorkState* LRTUBuilderGprsCnntManagerState(StateContext *this )
 CTOR( LocalRTUModeBuilder)
 
 FUNCTION_SETTING(Builder.buildGprsSelfTestState, LRTUBuildGprsSelfTestState);
-FUNCTION_SETTING(Builder.builderGprsCnntManagerState, LRTUBuildGprsConnectState);
+FUNCTION_SETTING(Builder.buildGprsConnectState, LRTUBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, LRTUBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, LRTUBuildGprsDealSMSState);
 FUNCTION_SETTING(Builder.builderSer485ProcessState, LRTUBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, LRTUBuilderGprsHeatBeatState);
-FUNCTION_SETTING(Builder.builderGprsHeatBeatState, LRTUBuilderGprsCnntManagerState);
+FUNCTION_SETTING(Builder.builderGprsCnntManagerState, LRTUBuilderGprsCnntManagerState);
 END_CTOR
 
 
@@ -674,12 +674,12 @@ WorkState* SMSModeBuilderGprsCnntManagerState(StateContext *this )
 CTOR( SMSModeBuilder)
 
 FUNCTION_SETTING(Builder.buildGprsSelfTestState, SMSModeBuildGprsSelfTestState);
-FUNCTION_SETTING(Builder.builderGprsCnntManagerState, SMSModeBuildGprsConnectState);
+FUNCTION_SETTING(Builder.buildGprsConnectState, SMSModeBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, SMSModeBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, SMSModeBuildGprsDealSMSState);
 FUNCTION_SETTING(Builder.builderSer485ProcessState, SMSModeBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, SMSModeBuilderGprsHeatBeatState);
-FUNCTION_SETTING(Builder.builderGprsHeatBeatState, SMSModeBuilderGprsCnntManagerState);
+FUNCTION_SETTING(Builder.builderGprsCnntManagerState, SMSModeBuilderGprsCnntManagerState);
 END_CTOR
 
 WorkState* RRTUBuildGprsSelfTestState(StateContext *this )
@@ -752,12 +752,12 @@ WorkState* RRTUBuilderGprsCnntManagerState(StateContext *this )
 }
 CTOR( RemoteRTUModeBuilder)
 FUNCTION_SETTING(Builder.buildGprsSelfTestState, RRTUBuildGprsSelfTestState);
-FUNCTION_SETTING(Builder.builderGprsCnntManagerState, RRTUBuildGprsConnectState);
+FUNCTION_SETTING(Builder.buildGprsConnectState, RRTUBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, RRTUBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, RRTUBuildGprsDealSMSState);
 FUNCTION_SETTING(Builder.builderSer485ProcessState, RRTUBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, RRTUBuilderGprsHeatBeatState);
-FUNCTION_SETTING(Builder.builderGprsHeatBeatState, RRTUBuilderGprsCnntManagerState);
+FUNCTION_SETTING(Builder.builderGprsCnntManagerState, RRTUBuilderGprsCnntManagerState);
 END_CTOR
 
 
@@ -837,12 +837,12 @@ WorkState* PassThroughModeBuilderGprsCnntManagerState(StateContext *this )
 
 CTOR( PassThroughModeBuilder)
 FUNCTION_SETTING(Builder.buildGprsSelfTestState, PassThroughModeBuildGprsSelfTestState);
-FUNCTION_SETTING(Builder.builderGprsCnntManagerState, PassThroughModeBuildGprsConnectState);
+FUNCTION_SETTING(Builder.buildGprsConnectState, PassThroughModeBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, PassThroughModeBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, PassThroughModeBuildGprsDealSMSState);
 FUNCTION_SETTING(Builder.builderSer485ProcessState, PassThroughModeBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, PassThroughModeBuilderGprsHeatBeatState);
-FUNCTION_SETTING(Builder.builderGprsHeatBeatState, PassThroughModeBuilderGprsCnntManagerState);
+FUNCTION_SETTING(Builder.builderGprsCnntManagerState, PassThroughModeBuilderGprsCnntManagerState);
 END_CTOR
 
 

@@ -19,6 +19,8 @@ static void ModbusRTURegTpye3_wrCB(void)
 {
 	uint16_t u32_h, u32_l ;
 	uint16_t val16, i;
+	uint8_t cr2_stop[4] = { 0, 0, 2, 0};			//CR2寄存器中的STOP的值与停止位的映射关系
+
 	Dtu_config.rtu_addr = regType3_read( 0, REG_LINE);
 	
 	u32_l = regType3_read( 1, REG_LINE);
@@ -32,7 +34,7 @@ static void ModbusRTURegTpye3_wrCB(void)
 		Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_9b;
 		
 	val16 = regType3_read( 4, REG_LINE);
-	Dtu_config.the_485cfg.USART_StopBits = ( val16 & 0x3) << 12;
+	Dtu_config.the_485cfg.USART_StopBits = ( cr2_stop[ val16] & 0x3) << 12;
 	val16 = regType3_read( 5, REG_LINE);
 	if( val16 == 0)
 		Dtu_config.the_485cfg.USART_Parity = USART_Parity_No;
@@ -133,11 +135,11 @@ void Init_rtu(void)
 		regType3_write( 8 + i * 3, REG_LINE, Dtu_config.chn_type[i]);
 		regType3_write( 9 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeH);
 		regType3_write( 10 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeL);
-		Set_chnType( i, Dtu_config.chn_type[i]);
-		Set_rangH( i, Dtu_config.sign_range[i].rangeH);
-		Set_rangL( i, Dtu_config.sign_range[i].rangeL);
-		Set_alarmH( i, Dtu_config.sign_range[i].alarmH);
-		Set_alarmL( i, Dtu_config.sign_range[i].alarmL);
+//		Set_chnType( i, Dtu_config.chn_type[i]);
+//		Set_rangH( i, Dtu_config.sign_range[i].rangeH);
+//		Set_rangL( i, Dtu_config.sign_range[i].rangeL);
+//		Set_alarmH( i, Dtu_config.sign_range[i].alarmH);
+//		Set_alarmL( i, Dtu_config.sign_range[i].alarmL);
 
 	}
 	

@@ -19,6 +19,9 @@
 #define DTU_BUF_LEN		256
 #define TMP_BUF_LEN		64
 
+
+//#define NEW_CODE			1
+
 //static void dtu_conf(void);
 
 
@@ -42,7 +45,7 @@ StateContext *MyContext;
 
 int Init_ThrdDtu (void) {
 	
-	
+#ifdef NEW_CODE	
 	StateContextFactory* factory = SCFGetInstance();
 	MyContext = factory->createContext( Dtu_config.work_mode);
 	
@@ -50,26 +53,29 @@ int Init_ThrdDtu (void) {
 	
 	MyContext->init( MyContext, DTU_Buf, DTU_BUF_LEN);
 	MyContext->initState( MyContext);
+#else	
+	if( Dtu_config.work_mode != MODE_LOCALRTU)
+	{
+		SIM800 = gprs_t_new();
+		SIM800->init(SIM800);
+	}
 	
-//	if( Dtu_config.work_mode != MODE_LOCALRTU)
-//	{
-//		SIM800 = gprs_t_new();
-//		SIM800->init(SIM800);
-//	}
-//	
 
-//	
-//	
-//	//使用用户的配置来重新启动485串口
-//	s485_uart_init( &Dtu_config.the_485cfg, NULL);
-//	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
-//	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
-//	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
-//	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
-//	
+	
+	
+	//使用用户的配置来重新启动485串口
+	
+	s485_uart_init( &Dtu_config.the_485cfg, NULL);
+//	s485_uart_init( &Conf_S485Usart_default, NULL);
 
-//	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
-//	if (!tid_ThrdDtu) return(-1);
+	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
+	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
+	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
+	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
+#endif	
+
+	tid_ThrdDtu = osThreadCreate (osThread(thrd_dtu), NULL);
+	if (!tid_ThrdDtu) return(-1);
 
 	return(0);
 }
@@ -100,7 +106,7 @@ void thrd_dtu (void const *argument) {
 	int retry = 20;
 	sprintf(DTU_Buf, "starting up gprs ...");
 	
-	
+#ifdef NEW_CODE		
 	while(1)
 	{
 		MyContext->curState->run( MyContext->curState, MyContext);
@@ -108,7 +114,7 @@ void thrd_dtu (void const *argument) {
 		
 	}
 	
-#if 0	
+#else	
 	
 	prnt_485( DTU_Buf);
 	if( Dtu_config.work_mode != MODE_LOCALRTU)

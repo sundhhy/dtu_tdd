@@ -30,22 +30,22 @@ uint16_t *HOLD_ADDRESS=hold_buf;
 static Reg3_write_cb	g_rg3_wr_cb = NULL;
 
 #ifdef CPU_LITTLE_END
-static void Little_end_to_Big_end( uint16_t *p_val16)
+static uint16_t Little_end_to_Big_end( uint16_t val16)
 {
-	uint8_t u16_h = ( *p_val16 ) >> 8;
-	uint8_t u16_l =  *p_val16 & 0xff;
+	uint8_t u16_h = val16  >> 8;
+	uint8_t u16_l =  val16 & 0xff;
+	uint16_t bendval = ( u16_l << 8) | u16_h;
 	
-	*p_val16 = 0;
-	*p_val16 = ( u16_l << 8) | u16_h;
+	return bendval;
 }
 
-static void Big_end_to_Little_end( uint16_t *p_val16)
+static uint16_t Big_end_to_Little_end( uint16_t val16)
 {
-	uint8_t u16_h = ( *p_val16 ) ;
-	uint8_t u16_l =  *p_val16 >> 8;
+	uint8_t u16_h = ( val16 ) ;
+	uint8_t u16_l =  val16 >> 8;
+	uint16_t lsb = ( u16_h << 8) | u16_l;
 	
-	*p_val16 = 0;
-	*p_val16 = ( u16_h << 8) | u16_l;
+	return lsb;
 }
 #endif
 
@@ -92,7 +92,7 @@ uint16_t regType3_read(uint16_t hold_address, uint16_t reg_type)
 			hold_address-=40001;
 		tmp = *(HOLD_ADDRESS + hold_address);
 #ifdef CPU_LITTLE_END
-		Little_end_to_Big_end( &tmp);
+		tmp = Little_end_to_Big_end( tmp);
 #endif	
 	}
 	else
@@ -112,7 +112,7 @@ int regType3_write(uint16_t hold_address, uint16_t reg_type, uint16_t val)
 		if( hold_address > 40000)
 			hold_address-=40001;
 #ifdef CPU_LITTLE_END
-		Big_end_to_Little_end( &tmp);
+		tmp = Big_end_to_Little_end( tmp);
 #endif
 		
 		if( *(HOLD_ADDRESS + hold_address) != tmp)
@@ -143,7 +143,7 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type)
 		
 		tmp = *(INPUT_ADDRESS + input_address);
 #ifdef CPU_LITTLE_END
-		Little_end_to_Big_end( &tmp);
+		tmp = Little_end_to_Big_end( tmp);
 #endif	
 	}
 	else

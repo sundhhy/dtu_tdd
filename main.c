@@ -78,6 +78,8 @@ char Test_buf[TEST_BUF_SIZE];
 /*
  * main: initialize and start the system
  */
+
+
 int main (void) {
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) || defined(TDD_ADC ) 
 	int i = 0;
@@ -97,8 +99,13 @@ int main (void) {
 	GPIO_Configuration();
 	Init_TIM2();
 	USART_Configuration();
+	
+	LED_run = stm32LED_new();
+	LED_com = stm32LED_new();
+	LED_run->init( LED_run, &PinLED_run);
+	LED_com->init( LED_com, &PinLED_com);
 
-#ifdef TDD_ON	
+#ifndef TDD_ON	
 	printf(" DTU TDD start ...\n");
 	if( filesys_init() != ERR_OK)
 	{
@@ -115,10 +122,7 @@ int main (void) {
 	printf(" mount filesystem succeed! \n");
 	
 	
-	LED_run = stm32LED_new();
-	LED_com = stm32LED_new();
-	LED_run->init( LED_run, &PinLED_run);
-	LED_com->init( LED_com, &PinLED_com);
+	
 	regist_timejob( 200, Led_job);
 	
 	
@@ -154,7 +158,7 @@ int main (void) {
 
 		while(1)
 		{
-			osDelay(50);
+			osDelay(25);
 			if( !NEED_ADC( Dtu_config.work_mode)) 
 				continue;
 			Collect_job();
@@ -342,7 +346,7 @@ static void Led_job()
 
 static int Select_apptype()
 {
-	int i = 30;
+	int i = 10;
 	int ret = 0;
 	char	uart_buf[32] = {0};
 	while(i)

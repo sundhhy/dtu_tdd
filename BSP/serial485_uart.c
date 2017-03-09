@@ -75,12 +75,14 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 	}
 	
 
-//	T485Rxirq_cb = cb;
+	USART_Cmd(SER485_USART, DISABLE);
 	USART_DeInit( SER485_USART);
 	
+	
+	USART_Init( SER485_USART, cfg);
 	DMA_s485Uart_Init();
 
-	USART_Init( SER485_USART, cfg);
+	
 	
 	
 	USART_ITConfig( SER485_USART, USART_IT_RXNE, ENABLE);
@@ -263,6 +265,9 @@ void s485_Uart_ioctl(int cmd, ...)
 			va_end(arg_ptr); 
 			S485_uart_ctl.rx_waittime_ms = int_data;
 			break;
+		
+		
+		
 		default: break;
 		
 	}
@@ -284,8 +289,8 @@ int s485_uart_test(char *buf, int size)
 	
 	
 	strcpy( buf, "Serial 485 test\n" );
-	s485_Uart_ioctl( S485UART_SET_TXWAITTIME_MS, 0);
-	s485_Uart_ioctl( S485UART_SET_RXWAITTIME_MS, 0);
+	s485_Uart_ioctl( S485UART_SET_TXWAITTIME_MS, 10);
+	s485_Uart_ioctl( S485UART_SET_RXWAITTIME_MS, 10);
 	s485_Uart_write( buf, strlen(buf));
 	
 	while(1)
@@ -305,14 +310,19 @@ int s485_uart_test(char *buf, int size)
 void DMA_s485Uart_Init(void)
 {
 
-		DMA_InitTypeDef DMA_InitStructure;	
+	DMA_InitTypeDef DMA_InitStructure;	
+//	static char first_invoke = 1;
+//	if( first_invoke)
+//		first_invoke = 0;
+//	else
+//		return;
 
     /* DMA clock enable */
 
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); // ??DMA1??
 //=DMA_Configuration==============================================================================//	
 /*--- UART_Tx_DMA_Channel DMA Config ---*/
-#if SER485_TX_USE_DMA == 1
+#if SER485_SENDMODE == SENDMODE_DMA	
 
     DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);                           // πÿ±’DMA
     DMA_DeInit(DMA_s485_usart.dma_tx_base);                                 // ª÷∏¥≥ı º÷µ

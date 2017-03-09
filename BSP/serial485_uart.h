@@ -7,7 +7,7 @@
 #define SENDMODE_INTR			1
 #define SENDMODE_DMA			2
 
-#define SER485_SENDMODE 		SENDMODE_INTR
+#define SER485_SENDMODE 		SENDMODE_DMA
 
 typedef void (*uart_cb)(void *rxbuf, void *arg);
 
