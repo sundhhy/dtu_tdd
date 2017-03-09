@@ -85,7 +85,7 @@ int main (void) {
 	char c = 0;
 #endif
 	int u32_val = 0;
-	
+	gprs_t *sim800;
 	osKernelInitialize ();                    // initialize CMSIS-RTOS
 
 	
@@ -100,11 +100,73 @@ int main (void) {
 	USART_Configuration();
 //	
 	printf(" DTU TDD start ...\n");
+	if( filesys_init() != ERR_OK)
+	{
+		printf(" init filesystem fail \n");
+		return ERR_FAIL;
+		
+	}
+	if( filesys_mount() != ERR_OK)
+	{
+		printf(" mount filesystem fail \n");
+		return ERR_FAIL;
+		
+	}
+	printf(" mount filesystem succeed! \n");
+	
+	
 	LED_run = stm32LED_new();
 	LED_com = stm32LED_new();
 	LED_run->init( LED_run, &PinLED_run);
 	LED_com->init( LED_com, &PinLED_com);
 	regist_timejob( 200, Led_job);
+	
+	
+	Init_system_config();
+	clean_time2_flags();
+	s485_uart_init( &Conf_S485Usart_default, NULL);
+	u32_val = Select_apptype();
+	if( u32_val == APPTYPE_CONFIG)
+	{
+		
+		Config_job();
+	}
+	else
+	{
+		Init_ThrdDtu();
+
+
+		osKernelStart (); 
+		
+		if( NEED_ADC( Dtu_config.work_mode)) 
+		{
+			create_adc();
+			regist_timejob( 50, ADC_50ms);
+			Init_rtu();
+		}
+		
+		if( NEED_GPRS( Dtu_config.work_mode)) 
+		{
+			sim800 = GprsGetInstance();
+			sim800->init( sim800);
+			sim800->startup(sim800);
+		}
+
+		while(1)
+		{
+			osDelay(50);
+			if( !NEED_ADC( Dtu_config.work_mode)) 
+				continue;
+			Collect_job();
+//			osThreadYield (); 
+		}
+	}
+	
+	
+	
+	
+	
+	
 #ifdef TDD_LED
 	LED_run->test( LED_run);
 	LED_com->test( LED_com);
@@ -267,47 +329,7 @@ int main (void) {
 #endif	
 	
 	
-	if( filesys_init() != ERR_OK)
-	{
-		printf(" init filesystem fail \n");
-		return ERR_FAIL;
-		
-	}
-	if( filesys_mount() != ERR_OK)
-	{
-		printf(" mount filesystem fail \n");
-		return ERR_FAIL;
-		
-	}
-	printf(" mount filesystem succeed! \n");
-	Init_system_config();
-	clean_time2_flags();
-	s485_uart_init( &Conf_S485Usart_default, NULL);
-	u32_val = Select_apptype();
-	if( u32_val == APPTYPE_CONFIG)
-	{
-		
-		Config_job();
-	}
-	else
-	{
-		Init_ThrdDtu();
-
-
-		osKernelStart (); 
-		
-		create_adc();
-		regist_timejob( 50, ADC_50ms);
-
-		Init_rtu();
-
-		while(1)
-		{
-			osDelay(50);
-			Collect_job();
-//			osThreadYield (); 
-		}
-	}
+	
 	
 }
 

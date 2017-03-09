@@ -48,7 +48,7 @@ int Init_ThrdDtu (void) {
 	
 	
 	
-	MyContext->init( MyContext, SIM800, DTU_Buf, DTU_BUF_LEN);
+	MyContext->init( MyContext, DTU_Buf, DTU_BUF_LEN);
 	MyContext->initState( MyContext);
 	
 //	if( Dtu_config.work_mode != MODE_LOCALRTU)

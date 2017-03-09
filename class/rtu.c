@@ -133,11 +133,11 @@ void Init_rtu(void)
 		regType3_write( 8 + i * 3, REG_LINE, Dtu_config.chn_type[i]);
 		regType3_write( 9 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeH);
 		regType3_write( 10 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeL);
-//		Set_chnType( i, Dtu_config.chn_type[i]);
-//		Set_rangH( i, Dtu_config.sign_range[i].rangeH);
-//		Set_rangL( i, Dtu_config.sign_range[i].rangeL);
-//		Set_alarmH( i, Dtu_config.sign_range[i].alarmH);
-//		Set_alarmL( i, Dtu_config.sign_range[i].alarmL);
+		Set_chnType( i, Dtu_config.chn_type[i]);
+		Set_rangH( i, Dtu_config.sign_range[i].rangeH);
+		Set_rangL( i, Dtu_config.sign_range[i].rangeL);
+		Set_alarmH( i, Dtu_config.sign_range[i].alarmH);
+		Set_alarmL( i, Dtu_config.sign_range[i].alarmL);
 
 	}
 	

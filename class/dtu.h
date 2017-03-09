@@ -14,7 +14,6 @@ INTERFACE( Builder);
 
 CLASS( StateContextFactory)
 {
-//	StateContextFactory* (*getInstance)(void);
 	StateContext *( *createContext)( int mode);
 	
 };
@@ -23,7 +22,6 @@ ABS_CLASS( StateContext)
 {
 //	Builder *stateBuilder;
 	
-	gprs_t *gprs;
 	char 	*dataBuf;
 	int 	bufLen;
 	
@@ -36,7 +34,7 @@ ABS_CLASS( StateContext)
 	WorkState *gprsCnntManagerState;
 	WorkState *curState;
 	
-	int (*init)( StateContext *this, gprs_t *myGprs, char *buf, int bufLen);
+	int (*init)( StateContext *this, char *buf, int bufLen);
 	void ( *setCurState)( StateContext *this, WorkState *state);
 	int ( *construct)( StateContext *this , Builder *state_builder);
 	
@@ -48,21 +46,16 @@ ABS_CLASS( StateContext)
 
 ABS_CLASS( WorkState)
 {
-	gprs_t *gprs;
 	char 	*dataBuf;
 	int 	bufLen;
-	BusinessProcess *modbusProcess;
-	BusinessProcess *configSystem;
-	BusinessProcess *forwardSer485;
-	BusinessProcess *forwardSMS;
-	BusinessProcess *forwardNet;
+	
 
 
 	//abs
 	int (*run)( WorkState *this, StateContext *context);
 	
 	//impl
-	int ( *init)( WorkState *this, gprs_t *myGprs, char *buf, int bufLen);
+	int ( *init)( WorkState *this, char *buf, int bufLen);
 	void (*print)( WorkState *this, char *str);
 };
 
@@ -87,7 +80,7 @@ CLASS( GprsSelfTestState)
 	
 };
 
-CLASS( GprsConnect_State)
+CLASS( GprsConnectState)
 {
 	IMPLEMENTS( WorkState);
 	
@@ -96,17 +89,27 @@ CLASS( GprsConnect_State)
 CLASS( GprsEventHandleState)
 {
 	IMPLEMENTS( WorkState);
+	BusinessProcess *modbusProcess;
+	BusinessProcess *configSystem;
+	BusinessProcess *forwardSer485;
+	BusinessProcess *forwardSMS;
+	BusinessProcess *forwardNet;
 	
 };
 
 CLASS( GprsDealSMSState)
 {
 	IMPLEMENTS( WorkState);
+	BusinessProcess *configSystem;
+	BusinessProcess *forwardSer485;
 	
 };
 CLASS( Ser485ProcessState)
 {
 	IMPLEMENTS( WorkState);
+	BusinessProcess *modbusProcess;
+	BusinessProcess *forwardSMS;
+	BusinessProcess *forwardNet;
 	
 };
 
@@ -195,6 +198,18 @@ CLASS( EmptyProcess)
 	
 };
 
+CLASS( ModbusBusiness)
+{
+	IMPLEMENTS( BusinessProcess);
+	
+};
+
+CLASS( ConfigSystem)
+{
+	
+	IMPLEMENTS( BusinessProcess);
+};
+
 CLASS( ForwardSer485)
 {
 	IMPLEMENTS( BusinessProcess);
@@ -214,17 +229,12 @@ CLASS( ForwardSMS)
 	
 };
 
-CLASS( ModbusBusiness)
-{
-	IMPLEMENTS( BusinessProcess);
-	
-};
-
-CLASS( ConfigSystem)
-{
-	
-	IMPLEMENTS( BusinessProcess);
-};
+BusinessProcess *GetEmptyProcess(void);
+BusinessProcess *GetModbusBusiness(void);
+BusinessProcess *GetConfigSystem(void);
+BusinessProcess *GetForwardSer485(void);
+BusinessProcess *GetForwardNet(void);
+BusinessProcess *GetForwardSMS(void);
 
 
 

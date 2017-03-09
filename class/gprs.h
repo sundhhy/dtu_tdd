@@ -105,6 +105,9 @@ typedef enum {
 #define CKECK_EVENT( target, flag)  ( ( ( gprs_event_t*)target)->type ==  flag)
 #define CLR_EVENT( event, flag)  ( event & ~( 1 << flag) )
 
+
+gprs_t *GprsGetInstance(void);
+
 int compare_phoneNO(char *NO1, char *NO2);
 int check_phoneNO(char *NO);
 int copy_phoneNO(char *dest_NO, char *src_NO);

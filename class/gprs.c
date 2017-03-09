@@ -81,6 +81,19 @@ static short	Gprs_currentState = SHUTDOWN;
 static short	FlagSmsReady = 0;
 static int RcvSms_seq = 0;
 
+
+gprs_t *GprsGetInstance(void)
+{
+	static gprs_t *singleton = NULL;
+	if( singleton == NULL)
+	{
+		singleton = gprs_t_new();
+		
+	}
+	return singleton;
+	
+}
+
 int init(gprs_t *self)
 {
 	gprs_uart_init();

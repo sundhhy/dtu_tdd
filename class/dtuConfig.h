@@ -14,6 +14,8 @@
 #define MODE_LOCALRTU			3
 #define MODE_BEGIN					0
 #define MODE_END					4
+#define NEED_ADC( mode)				( ( mode) > MODE_SMS)
+#define NEED_GPRS( mode)				( ( mode) != MODE_LOCALRTU)
 
 #define DTU_CONFGILE_MAIN_VER		2
 #define DTU_CONFGILE_SUB_VER		1
