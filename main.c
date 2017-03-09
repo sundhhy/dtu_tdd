@@ -80,7 +80,6 @@ char Test_buf[TEST_BUF_SIZE];
  */
 int main (void) {
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) || defined(TDD_ADC ) 
-	gprs_t *sim800 = gprs_t_new();
 	int i = 0;
 	char c = 0;
 #endif
@@ -98,7 +97,8 @@ int main (void) {
 	GPIO_Configuration();
 	Init_TIM2();
 	USART_Configuration();
-//	
+
+#ifdef TDD_ON	
 	printf(" DTU TDD start ...\n");
 	if( filesys_init() != ERR_OK)
 	{
@@ -162,7 +162,7 @@ int main (void) {
 		}
 	}
 	
-	
+#endif	
 	
 	
 	
@@ -323,7 +323,7 @@ int main (void) {
 			printf(" 485 uart test  %d fail \r\n", i);
 		
 		memset( Test_buf, 0, 512);
-		osDelay(3000);
+		osDelay(10);
 		
 	}
 #endif	

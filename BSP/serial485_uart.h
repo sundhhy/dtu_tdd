@@ -3,6 +3,11 @@
 #include "stdint.h"
 #include "stm32f10x_usart.h"
 
+#define SENDMODE_CPU			0
+#define SENDMODE_INTR			1
+#define SENDMODE_DMA			2
+
+#define SER485_SENDMODE 		SENDMODE_INTR
 
 typedef void (*uart_cb)(void *rxbuf, void *arg);
 

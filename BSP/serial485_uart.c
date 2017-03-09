@@ -35,7 +35,12 @@ uint32_t os_semaphore_cb_Sem_s485rxFrame[2] = { 0 };
 const osSemaphoreDef_t os_semaphore_def_Sem_s485rxFrame = { (os_semaphore_cb_Sem_s485rxFrame) };
 
 char	S485Uart_buf[S485_UART_BUF_LEN];			//用于DMA接收缓存
+
+#if ( SER485_SENDMODE == SENDMODE_INTR ) || ( SER485_SENDMODE == SENDMODE_DMA)
 char	S485Uart_Txbuf[S485_UART_BUF_LEN];			//用于DMA接收缓存
+short		g_sendCount = 0;
+short		g_sendLen = 0;
+#endif
 static struct usart_control_t {
 	short	tx_block;		//阻塞标志
 	short	rx_block;
@@ -80,8 +85,13 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 	
 	USART_ITConfig( SER485_USART, USART_IT_RXNE, ENABLE);
 	USART_ITConfig( SER485_USART, USART_IT_IDLE, ENABLE);
+	
+	
+#if SER485_SENDMODE == SENDMODE_DMA	
 	USART_DMACmd(SER485_USART, USART_DMAReq_Tx, ENABLE);  // 开启DMA发送
+#endif
 	USART_DMACmd(SER485_USART, USART_DMAReq_Rx, ENABLE); // 开启DMA接收
+	
 	USART_Cmd(SER485_USART, ENABLE);
 	
 	
@@ -105,16 +115,32 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 **/
 int s485_Uart_write(char *data, uint16_t size)
 {
+#if ( SER485_SENDMODE == SENDMODE_INTR ) || ( SER485_SENDMODE == SENDMODE_DMA)
 	int ret;
+	
+#else
+	int count = 0;
+#endif
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
+	
+#if ( SER485_SENDMODE == SENDMODE_INTR ) || ( SER485_SENDMODE == SENDMODE_DMA)
 	if( size > S485_UART_BUF_LEN)
 		size = S485_UART_BUF_LEN ;
 	memcpy( S485Uart_Txbuf, data, size);
+	
+	
+#	if SER485_SENDMODE == SENDMODE_DMA		
 	DMA_s485_usart.dma_tx_base->CMAR = (uint32_t)S485Uart_Txbuf;
 	DMA_s485_usart.dma_tx_base->CNDTR = (uint16_t)size; 
 	DMA_Cmd( DMA_s485_usart.dma_tx_base, ENABLE);        //开始DMA发送
-
+#	elif SER485_SENDMODE == SENDMODE_INTR		
+	
+	USART_SendData( SER485_USART, S485Uart_Txbuf[0]);
+	USART_ITConfig( SER485_USART, USART_IT_TXE, ENABLE);
+	g_sendCount  = 1;
+	g_sendLen  = size;
+#	endif
 //	osDelay(1);
 	if( S485_uart_ctl.tx_block)
 	{
@@ -133,6 +159,17 @@ int s485_Uart_write(char *data, uint16_t size)
 		
 	}
 	
+#endif
+
+#if SER485_SENDMODE == SENDMODE_CPU		
+	while( count < size)
+	{
+		USART_SendData( SER485_USART, data[count]);
+		while( USART_GetFlagStatus( SER485_USART, USART_FLAG_TXE) == RESET){};
+		count ++;
+	}
+
+#endif	
 	return ERR_OK;
 }
 
@@ -275,6 +312,8 @@ void DMA_s485Uart_Init(void)
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE); // ??DMA1??
 //=DMA_Configuration==============================================================================//	
 /*--- UART_Tx_DMA_Channel DMA Config ---*/
+#if SER485_TX_USE_DMA == 1
+
     DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);                           // 关闭DMA
     DMA_DeInit(DMA_s485_usart.dma_tx_base);                                 // 恢复初始值
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&SER485_USART->DR);// 外设地址
@@ -296,7 +335,7 @@ void DMA_s485Uart_Init(void)
 
     DMA_ITConfig(DMA_s485_usart.dma_tx_base, DMA_IT_TC, ENABLE);            // 允许传输完成中断
 
-   
+ #endif  
 
 /*--- UART_Rx_DMA_Channel DMA Config ---*/
 
@@ -334,9 +373,9 @@ void DMA1_Channel7_IRQHandler(void)
 
     if(DMA_GetITStatus(DMA1_FLAG_TC7))
     {
-		osSemaphoreRelease( SemId_s485txFinish);
-        DMA_ClearFlag(DMA_s485_usart.dma_tx_flag);         // 清除标志
-		DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
+			osSemaphoreRelease( SemId_s485txFinish);
+			DMA_ClearFlag(DMA_s485_usart.dma_tx_flag);         // 清除标志
+			DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
 		
     }
 }
@@ -370,6 +409,25 @@ void USART2_IRQHandler(void)
 		
 		osSemaphoreRelease( SemId_s485rxFrame);
 	}
+#if SER485_SENDMODE == SENDMODE_INTR	
+	if(USART_GetITStatus(USART2, USART_IT_TXE) == SET)  // 发送中断
+	{
+			g_sendCount ++;
+	
+		//发送完成后关闭发展中断，避免发送寄存器空了就会产生中断
+		if( g_sendCount >= g_sendLen)
+		{
+			USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
+			osSemaphoreRelease( SemId_s485txFinish);
+		}			
+		else
+			USART_SendData(USART2, S485Uart_Txbuf[ g_sendCount] );
+		
+		
+		
+	}
+	
+#endif
 
 }
 
