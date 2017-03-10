@@ -137,10 +137,7 @@ int main (void) {
 	}
 	else
 	{
-		Init_ThrdDtu();
-
-
-		osKernelStart (); 
+		
 		
 		if( NEED_ADC( Dtu_config.work_mode)) 
 		{
@@ -155,6 +152,9 @@ int main (void) {
 			sim800->init( sim800);
 			sim800->startup(sim800);
 		}
+		
+		Init_ThrdDtu();
+		osKernelStart (); 
 
 		while(1)
 		{

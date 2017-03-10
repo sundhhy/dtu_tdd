@@ -96,6 +96,7 @@ gprs_t *GprsGetInstance(void)
 
 int init(gprs_t *self)
 {
+	Gprs_currentState = SHUTDOWN;
 	gprs_uart_init();
 	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, 800);
 	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, 2000);
@@ -245,7 +246,8 @@ int	check_simCard( gprs_t *self)
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
-					Gprs_currentState = GPRS_OPEN_FINISH;
+					if( Gprs_currentState < GPRS_OPEN_FINISH)
+						Gprs_currentState = GPRS_OPEN_FINISH;
 					step ++;
 					DPRINTF(" ATE0 succeed! \t\n");
 					retry = RETRY_TIMES *10;
@@ -309,7 +311,8 @@ int	check_simCard( gprs_t *self)
 					(Gprs_cmd_buf[11]=='5')))
 				{
 						DPRINTF(" check_simCard succeed !\r\n");
-						Gprs_currentState = INIT_FINISH_OK;
+						if( Gprs_currentState < INIT_FINISH_OK)
+							Gprs_currentState = INIT_FINISH_OK;
 						return ERR_OK;
 				}
 				osDelay(500);

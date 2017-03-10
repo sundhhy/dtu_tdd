@@ -1565,7 +1565,9 @@ static void system_para_init(void)
 	  CHannel1finish =0; 
 	  CHannel2finish =0;
 	
-    	
+	RTU[CHANNEL0].Alarm = 0x00;
+	RTU[CHANNEL1].Alarm = 0x00;
+	RTU[CHANNEL2].Alarm = 0x00;
 	  
    /****************************************/
 	 /****************************************/

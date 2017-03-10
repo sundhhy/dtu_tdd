@@ -54,17 +54,8 @@ int Init_ThrdDtu (void) {
 	MyContext->init( MyContext, DTU_Buf, DTU_BUF_LEN);
 	MyContext->initState( MyContext);
 #else	
-	if( Dtu_config.work_mode != MODE_LOCALRTU)
-	{
-		SIM800 = gprs_t_new();
-		SIM800->init(SIM800);
-	}
-	
-
-	
-	
 	//使用用户的配置来重新启动485串口
-	
+	SIM800 = GprsGetInstance();
 	s485_uart_init( &Dtu_config.the_485cfg, NULL);
 //	s485_uart_init( &Conf_S485Usart_default, NULL);
 
@@ -121,13 +112,14 @@ void thrd_dtu (void const *argument) {
 	{
 		while(retry)
 		{
-			SIM800->startup(SIM800);
+			
 			if( SIM800->check_simCard(SIM800) == ERR_OK)
 			{	
 				sprintf(DTU_Buf, "succeed !\n");
 				break;
 			}
 			else {
+				SIM800->startup(SIM800);
 				retry --;
 				osDelay(1000);
 			}
