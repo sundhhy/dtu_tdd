@@ -23,7 +23,7 @@
 //#define NEW_CODE			1
 
 //static void dtu_conf(void);
-
+//$Id$
 
 void thrd_dtu (void const *argument);                             // thread function
 osThreadId tid_ThrdDtu;                                          // thread id

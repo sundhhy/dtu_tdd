@@ -72,7 +72,7 @@
 
 //---------------------------------------------------------------------//
 
-
+#define Deadline  655                  //报警回差值0.05V    20170303
 typedef struct{
   	 unsigned short  BD_20mV_HIGH;	       //20mV标定High值	     
 	   short           BD_20mV_LOW;				   //20mV标定Low值

@@ -944,6 +944,7 @@ void Calculate(unsigned char channel)
 	
 	float	projectval,bdhigh,bdlow,atemp1,atemp2,tdata1,tdata2,ax1,ax2;
 	float	temp_data1,temp_data2,temp_data3,temp_data4,temp_data5,temp_data6;
+
 	switch(channel)
 	{
 		case CHANNEL0:
@@ -953,8 +954,8 @@ void Calculate(unsigned char channel)
 
 				case V_5:		                                    //电压信号0-5V 或者1-5V
 				case V_1_5:
-		       bdhigh=(float)RTU[channel].BD.BD_5_HIGH/1000;
-				   bdlow=(float)RTU[channel].BD.BD_5_LOW/100000;
+		       bdhigh=(float)RTU[channel].BD.BD_5_HIGH/1000.0;
+				   bdlow=(float)RTU[channel].BD.BD_5_LOW/100000.0;
 				   atemp1=(((float)SAMPLE[channel].sample_Vpoint_1)-(float)SAMPLE[channel].sample_LOW)/((float)SAMPLE[channel].sample_HIGH-(float)SAMPLE[channel].sample_LOW);
 				   tdata2=atemp1*bdhigh+bdlow;                  //获取实际的电压值
 				   if(tdata2<0.0005)	tdata2=0;
@@ -989,17 +990,19 @@ void Calculate(unsigned char channel)
 				   {
 				     tdata2=0;
 					   AV_BUF0=0;
-					   RTU[channel].Alarm=0x02;         //断线标志
+					   RTU[channel].Alarm=0x01;         //断线标志
 				   }
-				   else
-				   {
-				     RTU[channel].Alarm=0x00;
-				   }
+				   //else
+				   //{
+				   //  RTU[channel].Alarm=0x00;
+				   //}
 				   if(RTU[channel].Type==V_1_5)       //信号为1-5V信号  
 				   {
 				     if(tdata2<1.0)
-					   tdata2=1.0;
-						  RTU[channel].Alarm=0x02;         //断线标志
+					 {
+					    tdata2=1.0;
+						  RTU[channel].Alarm=0x01;         //断线标志
+					 }
 				   }
 					 
 					 #if 0 
@@ -1016,11 +1019,50 @@ void Calculate(unsigned char channel)
 					 if(RTU[channel].Type==V_5)                   //0-5V 信号类型
 					 {
 						 
-						   RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
-						   RTU[channel].value = tdata2;             //获得实际AV值
+						    RTU[channel].RSV = RTU[channel].RangeL+(projectval-0)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-0); //转换成0-65535的工程值
+						   //RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
+						   RTU[channel].value = tdata2;          //获得实际AV值
+
+						   if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						   {
+							   RTU[channel].Alarm = 0x02;	 
+						   }
+						   if(RTU[channel].RSV>=RTU[channel].RangeH)
+						   {
+							   RTU[channel].Alarm = 0x04;
+						   }
+						   if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						   {
+                 RTU[channel].Alarm = 0x03;
+						   }
+						   if(RTU[channel].RSV<=RTU[channel].RangeL)
+						   {
+							   RTU[channel].Alarm = 0x05;
+						   }
+
+						   if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						   {
+								 RTU[channel].Alarm = 0x00; 
+
+						   }
+
+							 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
+
+							 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						   {
+								 RTU[channel].Alarm = 0x00;
+						   }
+						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						   {
+								 RTU[channel].Alarm = 0x00;
+						   }
+
 						  
 						 
-           }
+            }
 					 else if (RTU[channel].Type==V_1_5)           // 1--5V 信号类型
 					 {
 						 if(tdata2<1.0)
@@ -1034,10 +1076,51 @@ void Calculate(unsigned char channel)
 							 projectval = 30000; 
 							 tdata2 = 5.0;
              }
-						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
+
+						 RTU[channel].RSV = RTU[channel].RangeL+(projectval-6000)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-6000);   //转换成0-65535的工程值
+						 //RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
 						 RTU[channel].value = tdata2;
+
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+ 
+
 						 
-           }
+             }
 					 
 					break;
 
@@ -1053,10 +1136,10 @@ void Calculate(unsigned char channel)
 				   rang_f=(tdata1-tdata2)/ma_tie*1000;
 				   tdata2=(tdata1-tdata2)/bdhigh*1000;
 				   if(tdata2<0.0005)	tdata2=0;
+				
 				   if((RTU[channel].Type==mA0_10)&&(AV_BUF0<0.0005))
 				   {
 						   AV_BUF0=0;	
-
 				   }
 				   ax1=tdata2*1000;
 				   ax2=AV_BUF0*1000;
@@ -1075,12 +1158,14 @@ void Calculate(unsigned char channel)
 				   {
 				     tdata2=4.0;
 					   AV_BUF0=0;
-					   RTU[channel].Alarm=0x02; //断线
+					   RTU[channel].Alarm=0x01; //断线
 				   }
-				   else
-				   {
-				     RTU[channel].Alarm=0x00;
-				   }
+
+				   //else
+				   //{
+				   //  RTU[channel].Alarm=0x00;
+				   //}
+
 					 #if 0 
 				   tdata2=tdata2/20*30000;
 				   if(tdata2>30000) tdata2=30000;
@@ -1089,7 +1174,7 @@ void Calculate(unsigned char channel)
 					  projectval = tdata2/20*30000;
 					  if(projectval>30000) projectval =30000;
 					  if(tdata2>20.0)
-							 tdata2 =20.0;
+					    tdata2 =20.0;
 					 
 					 if(RTU[channel].Type==mA0_10)    //0-10mA 信号类型
 					 {
@@ -1097,16 +1182,56 @@ void Calculate(unsigned char channel)
 						 {
 							  projectval = 15000; 
 							  tdata2 =10.0;
-             }
+                         }
 						 if(tdata2>10.0)
 						 {
 							 tdata2 =10.0;
 							 projectval =15000;
 						 }
 						 
-						 RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
+						 RTU[channel].RSV =  RTU[channel].RangeL+(projectval-0)*(RTU[channel].RangeH-RTU[channel].RangeL)/(15000-0); //转换成0-65535的工程?
+						 //RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
 						 RTU[channel].value = tdata2;
-           }
+
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+
+            }
 					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
 					 {
 						 if(projectval<6000) 
@@ -1129,9 +1254,49 @@ void Calculate(unsigned char channel)
 						 {
 							 projectval = 30000;
 						 }
-						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
+						 RTU[channel].RSV = RTU[channel].RangeL+(projectval-6000)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-6000);  //转换成0-65535之间的值
+						 //RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
 						 RTU[channel].value = tdata2;
-           }
+
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+
+            }
 					 
 					break;
 				default:
@@ -1181,17 +1346,19 @@ void Calculate(unsigned char channel)
 				   {
 				     tdata2=0;
 					   AV_BUF1=0;
-					   RTU[channel].Alarm=0x02;         //断线标志
+					   RTU[channel].Alarm=0x01;         //断线标志
 				   }
-				   else
-				   {
-				     RTU[channel].Alarm=0x00;
-				   }
+				   //else
+				   //{
+				   //  RTU[channel].Alarm=0x00;
+				   //}
 				   if(RTU[channel].Type==V_1_5)       //信号为1-5V信号  
 				   {
 				     if(tdata2<1.0)
-					   tdata2=1.0;
-						  RTU[channel].Alarm=0x02;         //断线标志
+					 {
+					    tdata2=1.0;
+						  RTU[channel].Alarm=0x01;         //断线标志
+					 }
 				   }
 					 
 					 #if 0 
@@ -1208,8 +1375,47 @@ void Calculate(unsigned char channel)
 					 if(RTU[channel].Type==V_5)                   //0-5V 信号类型
 					 {
 						 
-						   RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
+						   RTU[channel].RSV = RTU[channel].RangeL+(projectval-0)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-0); //转换成0-65535的工程值
+						  // RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
 						   RTU[channel].value = tdata2;             //获得实际AV值
+
+						   if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						   {
+							   RTU[channel].Alarm = 0x02;	 
+						   }
+						   if(RTU[channel].RSV>=RTU[channel].RangeH)
+						   {
+							   RTU[channel].Alarm = 0x04;
+						   }
+						   if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						   {
+							   RTU[channel].Alarm = 0x03;
+						   }
+						   if(RTU[channel].RSV<=RTU[channel].RangeL)
+						   {
+							   RTU[channel].Alarm = 0x05;
+						   }
+
+						   if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00; 
+
+						   }
+
+						   if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
+
+						   if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
+						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
+
 						  
 						 
            }
@@ -1226,8 +1432,45 @@ void Calculate(unsigned char channel)
 							 projectval = 30000; 
 							 tdata2 = 5.0;
              }
-						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
+						 RTU[channel].RSV = RTU[channel].RangeL+(projectval-6000)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-6000);   //转换成0-65535的工程值
+						 //RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
 						 RTU[channel].value = tdata2;
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
 						 
            }
 					 
@@ -1267,12 +1510,13 @@ void Calculate(unsigned char channel)
 				   {
 				     tdata2=4.0;
 					   AV_BUF1=1;
-					   RTU[channel].Alarm=0x02; //断线
+					   RTU[channel].Alarm=0x01; //断线
 				   }
-				   else
-				   {
-				     RTU[channel].Alarm=0x00;
-				   }
+				   //else
+				   //{
+				   //  RTU[channel].Alarm=0x00;
+				   //}
+
 					 #if 0 
 				   tdata2=tdata2/20*30000;
 				   if(tdata2>30000) tdata2=30000;
@@ -1296,8 +1540,46 @@ void Calculate(unsigned char channel)
 							 projectval =15000;
 						 }
 						 
-						 RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
+						 RTU[channel].RSV =  RTU[channel].RangeL+(projectval-0)*(RTU[channel].RangeH-RTU[channel].RangeL)/(15000-0); //转换成0-65535的工程?
+						 //RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
 						 RTU[channel].value = tdata2;
+
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
            }
 					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
 					 {
@@ -1321,8 +1603,47 @@ void Calculate(unsigned char channel)
 						 {
 							 projectval = 30000;
 						 }
-						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
+						 RTU[channel].RSV = RTU[channel].RangeL+(projectval-6000)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-6000);  //转换成0-65535之间的值
+						 //RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
 						 RTU[channel].value = tdata2;
+
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
            }
 					 
 					break;
@@ -1373,17 +1694,19 @@ void Calculate(unsigned char channel)
 				   {
 				     tdata2=0;
 					   AV_BUF2=0;
-					   RTU[channel].Alarm=0x02;         //断线标志
+					   RTU[channel].Alarm=0x01;         //断线标志
 				   }
-				   else
-				   {
-				     RTU[channel].Alarm=0x00;
-				   }
+				   //else
+				   //{
+				   //  RTU[channel].Alarm=0x00;
+				   //}
 				   if(RTU[channel].Type==V_1_5)       //信号为1-5V信号  
 				   {
 				     if(tdata2<1.0)
+					 {
 					   tdata2=1.0;
-						  RTU[channel].Alarm=0x02;         //断线标志
+					   RTU[channel].Alarm=0x01;         //断线标志
+					 }
 				   }
 					 
 					 #if 0 
@@ -1400,8 +1723,45 @@ void Calculate(unsigned char channel)
 					 if(RTU[channel].Type==V_5)                   //0-5V 信号类型
 					 {
 						 
-						   RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
+						   RTU[channel].RSV = RTU[channel].RangeL+(projectval-0)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-0); //转换成0-65535的工程值
+						   //RTU[channel].RSV = 0+(projectval-0)*(65535-0)/(30000-0); //转换成0-65535的工程值
 						   RTU[channel].value = tdata2;             //获得实际AV值
+						   if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						   {
+							   RTU[channel].Alarm = 0x02;	 
+						   }
+						   if(RTU[channel].RSV>=RTU[channel].RangeH)
+						   {
+							   RTU[channel].Alarm = 0x04;
+						   }
+						   if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						   {
+							   RTU[channel].Alarm = 0x03;
+						   }
+						   if(RTU[channel].RSV<=RTU[channel].RangeL)
+						   {
+							   RTU[channel].Alarm = 0x05;
+						   }
+
+						   if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00; 
+
+						   }
+
+						   if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
+
+						   if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
+						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						   {
+							   RTU[channel].Alarm = 0x00;
+						   }
 						  	 
            }
 					 else if (RTU[channel].Type==V_1_5)           // 1--5V 信号类型
@@ -1417,8 +1777,45 @@ void Calculate(unsigned char channel)
 							 projectval = 30000; 
 							 tdata2 = 5.0;
              }
-						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
+						 RTU[channel].RSV = RTU[channel].RangeL+(projectval-6000)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-6000);   //转换成0-65535的工程值
+						 //RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);   //转换成0-65535的工程值
 						 RTU[channel].value = tdata2;
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
 						 
           }
 					 
@@ -1459,12 +1856,12 @@ void Calculate(unsigned char channel)
 				   {
 				     tdata2=4.0;
 					   AV_BUF2=0;
-					   RTU[channel].Alarm=0x02; //断线
+					   RTU[channel].Alarm=0x01; //断线
 				   }
-				   else
-				   {
-				     RTU[channel].Alarm=0x00;
-				   }
+				   //else
+				   //{
+				   //  RTU[channel].Alarm=0x00;
+				   //}
 					 #if 0 
 				   tdata2=tdata2/20*30000;
 				   if(tdata2>30000) tdata2=30000;
@@ -1488,8 +1885,45 @@ void Calculate(unsigned char channel)
 							 projectval =15000;
 						 }
 						 
-						 RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
+						 RTU[channel].RSV =  RTU[channel].RangeL+(projectval-0)*(RTU[channel].RangeH-RTU[channel].RangeL)/(15000-0); //转换成0-65535的工程?
+						 //RTU[channel].RSV =  0+(projectval-0)*(65535-0)/(15000-0); //转换成0-65535的工程?
 						 RTU[channel].value = tdata2;
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
            }
 					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
 					 {
@@ -1513,8 +1947,45 @@ void Calculate(unsigned char channel)
 						 {
 							 projectval = 30000;
 						 }
-						 RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
+						 RTU[channel].RSV = RTU[channel].RangeL+(projectval-6000)*(RTU[channel].RangeH-RTU[channel].RangeL)/(30000-6000);  //转换成0-65535之间的值
+						 //RTU[channel].RSV = 0+(projectval-6000)*(65535-0)/(30000-6000);  //转换成0-65535之间的值
 						 RTU[channel].value = tdata2;
+						 if(RTU[channel].RSV>=RTU[channel].HiAlm)
+						 {
+							 RTU[channel].Alarm = 0x02;	 
+						 }
+						 if(RTU[channel].RSV>=RTU[channel].RangeH)
+						 {
+							 RTU[channel].Alarm = 0x04;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].LowAlm)
+						 {
+							 RTU[channel].Alarm = 0x03;
+						 }
+						 if(RTU[channel].RSV<=RTU[channel].RangeL)
+						 {
+							 RTU[channel].Alarm = 0x05;
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].HiAlm-Deadline))   //超报警上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00; 
+
+						 }
+
+						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+
+						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
+						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+						 {
+							 RTU[channel].Alarm = 0x00;
+						 }
            }
 				break;
 					 
@@ -1528,6 +1999,9 @@ void Calculate(unsigned char channel)
 			break;
 	}
 	
+
+
+
 }
 
 static void system_para_init(void)
@@ -1549,12 +2023,48 @@ static void system_para_init(void)
 	  RTU[CHANNEL0].Type = V_5;
 	  RTU[CHANNEL1].Type = V_5;
 	  RTU[CHANNEL2].Type = V_5;
-	  RTU[CHANNEL0].BD.BD_5_HIGH = 5075;  
-	  RTU[CHANNEL0].BD.BD_5_LOW = 911; 
+//	  RTU[CHANNEL0].BD.BD_5_HIGH = 5075;  
+//	  RTU[CHANNEL0].BD.BD_5_LOW = 911; 
+//	  RTU[CHANNEL1].BD.BD_5_HIGH = 5082;  
+//	  RTU[CHANNEL1].BD.BD_5_LOW = 788; 	
+//	  RTU[CHANNEL2].BD.BD_5_HIGH = 5082;  
+//	  RTU[CHANNEL2].BD.BD_5_LOW = 788; 
+
+
+  RTU[CHANNEL0].BD.BD_5_HIGH = 5082;  
+	  RTU[CHANNEL0].BD.BD_5_LOW = 788; 
 	  RTU[CHANNEL1].BD.BD_5_HIGH = 5082;  
 	  RTU[CHANNEL1].BD.BD_5_LOW = 788; 	
 	  RTU[CHANNEL2].BD.BD_5_HIGH = 5082;  
 	  RTU[CHANNEL2].BD.BD_5_LOW = 788; 
+		
+		RTU[CHANNEL0].BD.BD_20mA_HIGH = 19949;  
+	  RTU[CHANNEL0].BD.BD_20mA_LOW = 0; 
+		RTU[CHANNEL1].BD.BD_20mA_HIGH = 19949;  
+	  RTU[CHANNEL1].BD.BD_20mA_LOW = 0; 
+		RTU[CHANNEL2].BD.BD_20mA_HIGH = 19949;  
+	  RTU[CHANNEL2].BD.BD_20mA_LOW = 0; 
+
+    RTU[CHANNEL0].RangeH = 65535;
+	  RTU[CHANNEL0].RangeL =0;
+	  RTU[CHANNEL0].HiAlm =  65535;
+	  RTU[CHANNEL0].LowAlm =0; 
+ 
+	  RTU[CHANNEL1].RangeH = 65535;
+	  RTU[CHANNEL1].RangeL =0;
+	  RTU[CHANNEL1].HiAlm =  65535;
+	  RTU[CHANNEL1].LowAlm =0;
+
+	  RTU[CHANNEL2].RangeH = 65535;
+	  RTU[CHANNEL2].RangeL =0;
+	  RTU[CHANNEL2].HiAlm =  65535;
+	  RTU[CHANNEL2].LowAlm =0;
+
+		RTU[CHANNEL0].Alarm = 0x00;
+		RTU[CHANNEL1].Alarm = 0x00;
+		RTU[CHANNEL2].Alarm = 0x00;
+
+	  //从W25q64中读取保存值 20170306
 	  sampledote0 = 0;
     sampledote1 = 0;
     sampledote2 = 0;

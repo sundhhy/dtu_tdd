@@ -171,9 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>103</LineNumber>
+          <LineNumber>174</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134267616</Address>
+          <Address>134263984</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -182,7 +182,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\cdma_dtu.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\dtu_tdd\cdma_dtu.c\103</Expression>
+          <Expression>\\dtu_tdd\cdma_dtu.c\174</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>840</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134263440</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\class\gprs.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\class/gprs.c\840</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -196,6 +212,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>SemId_rxFrame</ItemText>
         </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>data</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
@@ -206,49 +227,34 @@
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>Gprs_currentState</ItemText>
+          <ItemText>Dtu_config</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>2</WinNumber>
-          <ItemText>Dtu_config</ItemText>
+          <ItemText>DtuCfg_file</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>2</WinNumber>
-          <ItemText>DtuCfg_file</ItemText>
+          <ItemText>DTU_Buf</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>2</WinNumber>
-          <ItemText>DTU_Buf</ItemText>
+          <ItemText>RTU</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>2</WinNumber>
-          <ItemText>TcpRecvData</ItemText>
-        </Ww>
-        <Ww>
-          <count>6</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>Ip_cnnState</ItemText>
-        </Ww>
-        <Ww>
-          <count>7</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>RTU</ItemText>
-        </Ww>
-        <Ww>
-          <count>8</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>Conf_S485Usart_default</ItemText>
+          <ItemText>Temp_buf</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>0</SubType>
-          <ItemText>rxbuf</ItemText>
+          <ItemText>HOLD_ADDRESS</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

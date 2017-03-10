@@ -173,10 +173,10 @@ uint8_t 	modbusRTU_getID(uint8_t *command_buf)
 }
 uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int ackbuf_len)
 {
-	uint16_t i, data_start, data_num, data, ack_num;
+	uint16_t i, startReg, regNum, data, ack_num;
 	uint16_t crc16 = 0;
 	uint16_t *p_playload = NULL;
-	uint8_t  err = 0;
+	uint8_t  err = 0, byteNum = 0;
 	for(i=0; i<6; i++) 
 	{
 		ack_buf[i] = command_buf[i];											//?????
@@ -190,8 +190,8 @@ uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int
 	}
 	else
 	{
-		data_start = command_buf[3] + (command_buf[2] << 8);						//??????
-		data_num = command_buf[5] + (command_buf[4] << 8);							//???????
+		startReg = command_buf[3] + (command_buf[2] << 8);						//??????
+		regNum = command_buf[5] + (command_buf[4] << 8);							//???????
 		switch(command_buf[1])
 		{
 			/*¶ÁÈ¡¶àCoil×´Ì¬ ¶Á0Çø			-------------------------------------------*/
@@ -205,19 +205,19 @@ uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int
 
 			/*¶ÁÊäÈë¼Ä´æÆ÷ 3Çø------------------------------------------------------------------*/
 			case READ_INPUT:	
-																					//data_num=127;	  ??????
-				if((data_start >= INPUT_SIZE) || (data_num >= 125) || ((data_start + data_num) > INPUT_SIZE) ) 
+																					//regNum=127;	  ??????
+				if((startReg >= INPUT_SIZE) || (regNum >= 125) || ((startReg + regNum) > INPUT_SIZE) ) 
 				{
 					err= MB_ADDR_ERR;	
 					break;
 				}
 							
-				ack_buf[2] = data_num*2;
+				ack_buf[2] = regNum*2;
 				ack_num = 3;
-				for(i=0; i<data_num; i++)
+				for(i=0; i<regNum; i++)
 				{
-					data = regType4_read(data_start, REG_MODBUS);	
-					data_start++;
+					data = regType4_read(startReg, REG_MODBUS);	
+					startReg++;
 						
 					ack_buf[ack_num] = data; 			
 					ack_num++; 
@@ -227,19 +227,19 @@ uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int
 			break;
 		/*¶ÁÊäÈë¼Ä´æÆ÷ 4Çø£¬±£³Ö¼Ä´æÆ÷------------------------------------------------------------------*/
 			case READ_HOLD:	
-																					//data_num=127;	  ??????
-				if((data_start >= HOLD_SIZE) || (data_num >= 125) || ((data_start + data_num) > HOLD_SIZE) ) 
+																					//regNum=127;	  ??????
+				if((startReg >= HOLD_SIZE) || (regNum >= 125) || ((startReg + regNum) > HOLD_SIZE) ) 
 				{
 					err = MB_ADDR_ERR;	
 					break;
 				}
 							
-				ack_buf[2] = data_num*2;
+				ack_buf[2] = regNum*2;
 				ack_num = 3;
-				for(i=0; i<data_num; i++)
+				for(i=0; i<regNum; i++)
 				{
-					data = regType3_read(data_start, REG_MODBUS);	
-					data_start++;
+					data = regType3_read(startReg, REG_MODBUS);	
+					startReg++;
 						
 					ack_buf[ack_num] = data; 			
 					ack_num++; 
@@ -249,21 +249,47 @@ uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int
 			break;
 			/*Ð´ÊäÈë¼Ä´æÆ÷ 4Çø£¬±£³Ö¼Ä´æÆ÷------------------------------------------------------------------*/
 			case WRITE_1_HOLD:	
-																					//data_num=127;	  ??????
-				if((data_start >= HOLD_SIZE) || (data_num >= 125) || ((data_start + data_num) > HOLD_SIZE) ) 
+																					//regNum=127;	  ??????
+				if((startReg >= HOLD_SIZE) || (regNum >= 125) || ((startReg + regNum) > HOLD_SIZE) ) 
 				{
 					err = MB_ADDR_ERR;	
 					break;
 				}
 							
 				p_playload = (uint16_t *)(command_buf + 4);
-				regType3_write(data_start, REG_MODBUS, *p_playload);
-				data = regType3_read(data_start, REG_MODBUS);
+				regType3_write(startReg, REG_MODBUS, *p_playload);
+				data = regType3_read(startReg, REG_MODBUS);
 				ack_num = 4;
 				ack_buf[ack_num] = data; 			
 				ack_num++; 
 				ack_buf[ack_num] = data >>8 ;				
 				ack_num++;	
+				
+				break;
+			case WRITE_N_HOLD:	
+																					//regNum=127;	  ??????
+				if((startReg >= HOLD_SIZE) || (regNum >= 125) || ((startReg + regNum) > HOLD_SIZE) ) 
+				{
+					err = MB_ADDR_ERR;	
+					break;
+				}
+				byteNum = 	command_buf[ 6];
+				if( byteNum != regNum * 2)
+				{
+					err = MB_DATA_ERR;	
+					break;
+				}
+				
+				
+				
+				for(i=0; i< byteNum; i+= 2)
+				{
+					data = 0;
+					data = command_buf[ 7 + i ] + (command_buf[ 8 + i ] << 8);	
+					regType3_write( startReg , REG_MODBUS, data);
+					startReg ++;
+				}
+				ack_num = 6;
 				
 				break;
 				

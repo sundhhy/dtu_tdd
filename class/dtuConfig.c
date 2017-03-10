@@ -181,8 +181,8 @@ static void dtu_conf(char *data)
 	short		i = 0, j = 0;
 	char		tmpbuf[8];
 	char		com_Wordbits[4] = { '8', '9', 0, 0};
-	char		com_Paritybit[4] = { 'N', 'E', 'O', 0};
 	char		com_stopbit[4] = { '1', '2',0,0};
+	char		parity = 0;
 	if( get_cmdtype() != CONFCMD_TYPE_ATC)
 		return;
 	
@@ -467,10 +467,15 @@ static void dtu_conf(char *data)
 			
 			if( parg[0] == '?')
 			{
-				
+				if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_No)
+					parity = 'N';
+				else if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Odd)
+					parity = 'O';
+				else if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Even)
+					parity = 'E';
 				sprintf( data, "%d,%c,%c,%c", Dtu_config.the_485cfg.USART_BaudRate, \
 												 com_Wordbits[Dtu_config.the_485cfg.USART_WordLength/0x1000], \
-												 com_Paritybit[Dtu_config.the_485cfg.USART_Parity/0x300], \
+												 parity, \
 												 com_stopbit[Dtu_config.the_485cfg.USART_StopBits/0x2000]	);
 	
 				
@@ -550,9 +555,8 @@ static void dtu_conf(char *data)
 				i =  strlen(parg);
 				if( i > 31)
 					i = 31;
-						
+				memset(  Dtu_config.registry_package, 0, sizeof( Dtu_config.registry_package));		
 				memcpy( Dtu_config.registry_package, parg, i );
-				Dtu_config.registry_package[31] = 0;
 				strcpy( data, "OK");
 				ack_str( data);
 			}
