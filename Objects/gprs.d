@@ -40,3 +40,4 @@
 .\objects\gprs.o: .\sdh_lib\hw_w25q.h
 .\objects\gprs.o: ..\dtu_tdd\osObjects.h
 .\objects\gprs.o: .\sdh_lib\list.h
+.\objects\gprs.o: .\sdh_lib\bufManager.h

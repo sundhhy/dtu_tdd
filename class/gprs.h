@@ -52,6 +52,7 @@ CLASS(gprs_t)
 
 	
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
+	int (*buf_test)( gprs_t *self, char *buf, int len);
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
 	int (*report_event)( gprs_t *self, void **event, char *buf, int *lsize);
@@ -69,14 +70,16 @@ CLASS(gprs_t)
 
 
 typedef enum {
+	GPRSERROR,
 	SHUTDOWN,
+	STARTUP,
     GPRS_OPEN_FINISH,       /// GPRS 打开成功了
 	INIT_FINISH_OK,
     TCP_IP_OK,
     TCP_IP_NO,
 }SIM_STATUS ;
 // { |len| data[0]| ... | data[len - 1]|}
-#define EXTRASPACE		1		//维护缓存的额外空间，此处用于保存数据长度的空间
+#define EXTRASPACE		2		//维护缓存的额外空间，缓存中长度字段类型是u16
 #define ADD_RECVBUF_WR(recvbuf) { \
 	recvbuf->write ++;	\
 	recvbuf->write &= ( recvbuf->buf_len - 1);\
@@ -86,6 +89,8 @@ typedef enum {
 	recvbuf->read ++;	\
 	recvbuf->read &= ( recvbuf->buf_len - 1);\
 }
+
+
 typedef struct {
 	uint16_t	read;
 	uint16_t	write;

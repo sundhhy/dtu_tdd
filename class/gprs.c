@@ -23,7 +23,7 @@
 #include "def.h"
 #include "debug.h"
 #include "dtuConfig.h"
-
+#include "bufManager.h"
 #include "CircularBuffer.h"
 
 
@@ -72,15 +72,15 @@ static struct {
 }Ip_cnnState;
 
 
-RecvdataBuf	TcpRecvData;
+//RecvdataBuf	TcpRecvData;
 
 static char Gprs_cmd_buf[CMDBUF_LEN];
 static char TCP_data[TCPDATA_LEN];
 
 static short	Gprs_currentState = SHUTDOWN;
 static short	FlagSmsReady = 0;
-static int RcvSms_seq = 0;
-
+static int 		RcvSms_seq = 0;
+vectorBufManager_t	g_TcpVbm;
 
 gprs_t *GprsGetInstance(void)
 {
@@ -111,11 +111,14 @@ int init(gprs_t *self)
 	self->event_cbuf->read = 0;
 	self->event_cbuf->write = 0;
 	self->event_cbuf->size = EVENT_MAX;
-	TcpRecvData.buf = TCP_data;
-	TcpRecvData.buf_len = TCPDATA_LEN;
-	TcpRecvData.read = 0;
-	TcpRecvData.write = 0;
-	TcpRecvData.free_size = TCPDATA_LEN;
+	
+	
+	VecBuf_Init( &g_TcpVbm, TCP_data, TCPDATA_LEN, DROP_NEWDATA);
+//	TcpRecvData.buf = TCP_data;
+//	TcpRecvData.buf_len = TCPDATA_LEN;
+//	TcpRecvData.read = 0;
+//	TcpRecvData.write = 0;
+//	TcpRecvData.free_size = TCPDATA_LEN;
 	
 	regRxIrq_cb( read_event, (void *)self);
 	Gprs_state.sms_msgFromt = -1;
@@ -123,75 +126,80 @@ int init(gprs_t *self)
 	return ERR_OK;
 }
 //todo: 没有考虑空洞的情况
-void add_recvdata( RecvdataBuf *recvbuf, char *data, int len)
-{
-	short i = 0;
-	short datalen = 0;
-	if( len > recvbuf->buf_len)
-		return;
-	if( len == 0)
-		return;
-	//buf_len 必须是2的幂
-	
-	//空间不足时，清除未读取的数据来获得足够的空间
-	while(  len > TcpRecvData.free_size )
-	{
-		//清除未读取的部分
-		datalen = recvbuf->buf[ recvbuf->read];
-		recvbuf->buf[ recvbuf->read] = 0;
-		recvbuf->read += datalen + EXTRASPACE;
-		recvbuf->read &= ( recvbuf->buf_len - 1);
-		TcpRecvData.free_size += datalen + EXTRASPACE;
-		
-		i ++; 
-		if( i > 5)		//超过5次释放都无法满足，就放弃
-			return;
-	}
-	recvbuf->buf[ recvbuf->write] = len + 1;		//在结尾要加上0
-	
-	i = 0;
-	while( len)
-	{
-		ADD_RECVBUF_WR( recvbuf);
-		TcpRecvData.free_size --;
-		recvbuf->buf[ recvbuf->write ] = data[i];
-		i ++;
-		len --;
-	}
-	ADD_RECVBUF_WR( recvbuf);
-	TcpRecvData.free_size --;
-	recvbuf->buf[ recvbuf->write ] = 0;		//以0为结尾
-	ADD_RECVBUF_WR( recvbuf);
-	
-}
-int read_recvdata( RecvdataBuf *recvbuf, char *data, int bufsize)
-{
-	short len = recvbuf->buf[ recvbuf->read];
-	short i = 0;
-	if( len == 0)
-		return 0;
-	//buf_len 必须是2的幂
-	recvbuf->buf[ recvbuf->read] = 0;		//清除长度
-	ADD_RECVBUF_RD( recvbuf);
-	TcpRecvData.free_size ++;
-	while( len )
-	{
-		
-		
-		if( i < bufsize)
-		{
-			data[i++ ] = recvbuf->buf[ recvbuf->read ];
-			
-		}
-		ADD_RECVBUF_RD( recvbuf);
-		TcpRecvData.free_size ++;
-		len --;
-	}
-	if( i < bufsize)
-		return ( i - 1);		//在写入时加了一个0作为结尾，所以实际长度要减1
-	return bufsize;
-	
-}
+//void add_recvdata( RecvdataBuf *recvbuf, char *data, int len)
+//{
+//	short i = 0;
+//	short numAllByte = len + EXTRASPACE;
+//	uint16_t *pnumByte;
+//	if( numAllByte > ( recvbuf->buf_len) )		//
+//		return;
+//	if( len == 0)
+//		return;
+//	//buf_len 必须是2的幂
+//	
+//	//空间不足时，清除未读取的数据来获得足够的空间
+//	while(  numAllByte > TcpRecvData.free_size )
+//	{
+//		//清除未读取的部分
+//		pnumByte = ( uint16_t *)( recvbuf->buf + recvbuf->read);
+//		if( *pnumByte == 0)
+//			return;
+//		*pnumByte = 0;
+//		recvbuf->read += *pnumByte + EXTRASPACE;
+//		recvbuf->read &= ( recvbuf->buf_len - 1);
+//		TcpRecvData.free_size += *pnumByte + EXTRASPACE;
+//		
+////		i ++; 
+////		if( i > 5)		//超过5次释放都无法满足，就放弃
+////			return;
+//	}
+//	
+//	pnumByte = ( uint16_t *)( recvbuf->buf + recvbuf->read);
+//	*pnumByte = len;
+//	
+//	i = 0;
+//	while( len)
+//	{
+//		ADD_RECVBUF_WR( recvbuf);
+//		TcpRecvData.free_size --;
+//		recvbuf->buf[ recvbuf->write ] = data[i];
+//		i ++;
+//		len --;
+//	}
+//	ADD_RECVBUF_WR( recvbuf);
+//	TcpRecvData.free_size --;
+//	recvbuf->buf[ recvbuf->write ] = 0;		//以0为结尾
+//	ADD_RECVBUF_WR( recvbuf);
+//	
+//}
+//int read_recvdata( RecvdataBuf *recvbuf, char *data, int bufsize)
+//{
+//	short len = recvbuf->buf[ recvbuf->read];
+//	short i = 0;
+//	if( len == 0)
+//		return 0;
+//	//buf_len 必须是2的幂
+//	recvbuf->buf[ recvbuf->read] = 0;		//清除长度
+//	ADD_RECVBUF_RD( recvbuf);
+//	TcpRecvData.free_size ++;
+//	while( len )
+//	{
+//		
+//		
+//		if( i < bufsize)
+//		{
+//			data[i++ ] = recvbuf->buf[ recvbuf->read ];
+//			
+//		}
+//		ADD_RECVBUF_RD( recvbuf);
+//		TcpRecvData.free_size ++;
+//		len --;
+//	}
+//	if( i < bufsize)
+//		return ( i - 1);		//在写入时加了一个0作为结尾，所以实际长度要减1
+//	return bufsize;
+//	
+//}
 
 
 void startup(gprs_t *self)
@@ -205,7 +213,7 @@ void startup(gprs_t *self)
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	
 	
-	
+	Gprs_currentState = STARTUP;
 	
 	return ;
 	
@@ -256,6 +264,7 @@ int	check_simCard( gprs_t *self)
 				osDelay(100);
 				retry --;
 				if( retry == 0) {
+					Gprs_currentState = GPRSERROR;
 					DPRINTF(" ATE0 fail \t\n");
 					return ERR_FAIL;
 					
@@ -298,6 +307,7 @@ int	check_simCard( gprs_t *self)
 				osDelay(100);
 				retry --;
 				if( retry == 0) {
+					Gprs_currentState = GPRSERROR;
 					DPRINTF(" AT+CPIN? fail \t\n");
 					return ERR_FAIL;
 				}
@@ -318,6 +328,7 @@ int	check_simCard( gprs_t *self)
 				osDelay(500);
 				retry --;
 				if( retry == 0) {
+					Gprs_currentState = GPRSERROR;
 					DPRINTF(" AT+CREG? fail %s \r\n", Gprs_cmd_buf );
 					return ERR_FAIL;
 				}
@@ -924,7 +935,7 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 			return ERR_FAIL;
 		}
 		//花生壳调试时，本地未开启服务器时，会出现连接后马上断开的情况
-		pp = strstr((const char*)Gprs_cmd_buf,"CLOSED");		
+		pp = strstr((const char*)Gprs_cmd_buf,"CLOS");		
 		if( pp)
 		{
 			Ip_cnnState.cnn_state[ cnnt_num] = CNNT_DISCONNECT;
@@ -1039,39 +1050,11 @@ int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 //	int tmp = 0;
 //	char *pp;
 	gprs_event_t *this_event = (gprs_event_t *)event;
-	*len = read_recvdata( &TcpRecvData, buf, *len);
+//	*len = read_recvdata( &TcpRecvData, buf, *len);
+	*len = VecBuf_read( &g_TcpVbm, buf, *len);
 	if( CKECK_EVENT( this_event, tcp_receive) )
 	{
-		return this_event->arg;
-//		pp = strstr((const char*)buf,"RECEIVE");
-//		if( pp)
-//		{
-
-//			this_event->arg = get_seq(&pp);;
-//			pp = strstr(pp,",");
-//			tmp = get_seq(&pp); 
-//			if( *len > tmp)
-//				*len = tmp;
-//			memcpy( buf, pp + 1, tmp);
-////			event->data = malloc( tmp + 1);
-////			if( event->data)
-////			{
-////				
-////				while( *pp != '\x00A')
-////					pp++;
-////				
-////				memcpy( event->data, pp + 1, tmp);
-////				event->data[tmp] = '\0';
-////	
-////			}	
-////		tmp = strlen( (const char *)this_event->data) + 1;
-////		if( *len > tmp)
-////			*len = tmp;
-////		memcpy( buf, this_event->data, *len);
-//		
-//		return this_event->arg;
-//		}
-		
+		return this_event->arg;	
 	}
 	
 	return ERR_FAIL;
@@ -1146,7 +1129,8 @@ void read_event(void *buf, void *arg)
 			tmp = get_seq(&pp); 
 			while( *pp != '\x00A')
 				pp++;
-			add_recvdata( &TcpRecvData, pp + 1, tmp);
+			VecBuf_write( &g_TcpVbm,  pp + 1, tmp);
+//			add_recvdata( &TcpRecvData, pp + 1, tmp);
 			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
 			{
 				
@@ -1616,6 +1600,95 @@ int check_ip(char *ip)
 	return ERR_BAD_PARAMETER;
 	
 }
+
+int buf_test( gprs_t *self, char *buf, int len)
+{
+	int  i  = 0 ;
+//	int	 tcp_buf_len = TCPDATA_LEN;
+	int ret = 0;
+
+
+	//按照全路径法写测试用例
+	
+	//1 测试写数据长度为0时的操作
+	VecBuf_write( &g_TcpVbm, buf, 0);
+	
+	//2 测试无数据时的读取
+	ret = VecBuf_read( &g_TcpVbm, buf, len);
+	
+	//3 测试写入数据大于缓存的最大限度时的行为
+	memset( buf, 1, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN);
+	
+	//4 测试写入数据长度正好是缓存最大容量时的行为
+	memset( buf, 2, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN - VBM_FRAMEHEAD_LEN);
+	
+	//5 测试缓存数据最大时，读取缓存的行为
+	memset( buf, 0, len );
+	ret = VecBuf_read( &g_TcpVbm, buf, len);
+	
+	//6 测试普通长度数据写入功能
+	memset( buf, 3, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN/2 );
+	
+	//7 测试读取数据的缓存不足时，读取操作
+	memset( buf, 0, len );
+	ret = VecBuf_read( &g_TcpVbm, buf, TCPDATA_LEN/3);
+	
+	//8 测试普通数据写入后， 正常的读取行为
+	memset( buf, 4, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN/2 );
+	memset( buf, 0, len );
+	ret = VecBuf_read( &g_TcpVbm, buf, TCPDATA_LEN);
+	
+	//9 写两帧数据，都一次读取时读取缓存不足，测试第二次缓存充足时能否正常读取
+	memset( buf, 5, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN/3 );
+	memset( buf, 6, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN/3 );
+	memset( buf, 0, len );
+	ret = VecBuf_read( &g_TcpVbm, buf, TCPDATA_LEN/4);
+	memset( buf, 0, len );
+	ret = VecBuf_read( &g_TcpVbm, buf, TCPDATA_LEN);
+	
+	
+	//10 测试第二次写数据时缓存不足的行为
+	for( i = 1; i < 3; i ++)
+	{
+		memset( buf, i, TCPDATA_LEN / 2);
+		VecBuf_write( &g_TcpVbm, buf, TCPDATA_LEN / 2);
+	}
+	for( i = 0; i < 2; i ++)
+	{
+		memset( buf, 0, len);
+		ret = VecBuf_read( &g_TcpVbm, buf, len);
+	}
+	
+	//11 测试写字节数不对齐时的写
+	
+	for( i = 1; i < 15; i += 2)
+	{
+		memset( buf, i, TCPDATA_LEN );
+		VecBuf_write( &g_TcpVbm, buf, i );
+	}
+	
+	//12 测试在写入不对齐长度数据后，写入对齐长度数据
+	memset( buf, 12, TCPDATA_LEN );
+	VecBuf_write( &g_TcpVbm, buf, 8 );
+	
+	//13 把数据读取看下是否都正确
+	ret = 1;
+	while( ret)
+	{
+		
+		ret = VecBuf_read( &g_TcpVbm, buf, len);
+	}
+	
+	return 0;
+	
+	
+}
 int sms_test( gprs_t *self, char *phnNmbr, char *buf, int bufsize)
 {
 	int ret = 0;
@@ -2037,8 +2110,10 @@ FUNCTION_SETTING(send_text_sms, send_text_sms);
 FUNCTION_SETTING(read_phnNmbr_TextSMS, read_phnNmbr_TextSMS);
 FUNCTION_SETTING(read_seq_TextSMS, read_seq_TextSMS);
 
-
 FUNCTION_SETTING(delete_sms, delete_sms);
+
+FUNCTION_SETTING(buf_test, buf_test);
+FUNCTION_SETTING(sms_test, sms_test);
 FUNCTION_SETTING(sms_test, sms_test);
 
 FUNCTION_SETTING(get_apn, get_apn);

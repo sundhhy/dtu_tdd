@@ -250,14 +250,15 @@ void thrd_dtu (void const *argument) {
 					{
 						//接收到数据就将闹钟的起始时间设置为当前时间
 						set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
-						
-						
+						sprintf( Temp_buf, "TCP[%d] recv %d Byte, event %p!", ret, lszie, gprs_event);
+						prnt_485( Temp_buf);
 						if( Dtu_config.work_mode == MODE_REMOTERTU)
 						{
-							if( modbusRTU_getID( (uint8_t *)DTU_Buf) != Dtu_config.rtu_addr)
-								break;
-							lszie = modbusRTU_data( (uint8_t *)DTU_Buf, lszie, (uint8_t *)Temp_buf, sizeof( Temp_buf));
-							SIM800->sendto_tcp( SIM800, ret, Temp_buf, lszie);
+							if( modbusRTU_getID( (uint8_t *)DTU_Buf) == Dtu_config.rtu_addr)
+							{
+								lszie = modbusRTU_data( (uint8_t *)DTU_Buf, lszie, (uint8_t *)Temp_buf, sizeof( Temp_buf));
+								SIM800->sendto_tcp( SIM800, ret, Temp_buf, lszie);
+							}
 						}
 						else
 						{
@@ -265,9 +266,8 @@ void thrd_dtu (void const *argument) {
 
 						}
 						
-//						prnt_485("recv: ");
+						
 //						prnt_485(DTU_Buf);
-						DPRINTF("rx:[%d] %s \n", ret, DTU_Buf);
 						SIM800->free_event( SIM800, gprs_event);
 						continue;
 					}

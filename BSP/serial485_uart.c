@@ -129,6 +129,7 @@ int s485_Uart_write(char *data, uint16_t size)
 #if ( SER485_SENDMODE == SENDMODE_INTR ) || ( SER485_SENDMODE == SENDMODE_DMA)
 	if( size > S485_UART_BUF_LEN)
 		size = S485_UART_BUF_LEN ;
+	memset( S485Uart_Txbuf, 0, size);
 	memcpy( S485Uart_Txbuf, data, size);
 	
 	

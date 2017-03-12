@@ -547,7 +547,10 @@ static void dtu_conf(char *data)
 		{
 			if( *parg == '?')
 			{
-				sprintf( data, "%s", Dtu_config.registry_package);
+				if( strlen( Dtu_config.registry_package))
+					sprintf( data, "%s", Dtu_config.registry_package);
+				else
+					sprintf( data," ");
 				ack_str( data);
 			}
 			else
@@ -568,7 +571,11 @@ static void dtu_conf(char *data)
 		{
 			if( *parg == '?')
 			{
-				sprintf( data, "%s", Dtu_config.heatbeat_package);
+				
+				if( strlen( Dtu_config.heatbeat_package))
+					sprintf( data, "%s", Dtu_config.heatbeat_package);
+				else
+					sprintf( data," ");
 				ack_str( data);
 			}
 			else
@@ -576,9 +583,8 @@ static void dtu_conf(char *data)
 				i =  strlen(parg);
 				if( i > 31)
 					i = 31;
-						
+				memset( Dtu_config.heatbeat_package, 0, sizeof( Dtu_config.heatbeat_package));		
 				memcpy( Dtu_config.heatbeat_package, parg, i );
-				Dtu_config.heatbeat_package[31] = 0;
 				strcpy( data, "OK");
 				ack_str( data);
 			}

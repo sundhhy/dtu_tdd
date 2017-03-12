@@ -71,8 +71,8 @@ int fgetc(FILE *f /*stream*/)
 }
 
 
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485) || defined(TDD_ADC) 
-#define TEST_BUF_SIZE 512
+#ifdef TDD_ON
+#define TEST_BUF_SIZE 1200
 char Test_buf[TEST_BUF_SIZE];
 #endif
 /*
@@ -81,12 +81,15 @@ char Test_buf[TEST_BUF_SIZE];
 
 
 int main (void) {
+	gprs_t *sim800;
+	int u32_val = 0;
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) || defined(TDD_ADC ) 
 	int i = 0;
 	char c = 0;
+	
+	
 #endif
-	int u32_val = 0;
-	gprs_t *sim800;
+	
 	osKernelInitialize ();                    // initialize CMSIS-RTOS
 
 	
@@ -168,7 +171,11 @@ int main (void) {
 	
 #endif	
 	
-	
+#ifdef TDD_GPRS_BUF
+	sim800 = GprsGetInstance();
+	sim800->init( sim800);
+	sim800->buf_test( sim800, Test_buf, TEST_BUF_SIZE);
+#endif	
 	
 	
 #ifdef TDD_LED
