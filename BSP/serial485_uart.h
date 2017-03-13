@@ -46,7 +46,8 @@ int s485_Uart_write(char *data, uint16_t size);
  * @return 
  */
 int s485_Uart_read(char *data, uint16_t size);
-int s485_Uart_Raw(char **data);
+int s485Obtain_Playloadbuf(char **data);
+int s485GiveBack_Rxbuf(char *data);
 
 /**
  * @brief 控制串口的行为
@@ -66,7 +67,7 @@ void s485_Uart_ioctl(int cmd, ...);
  */
 int s485_uart_test(char *buf, int size);
 
-
+#define S485RX_BUF_LEN		2048
 #define S485_UART_BUF_LEN		256
 
 #define S485_UART_CMD_SET_TXBLOCK	1

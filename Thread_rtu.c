@@ -18,8 +18,7 @@ RtuInstance *g_p_myRtu;
 int Init_Thread_rtu (void) {
 
 	int ret = 0;
-  tid_Thread_RTU = osThreadCreate (osThread(Thread_rtu), NULL);
-	
+
 	g_p_myRtu = RtuInstance_new();
 	ret = g_p_myRtu->init( g_p_myRtu, Dtu_config.work_mode);
 	if( ret != ERR_OK)
@@ -28,15 +27,16 @@ int Init_Thread_rtu (void) {
 		return ERR_OK;
 		
 	}
-	
+
 	s485_uart_init( &Dtu_config.the_485cfg, NULL);
 	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
 	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
 	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
 	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
 	
-	
-  if (!tid_Thread_RTU) return(-1);
+	tid_Thread_RTU = osThreadCreate (osThread(Thread_rtu), NULL);
+
+	if (!tid_Thread_RTU) return(-1);
   
   return(0);
 }

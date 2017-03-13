@@ -385,7 +385,8 @@ void USART3_IRQHandler(void)
 		if( GprsRxirqCB.cb != NULL)
 			GprsRxirqCB.cb( Gprs_uart_ctl.rxbuf,  GprsRxirqCB.arg);
 		
-		Gprs_uart_ctl.recv_size = get_loadbuflen( &GprsUart_ppbuf)  - DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
+		Gprs_uart_ctl.recv_size = get_loadbuflen( &GprsUart_ppbuf)  - \
+			DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
 		
 		switch_receivebuf( &GprsUart_ppbuf, &rxbuf, &rxbuflen);
 		DMA_gprs_usart.dma_rx_base->CMAR = (uint32_t)rxbuf;

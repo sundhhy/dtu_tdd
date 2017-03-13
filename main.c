@@ -32,7 +32,7 @@
 
 static void Led_job();
 static int Select_apptype();		//选择工作类型
-
+int Init_Thread_rtu (void);
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
      set to 'Yes') calls __io_putchar() */
@@ -157,6 +157,7 @@ int main (void) {
 		}
 		
 		Init_ThrdDtu();
+		Init_Thread_rtu();
 		osKernelStart (); 
 
 		while(1)

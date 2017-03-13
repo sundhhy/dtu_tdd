@@ -21,6 +21,8 @@
 #include <string.h>
 #include "def.h"
 #include "led.h"
+#include "Ping_PongBuf.h"
+
 
 //static u485RxirqCB *T485Rxirq_cb;
 
@@ -34,10 +36,11 @@ osSemaphoreId SemId_s485rxFrame;                         // Semaphore ID
 uint32_t os_semaphore_cb_Sem_s485rxFrame[2] = { 0 }; 
 const osSemaphoreDef_t os_semaphore_def_Sem_s485rxFrame = { (os_semaphore_cb_Sem_s485rxFrame) };
 
-char	S485Uart_buf[S485_UART_BUF_LEN];			//用于DMA接收缓存
+char	S485Uart_buf[S485RX_BUF_LEN];			//用于DMA接收缓存
+static PPBuf_t	g_S485_ppbuf;
 
 #if ( SER485_SENDMODE == SENDMODE_INTR ) || ( SER485_SENDMODE == SENDMODE_DMA)
-char	S485Uart_Txbuf[S485_UART_BUF_LEN];			//用于DMA接收缓存
+char	S485Uart_Txbuf[S485_UART_BUF_LEN];			//用于发送
 short		g_sendCount = 0;
 short		g_sendLen = 0;
 #endif
@@ -71,6 +74,14 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 	{
 		SemId_s485txFinish = osSemaphoreCreate(osSemaphore(Sem_s485txFinish), 1);
 		SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), 1);
+		g_S485_ppbuf.ping_buf = S485Uart_buf;
+		g_S485_ppbuf.pong_buf = S485Uart_buf + S485RX_BUF_LEN/2;
+		g_S485_ppbuf.ping_len = S485RX_BUF_LEN/2;
+		g_S485_ppbuf.pong_len = S485RX_BUF_LEN/2;
+		init_pingponfbuf( &g_S485_ppbuf);
+		
+		
+		
 		first = 1;
 	}
 	
@@ -189,6 +200,8 @@ int s485_Uart_read(char *data, uint16_t size)
 {
 	int  ret;
 	int len = size;
+	char *playloadbuf ;
+	
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
 	
@@ -215,10 +228,12 @@ int s485_Uart_read(char *data, uint16_t size)
 	{
 		if( len > S485_uart_ctl.recv_size)
 			len = S485_uart_ctl.recv_size;
+		playloadbuf = get_playloadbuf( &g_S485_ppbuf);
 		memset( data, 0, size);
-		memcpy( data, S485Uart_buf, len);
-		memset( S485Uart_buf, 0, len);
-		LED_com->turnon(LED_com);
+		memcpy( data, playloadbuf, len);
+		memset( playloadbuf, 0, len);
+		free_playloadbuf( &g_S485_ppbuf);
+//		LED_com->turnon(LED_com);
 //		if( T485Rxirq_cb != NULL && len)
 //			T485Rxirq_cb->cb( NULL,  T485Rxirq_cb->arg);
 		S485_uart_ctl.recv_size = 0;
@@ -230,10 +245,11 @@ int s485_Uart_read(char *data, uint16_t size)
 
 //将串口的缓存给调用者
 //返回当前缓存的数据长度
-int s485_Uart_Raw(char **data)
+int s485Obtain_Playloadbuf(char **data)
 {
 	int  ret;
 	int len = 0;
+	char *playloadbuf ;
 
 	if( S485_uart_ctl.rx_block)
 	{
@@ -256,12 +272,19 @@ int s485_Uart_Raw(char **data)
 	{
 		
 		len = S485_uart_ctl.recv_size;
+		playloadbuf = get_playloadbuf( &g_S485_ppbuf);
 		S485_uart_ctl.recv_size = 0;
-		*data = S485Uart_buf;
+		*data = playloadbuf;
 		return len;
 	}
 	
 	return 0;
+}
+
+int s485GiveBack_Rxbuf(char *data)
+{
+	free_playloadbuf( &g_S485_ppbuf);
+	
 }
 
 
@@ -348,6 +371,8 @@ void DMA_s485Uart_Init(void)
 {
 
 	DMA_InitTypeDef DMA_InitStructure;	
+	short rxbuflen;
+	char *rxbuf;
 //	static char first_invoke = 1;
 //	if( first_invoke)
 //		first_invoke = 0;
@@ -387,13 +412,13 @@ void DMA_s485Uart_Init(void)
 /*--- UART_Rx_DMA_Channel DMA Config ---*/
 
  
-
+	switch_receivebuf( &g_S485_ppbuf, &rxbuf, &rxbuflen);
     DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE);                           
     DMA_DeInit(DMA_s485_usart.dma_rx_base);                                 
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&SER485_USART->DR);
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)S485Uart_buf;         
+    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)rxbuf;         
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                     
-    DMA_InitStructure.DMA_BufferSize = S485_UART_BUF_LEN;                     
+    DMA_InitStructure.DMA_BufferSize = rxbuflen;                     
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;        
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                 
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
@@ -441,13 +466,20 @@ void DMA1_Channel7_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
 	uint8_t clear_idle = clear_idle;
+	short rxbuflen;
+	char *rxbuf;
 	if(USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)  // 空闲中断
 	{
 		
 		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE);       // 关闭DMA
 		DMA_ClearFlag( DMA_s485_usart.dma_rx_flag );           // 清除DMA标志
-		S485_uart_ctl.recv_size = S485_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_s485_usart.dma_rx_base); //获得接收到的字节
-		DMA_s485_usart.dma_rx_base->CNDTR = S485_UART_BUF_LEN;
+		S485_uart_ctl.recv_size = get_loadbuflen( &g_S485_ppbuf)  - \
+		DMA_GetCurrDataCounter( DMA_s485_usart.dma_rx_base); //获得接收到的字节
+//		S485_uart_ctl.recv_size = S485_UART_BUF_LEN - DMA_GetCurrDataCounter(DMA_s485_usart.dma_rx_base); //获得接收到的字节
+		
+		switch_receivebuf( &g_S485_ppbuf, &rxbuf, &rxbuflen);
+		DMA_s485_usart.dma_rx_base->CMAR = (uint32_t)rxbuf;
+		DMA_s485_usart.dma_rx_base->CNDTR = rxbuflen;
 		DMA_Cmd( DMA_s485_usart.dma_rx_base, ENABLE);
 		
 		clear_idle = SER485_USART->SR;
