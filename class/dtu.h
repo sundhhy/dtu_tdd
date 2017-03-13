@@ -17,9 +17,9 @@ enum WakeStateSeq {
 	STATE_SelfTest,
 	STATE_Connect,
 	STATE_EventHandle,
-	STATE_SMSHandle,
 	STATE_HeatBeatHandle,
 	STATE_CnntManager,
+	STATE_SMSHandle,
 	STATE_Total
 	
 	
@@ -56,8 +56,8 @@ ABS_CLASS( StateContext)
 	WorkState *curState;
 	
 	int (*init)( StateContext *this, char *buf, int bufLen);
-	void ( *setCurState)( StateContext *this, WorkState *state);
-	void	(*nextState)( StateContext *this, short mynum); 
+	void ( *setCurState)( StateContext *this, int targetState);
+	void	(*nextState)( StateContext *this, int myState); 
 	int ( *construct)( StateContext *this , Builder *state_builder);
 	
 	//abs

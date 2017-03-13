@@ -261,6 +261,13 @@ int	check_simCard( gprs_t *self)
 					retry = RETRY_TIMES *10;
 					break;
 				}
+				pp = strstr((const char*)Gprs_cmd_buf,"POWER DOWN");
+				if(pp)
+				{
+					
+					Gprs_currentState = SHUTDOWN;
+					return ERR_FAIL;
+				}
 				osDelay(100);
 				retry --;
 				if( retry == 0) {
@@ -323,6 +330,7 @@ int	check_simCard( gprs_t *self)
 						DPRINTF(" check_simCard succeed !\r\n");
 						if( Gprs_currentState < INIT_FINISH_OK)
 							Gprs_currentState = INIT_FINISH_OK;
+						FlagSmsReady = 1;
 						return ERR_OK;
 				}
 				osDelay(500);
@@ -476,7 +484,9 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 	
 	if( check_phoneNO( phnNmbr) == ERR_OK)
 		legal_phno = 1;
-	
+	//短信为准备好，说明还没有入网
+	if( FlagSmsReady == 0)
+		return ERR_UNINITIALIZED;  
 	
 	while(1)
 	{
@@ -944,7 +954,7 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 		
 		retry --;
 		
-		osDelay(500);
+		osDelay(100);
 		if( retry == 0)
 			return ERR_OK;
 	}

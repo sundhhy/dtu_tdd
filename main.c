@@ -354,7 +354,7 @@ static void Led_job()
 
 static int Select_apptype()
 {
-	int i = 10;
+	int i = 3;
 	int ret = 0;
 	char	uart_buf[32] = {0};
 	while(i)

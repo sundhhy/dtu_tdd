@@ -92,15 +92,15 @@ char *get_playloadbuf( PPBuf_t *ppbuf)
 }
 void free_playloadbuf( PPBuf_t *ppbuf)
 {
-//	if( ppbuf->playload_buf == BUF_PING)
-//	{
-//		memset( ppbuf->ping_buf, 0, ppbuf->ping_len);
-//	}
-//	else if( ppbuf->playload_buf == BUF_PONG)
-//	{
-//		memset( ppbuf->pong_buf, 0, ppbuf->pong_len);
-//		
-//	}
+	if( ppbuf->playload_buf == BUF_PING)
+	{
+		memset( ppbuf->ping_buf, 0, ppbuf->ping_len);
+	}
+	else if( ppbuf->playload_buf == BUF_PONG)
+	{
+		memset( ppbuf->pong_buf, 0, ppbuf->pong_len);
+		
+	}
 //	ppbuf->playload_buf = BUF_NONE;
 	
 }

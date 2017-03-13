@@ -86,13 +86,13 @@ int StateContextInit( StateContext *this, char *buf, int bufLen)
 	return ERR_OK;
 }
 
-void setCurState( StateContext *this, WorkState *state)
+void setCurState( StateContext *this, int targetState)
 {
-	if( state)
-		this->curState = state;
+	if( StateLine[ targetState])
+		this->curState = StateLine[ targetState];
 }
 
-void nextState( StateContext *this, short mynum)
+void nextState( StateContext *this, int myState)
 {
 	int i = 0;
 	
@@ -106,12 +106,12 @@ void nextState( StateContext *this, short mynum)
 		
 		//初始状态不应该在正常运行中出现
 		//所以查询状时跳过初始状态
-		mynum ++;
-		if( mynum == STATE_Total)
-			mynum = 1;
-		if( StateLine[ mynum] )
+		myState ++;
+		if( myState == STATE_Total)
+			myState = 1;
+		if( StateLine[ myState] )
 		{
-			this->curState = StateLine[ mynum];
+			this->curState = StateLine[ myState];
 			break;
 			
 		}
@@ -139,13 +139,13 @@ int Construct( StateContext *this, Builder *state_builder)
 //		StateLine[4]  = this->gprsHeatBeatState;
 //		StateLine[5]  = this->gprsCnntManagerState;
 		
-	StateLine[0] = state_builder->buildGprsSelfTestState( this);
-	StateLine[1] = state_builder->buildGprsConnectState( this);
-	StateLine[2] = state_builder->buildGprsEventHandleState( this);
-	StateLine[3] = state_builder->buildGprsDealSMSState( this);
-	StateLine[4] = state_builder->builderGprsHeatBeatState( this);
-	StateLine[5] = state_builder->builderGprsCnntManagerState( this);
-	
+	StateLine[ STATE_SelfTest] = state_builder->buildGprsSelfTestState( this);
+	StateLine[ STATE_Connect] = state_builder->buildGprsConnectState( this);
+	StateLine[ STATE_EventHandle] = state_builder->buildGprsEventHandleState( this);
+	StateLine[ STATE_HeatBeatHandle] = state_builder->builderGprsHeatBeatState( this);
+	StateLine[ STATE_CnntManager] = state_builder->builderGprsCnntManagerState( this);
+	StateLine[ STATE_SMSHandle] = state_builder->buildGprsDealSMSState( this);
+
 	this->curState = StateLine[0];
 	
 	return ERR_OK;
@@ -373,70 +373,70 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	
 	while( 1)
 	{
-			lszie = this->bufLen;
-			ret = this_gprs->report_event( this_gprs, &gprs_event, this->dataBuf, &lszie);
-			if( ret != ERR_OK)
-			{	
-				
-				break;
+		lszie = this->bufLen;
+		ret = this_gprs->report_event( this_gprs, &gprs_event, this->dataBuf, &lszie);
+		if( ret != ERR_OK)
+		{	
+			
+			break;
+		}
+		
+		ret = this_gprs->deal_tcprecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie);
+		if( ret >= 0)
+		{
+			//接收到数据重置闹钟，避免发送心跳报文
+			set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
+			
+			//在线模式下，需要使用短信配置系统之前，要下发SMSMODE来进入短信模式
+			pp = strstr((const char*)this->dataBuf,"SMSMODE");
+			if( pp)
+			{
+				Dtu_config.work_mode = MODE_SMS;
+	//					context->setCurState( context, context->gprsDealSMSState);	
+				return ERR_OK;
 			}
 			
-			ret = this_gprs->deal_tcprecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie);
-			if( ret >= 0)
-			{
-				//接收到数据重置闹钟，避免发送心跳报文
-				set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
-				
-				//在线模式下，需要使用短信配置系统之前，要下发SMSMODE来进入短信模式
-				pp = strstr((const char*)this->dataBuf,"SMSMODE");
-				if( pp)
-				{
-					Dtu_config.work_mode = MODE_SMS;
-//					context->setCurState( context, context->gprsDealSMSState);	
-					return ERR_OK;
-				}
-				
-				self->modbusProcess->process( this->dataBuf, lszie, TcpModbusAckCB	, &ret) ;
-				self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
-				DPRINTF("rx:[%d] %s \n", ret, this->dataBuf);
-				this_gprs->free_event( this_gprs, gprs_event);
-				continue;
-			}
-					
-			lszie = this->bufLen;
-			memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
-			
-			ret = this_gprs->deal_smsrecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie, DtuTempBuf);			
-			
-			if( ret > 0)
-			{
-				for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
-				{
-					if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
-					{
-						smsSource =  i;
-						self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
-						self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
-						
-					}
-						
-				}
-				this_gprs->delete_sms( this_gprs, ret);
-				this_gprs->free_event( this_gprs, gprs_event);
-				continue;
-			}
-					
-			ret = this_gprs->deal_tcpclose_event( this_gprs, gprs_event);
-			if( ret >= 0)
-			{
-				sprintf( this->dataBuf, "tcp close : %d ", ret);
-				this->print( this, this->dataBuf);
-			}
+			self->modbusProcess->process( this->dataBuf, lszie, TcpModbusAckCB	, &ret) ;
+			self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
+			DPRINTF("rx:[%d] %s \n", ret, this->dataBuf);
 			this_gprs->free_event( this_gprs, gprs_event);
+			continue;
+		}
+				
+		lszie = this->bufLen;
+		memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+		
+		ret = this_gprs->deal_smsrecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie, DtuTempBuf);			
+		
+		if( ret > 0)
+		{
+			for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
+			{
+				if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
+				{
+					smsSource =  i;
+					self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
+					self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
+					
+				}
+					
+			}
+			this_gprs->delete_sms( this_gprs, ret);
+			this_gprs->free_event( this_gprs, gprs_event);
+			continue;
+		}
+				
+		ret = this_gprs->deal_tcpclose_event( this_gprs, gprs_event);
+		if( ret >= 0)
+		{
+			sprintf( this->dataBuf, "tcp close : %d ", ret);
+			this->print( this, this->dataBuf);
+		}
+		this_gprs->free_event( this_gprs, gprs_event);
 					
 	}	//while(1)
 				
-//	context->setCurState( context, context->gprsHeatBeatState);	
+//	context->setCurState( context,  STATE_HeatBeatHandle);	
 	context->nextState( context, STATE_EventHandle);
 	return 	ERR_OK;
 				
@@ -448,58 +448,7 @@ FUNCTION_SETTING(WorkState.run, GprsEventHandleRun);
 END_CTOR
 
 
-///-----------------------------------------------------------------------------
 
-int GprsDealSMSRun( WorkState *this, StateContext *context)
-{
-	gprs_t	*this_gprs = GprsGetInstance();
-	GprsDealSMSState	*self = SUB_PTR( this, WorkState, GprsDealSMSState);
-	
-	int			lszie = 0;
-	short 		i = 0;
-	int				ret = 0;
-	int 			smsSource = 0;
-	
-	lszie = this->bufLen;
-	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
-	
-	while( 1)
-	{
-		ret = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
-		if( ret >= 0)
-		{
-			for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
-			{
-				if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
-				{
-					
-					smsSource =  i;
-					self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
-					self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
-					
-					
-					break;
-				}
-				
-			}
-			this_gprs->delete_sms( this_gprs, ret);
-		}	
-		else
-		{
-			break;
-		}
-	}	
-	
-//	context->setCurState( context, context->gprsSer485ProcessState);	
-	context->nextState( context, STATE_SMSHandle);
-	return 	ERR_OK;
-				
-}
-
-CTOR( GprsDealSMSState)
-SUPER_CTOR( WorkState);
-FUNCTION_SETTING(WorkState.run, GprsDealSMSRun);
-END_CTOR
 
 
 ///-----------------------------------------------------------------------------
@@ -581,7 +530,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	{
 		strcpy( this->dataBuf, "None connnect, reconnect...");
 		this->print( this, this->dataBuf);
-		context->setCurState( context, StateLine[ STATE_SMSHandle] );	
+		context->setCurState( context, STATE_SMSHandle );	
 		return ERR_OK;
 	}
 	
@@ -604,7 +553,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 //	}
 //	else 
 	
-	context->setCurState( context, StateLine[ STATE_EventHandle] );	
+	context->setCurState( context, STATE_EventHandle );	
 	if( Dtu_config.multiCent_mode)
 	{
 		
@@ -633,7 +582,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 				break;
 		}
 		if( safecount > IPMUX_NUM)
-			context->setCurState( context, StateLine[ STATE_SMSHandle]);	
+			context->setCurState( context, STATE_SMSHandle);	
 //		context->nextState( context, STATE_CnntManager);
 			
 	}		
@@ -644,6 +593,62 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 CTOR(  GprsCnntManagerState)
 SUPER_CTOR( WorkState);
 FUNCTION_SETTING(WorkState.run, GprsCnntManagerRun);
+END_CTOR
+///-----------------------------------------------------------------------------
+
+int GprsDealSMSRun( WorkState *this, StateContext *context)
+{
+	gprs_t	*this_gprs = GprsGetInstance();
+	GprsDealSMSState	*self = SUB_PTR( this, WorkState, GprsDealSMSState);
+	
+	int			lszie = 0;
+	short 		i = 0;
+	int				ret = 0;
+	int 			smsSource = 0;
+	
+	lszie = this->bufLen;
+	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+	
+	while( 1)
+	{
+		ret = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
+		if( ret >= 0)
+		{
+			for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
+			{
+				if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
+				{
+					
+					smsSource =  i;
+					self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
+					self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
+					
+					
+					break;
+				}
+				
+			}
+			this_gprs->delete_sms( this_gprs, ret);
+		}	
+		else
+		{
+			if( ret == ERR_UNINITIALIZED)
+				context->setCurState( context,  STATE_SelfTest);	
+			else
+				context->setCurState( context,  STATE_Connect);	
+			break;
+		}
+	}	
+	
+	context->setCurState( context,  STATE_SelfTest);	
+//	context->nextState( context, STATE_SMSHandle);
+	return 	ERR_OK;
+				
+}
+
+CTOR( GprsDealSMSState)
+SUPER_CTOR( WorkState);
+FUNCTION_SETTING(WorkState.run, GprsDealSMSRun);
 END_CTOR
 ///-----------------------------------------------------------------------------
 
