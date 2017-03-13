@@ -1262,13 +1262,23 @@ void free_event( gprs_t *self, void *event)
 //返回第一个未处于连接状态的序号
 int	get_firstDiscnt_seq( gprs_t *self)
 {
-	int i = 0; 
-	for( i = 0 ; i < IPMUX_NUM; i ++)
+	static char i = 0; 
+	int count = IPMUX_NUM;
+	while( count)
 	{
 		if( Ip_cnnState.cnn_state[ i] != CNNT_ESTABLISHED)
 			return i;
+		i ++;
+		i %= IPMUX_NUM;
+		count --;
 		
 	}
+//	for(  ; i < IPMUX_NUM; i ++)
+//	{
+//		if( Ip_cnnState.cnn_state[ i] != CNNT_ESTABLISHED)
+//			return i;
+//		
+//	}
 	
 	return ERR_FAIL;
 	

@@ -4,20 +4,41 @@
 #include "stdint.h"
 #include "gprs.h"
 
+#define DTUTMP_BUF_LEN		64
+extern char	DtuTempBuf[DTUTMP_BUF_LEN];
+
 typedef int ( *hookFunc)( char *data, int len, void *arg);
 ABS_CLASS( StateContext);
 INTERFACE( BusinessProcess);
 ABS_CLASS( WorkState);
 INTERFACE( Builder);
 
+enum WakeStateSeq {
+	STATE_SelfTest,
+	STATE_Connect,
+	STATE_EventHandle,
+	STATE_SMSHandle,
+	STATE_HeatBeatHandle,
+	STATE_CnntManager,
+	STATE_Total
+	
+	
+};
 
-
-CLASS( StateContextFactory)
+CLASS( DtuContextFactory)
 {
 	StateContext *( *createContext)( int mode);
 	
 };
-StateContextFactory* SCFGetInstance(void);
+CLASS( RtuContextFactory)
+{
+	StateContext *( *createContext)( int mode);
+	
+};
+
+DtuContextFactory* DCFctGetInstance(void);
+RtuContextFactory* RCFctGetInstance(void);
+
 ABS_CLASS( StateContext)
 {
 //	Builder *stateBuilder;
@@ -25,17 +46,18 @@ ABS_CLASS( StateContext)
 	char 	*dataBuf;
 	int 	bufLen;
 	
-	WorkState *gprsSelfTestState;
-	WorkState *gprsConnectState;
-	WorkState *gprsEventHandleState;
-	WorkState *gprsDealSMSState;
-	WorkState *gprsSer485ProcessState;
-	WorkState *gprsHeatBeatState;
-	WorkState *gprsCnntManagerState;
+//	WorkState *gprsSelfTestState;
+//	WorkState *gprsConnectState;
+//	WorkState *gprsEventHandleState;
+//	WorkState *gprsDealSMSState;
+////	WorkState *gprsSer485ProcessState;
+//	WorkState *gprsHeatBeatState;
+//	WorkState *gprsCnntManagerState;
 	WorkState *curState;
 	
 	int (*init)( StateContext *this, char *buf, int bufLen);
 	void ( *setCurState)( StateContext *this, WorkState *state);
+	void	(*nextState)( StateContext *this, short mynum); 
 	int ( *construct)( StateContext *this , Builder *state_builder);
 	
 	//abs
@@ -47,8 +69,8 @@ ABS_CLASS( StateContext)
 ABS_CLASS( WorkState)
 {
 	char 	*dataBuf;
-	int 	bufLen;
-	
+	short 	bufLen;
+//	short		stateNum;		//¹¤×÷×´Ì¬µÄÐòºÅ
 
 
 	//abs
@@ -65,7 +87,7 @@ INTERFACE( Builder)
 	WorkState* ( *buildGprsConnectState)(StateContext *this );
 	WorkState* ( *buildGprsEventHandleState)(StateContext *this );
 	WorkState* ( *buildGprsDealSMSState)(StateContext *this );
-	WorkState* ( *builderSer485ProcessState)(StateContext *this );
+//	WorkState* ( *builderSer485ProcessState)(StateContext *this );
 	WorkState* ( *builderGprsHeatBeatState)(StateContext *this );
 	WorkState* ( *builderGprsCnntManagerState)(StateContext *this );
 };
@@ -104,14 +126,14 @@ CLASS( GprsDealSMSState)
 	BusinessProcess *forwardSer485;
 	
 };
-CLASS( Ser485ProcessState)
-{
-	IMPLEMENTS( WorkState);
-	BusinessProcess *modbusProcess;
-	BusinessProcess *forwardSMS;
-	BusinessProcess *forwardNet;
-	
-};
+//CLASS( Ser485ProcessState)
+//{
+//	IMPLEMENTS( WorkState);
+//	BusinessProcess *modbusProcess;
+//	BusinessProcess *forwardSMS;
+//	BusinessProcess *forwardNet;
+//	
+//};
 
 CLASS( GprsHeatBeatState)
 {
@@ -236,6 +258,7 @@ BusinessProcess *GetForwardSer485(void);
 BusinessProcess *GetForwardNet(void);
 BusinessProcess *GetForwardSMS(void);
 
+int Ser485ModbusAckCB( char *data, int len, void *arg);
 
 
 

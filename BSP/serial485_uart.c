@@ -228,6 +228,42 @@ int s485_Uart_read(char *data, uint16_t size)
 	return 0;
 }
 
+//将串口的缓存给调用者
+//返回当前缓存的数据长度
+int s485_Uart_Raw(char **data)
+{
+	int  ret;
+	int len = 0;
+
+	if( S485_uart_ctl.rx_block)
+	{
+		if( S485_uart_ctl.rx_waittime_ms == 0)
+			ret = osSemaphoreWait( SemId_s485rxFrame, osWaitForever );
+		else
+			ret = osSemaphoreWait( SemId_s485rxFrame, S485_uart_ctl.rx_waittime_ms );
+		
+		
+		if( ret < 0)
+		{
+			return ERR_DEV_TIMEOUT;
+		}
+		
+	}
+	else 
+		ret = osSemaphoreWait( SemId_s485rxFrame, 0 );
+	
+	if( ret > 0)
+	{
+		
+		len = S485_uart_ctl.recv_size;
+		S485_uart_ctl.recv_size = 0;
+		*data = S485Uart_buf;
+		return len;
+	}
+	
+	return 0;
+}
+
 
 /*!
 **
@@ -417,7 +453,7 @@ void USART2_IRQHandler(void)
 		clear_idle = SER485_USART->SR;
 		clear_idle = SER485_USART->DR;
 		USART_ReceiveData( USART2 ); // Clear IDLE interrupt flag bit
-		
+		LED_com->turnon(LED_com);
 		osSemaphoreRelease( SemId_s485rxFrame);
 	}
 #if SER485_SENDMODE == SENDMODE_INTR	

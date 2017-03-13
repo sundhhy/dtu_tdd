@@ -13,8 +13,73 @@
 #include "modbusRTU_cli.h"
 #include "adc.h"
 #include "times.h"
+#include "serial485_uart.h"
+
 
 /*    rtu code */
+//主管485串口通信
+//包括RTU模式下从485输入的Modbus通信处理
+//以及透传模式下的485转发处理
+
+int RtuInit( RtuInstance *self, int workmode)
+{
+	switch( workmode)
+	{
+		case MODE_PASSTHROUGH:
+			self->modbusProcess = GetEmptyProcess();
+			self->forwardSMS = GetEmptyProcess();
+			self->forwardNet = GetForwardNet();
+			break;
+		case MODE_SMS:
+			self->modbusProcess = GetEmptyProcess();
+			self->forwardSMS = GetForwardSMS();
+			self->forwardNet = GetEmptyProcess();
+			break;
+//		case MODE_REMOTERTU:
+//			self->modbusProcess = GetModbusBusiness;
+//			self->forwardSMS = GetEmptyProcess;
+//			self->forwardNet = GetForwardNet;
+//			break;
+		case MODE_LOCALRTU:
+			self->modbusProcess = GetModbusBusiness();
+			self->forwardSMS = GetEmptyProcess();
+			self->forwardNet = GetEmptyProcess();
+			break;
+		default:
+			return ERR_BAD_PARAMETER;
+//			break;
+	}
+	return ERR_OK;
+}
+
+void RtuRun( RtuInstance *self)
+{
+	int recvlen = 0;
+	gprs_t	*this_gprs = GprsGetInstance();
+	recvlen = s485_Uart_Raw( &self->dataBuf);
+	if( recvlen == 0)
+	{
+		return;
+	}
+	self->modbusProcess->process( self->dataBuf, recvlen, Ser485ModbusAckCB	, NULL) ;
+	self->forwardNet->process( self->dataBuf, recvlen, NULL	, this_gprs) ;
+	self->forwardSMS->process( self->dataBuf, recvlen, NULL	, this_gprs) ;
+}
+
+
+CTOR( RtuInstance)
+FUNCTION_SETTING( init, RtuInit);
+FUNCTION_SETTING( run, RtuRun);
+
+END_CTOR
+
+
+
+
+
+
+
+
 static void ModbusRTURegTpye3_wrCB(void)
 {
 	uint16_t u32_h, u32_l ;
@@ -150,3 +215,5 @@ void Init_rtu(void)
 	Regist_get_rsv( Read_rtursv);
 	Regist_get_alarm( Read_rtualarm);
 }
+
+

@@ -46,6 +46,7 @@ int s485_Uart_write(char *data, uint16_t size);
  * @return 
  */
 int s485_Uart_read(char *data, uint16_t size);
+int s485_Uart_Raw(char **data);
 
 /**
  * @brief 控制串口的行为

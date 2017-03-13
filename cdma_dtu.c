@@ -20,7 +20,7 @@
 #define TMP_BUF_LEN		64
 
 
-//#define NEW_CODE			1
+#define NEW_CODE			1
 
 //static void dtu_conf(void);
 //$Id$
@@ -32,7 +32,6 @@ osThreadDef (thrd_dtu, osPriorityNormal, 1, 0);                   // thread obje
 gprs_t *SIM800 ;
 
 char	DTU_Buf[DTU_BUF_LEN];
-char	Temp_buf[TMP_BUF_LEN];
 static void Config_ack( char *data, void *arg);
 
 #define TTEXTSRC_485 0
@@ -46,10 +45,12 @@ StateContext *MyContext;
 int Init_ThrdDtu (void) {
 	
 #ifdef NEW_CODE	
-	StateContextFactory* factory = SCFGetInstance();
+	DtuContextFactory* factory = DCFctGetInstance();
+	
 	MyContext = factory->createContext( Dtu_config.work_mode);
 	
-	
+	if( MyContext == NULL)
+		return 0;
 	
 	MyContext->init( MyContext, DTU_Buf, DTU_BUF_LEN);
 	MyContext->initState( MyContext);
@@ -214,13 +215,13 @@ void thrd_dtu (void const *argument) {
 				
 				//读取一条短信
 			
-				memset( Temp_buf, 0, sizeof( Temp_buf));
-				ret = SIM800->read_phnNmbr_TextSMS( SIM800, Temp_buf, DTU_Buf,  DTU_Buf, &lszie);				
+				memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+				ret = SIM800->read_phnNmbr_TextSMS( SIM800, DtuTempBuf, DTU_Buf,  DTU_Buf, &lszie);				
 				if( ret >= 0)
 				{
 					for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 					{
-						if( compare_phoneNO( Temp_buf, Dtu_config.admin_Phone[i]) == 0)
+						if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
 						{
 							TText_source = TTEXTSRC_SMS( i);
 							Config_server( DTU_Buf, Config_ack, &TText_source);
@@ -250,14 +251,14 @@ void thrd_dtu (void const *argument) {
 					{
 						//接收到数据就将闹钟的起始时间设置为当前时间
 						set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
-						sprintf( Temp_buf, "TCP[%d] recv %d Byte, event %p!", ret, lszie, gprs_event);
-						prnt_485( Temp_buf);
+						sprintf( DtuTempBuf, "TCP[%d] recv %d Byte, event %p!", ret, lszie, gprs_event);
+						prnt_485( DtuTempBuf);
 						if( Dtu_config.work_mode == MODE_REMOTERTU)
 						{
 							if( modbusRTU_getID( (uint8_t *)DTU_Buf) == Dtu_config.rtu_addr)
 							{
-								lszie = modbusRTU_data( (uint8_t *)DTU_Buf, lszie, (uint8_t *)Temp_buf, sizeof( Temp_buf));
-								SIM800->sendto_tcp( SIM800, ret, Temp_buf, lszie);
+								lszie = modbusRTU_data( (uint8_t *)DTU_Buf, lszie, (uint8_t *)DtuTempBuf, sizeof( DtuTempBuf));
+								SIM800->sendto_tcp( SIM800, ret, DtuTempBuf, lszie);
 							}
 						}
 						else
@@ -273,13 +274,13 @@ void thrd_dtu (void const *argument) {
 					}
 					
 					lszie = DTU_BUF_LEN;
-					memset( Temp_buf, 0, sizeof( Temp_buf));
-					ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, Temp_buf);				
+					memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+					ret = SIM800->deal_smsrecv_event( SIM800, gprs_event, DTU_Buf,  &lszie, DtuTempBuf);				
 					if( ret > 0)
 					{
 						for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 						{
-							if( compare_phoneNO( Temp_buf, Dtu_config.admin_Phone[i]) == 0)
+							if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
 							{
 								TText_source = TTEXTSRC_SMS( i);
 								Config_server( DTU_Buf, Config_ack, &TText_source);
@@ -321,8 +322,8 @@ void thrd_dtu (void const *argument) {
 				{
 					if( modbusRTU_getID( (uint8_t *)DTU_Buf) != Dtu_config.rtu_addr)
 						break;
-					lszie = modbusRTU_data( (uint8_t *)DTU_Buf, ret, (uint8_t *)Temp_buf, sizeof( Temp_buf));
-					s485_Uart_write( Temp_buf, lszie);
+					lszie = modbusRTU_data( (uint8_t *)DTU_Buf, ret, (uint8_t *)DtuTempBuf, sizeof( DtuTempBuf));
+					s485_Uart_write( DtuTempBuf, lszie);
 					
 					break;
 

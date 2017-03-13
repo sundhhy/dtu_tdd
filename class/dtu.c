@@ -11,8 +11,13 @@
 #include "dtu.h"
 
 #include "modbusRTU_cli.h"
-#define DTUTMP_BUF_LEN		64
+
+
+
+
 char	DtuTempBuf[DTUTMP_BUF_LEN];
+
+static WorkState *StateLine[ STATE_Total];
 
 static void Debug_485( char *data)
 {
@@ -27,19 +32,19 @@ static void Debug_485( char *data)
 }
 
 //创建不同工作模式下的环境
-StateContextFactory* SCFGetInstance(void)
+DtuContextFactory* DCFctGetInstance(void)
 {
 	
-	static StateContextFactory *scf = NULL;
-	if( scf == NULL)
+	static DtuContextFactory *dtuFact = NULL;
+	if( dtuFact == NULL)
 	{
-		scf = StateContextFactory_new();
+		dtuFact = DtuContextFactory_new();
 		
 	}
-	return scf;
+	return dtuFact;
 }
 
-StateContext *createContext( int mode)
+StateContext *DtucreateContext( int mode)
 {
 	StateContext *context;
 	switch( mode)
@@ -53,9 +58,9 @@ StateContext *createContext( int mode)
 		case MODE_REMOTERTU:
 			context =  ( StateContext *)RemoteRTUModeContext_new();
 			break;
-		case MODE_LOCALRTU:
-			context =  ( StateContext *)LocalRTUModeContext_new();
-			break;
+//		case MODE_LOCALRTU:
+//			context =  ( StateContext *)LocalRTUModeContext_new();
+//			break;
 		default:
 			context =  NULL;
 			break;
@@ -64,9 +69,12 @@ StateContext *createContext( int mode)
 	
 }
 
-CTOR(StateContextFactory)
-FUNCTION_SETTING( createContext, createContext);
+CTOR(DtuContextFactory)
+FUNCTION_SETTING( createContext, DtucreateContext);
 END_CTOR
+
+
+
 
 //容纳状态的环境
 
@@ -84,24 +92,68 @@ void setCurState( StateContext *this, WorkState *state)
 		this->curState = state;
 }
 
+void nextState( StateContext *this, short mynum)
+{
+	int i = 0;
+	
+
+	
+	
+	//切到这个状态之后的第一个存在的状态
+	//如果除了本状态，其他状态都不存在，就是保持状态不变
+	for( i = 0; i < STATE_Total; i ++)
+	{
+		
+		//初始状态不应该在正常运行中出现
+		//所以查询状时跳过初始状态
+		mynum ++;
+		if( mynum == STATE_Total)
+			mynum = 1;
+		if( StateLine[ mynum] )
+		{
+			this->curState = StateLine[ mynum];
+			break;
+			
+		}
+		
+	}
+		
+	
+}
+
 int Construct( StateContext *this, Builder *state_builder)
 {
 	
 	
-	this->gprsSelfTestState = state_builder->buildGprsSelfTestState( this);
-	this->gprsConnectState = state_builder->buildGprsConnectState( this);
-	this->gprsEventHandleState = state_builder->buildGprsEventHandleState( this);
-	this->gprsDealSMSState = state_builder->buildGprsDealSMSState( this);
-	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState( this);
-	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState( this);
-	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState( this);
+//	this->gprsSelfTestState = state_builder->buildGprsSelfTestState( this);
+//	this->gprsConnectState = state_builder->buildGprsConnectState( this);
+//	this->gprsEventHandleState = state_builder->buildGprsEventHandleState( this);
+//	this->gprsDealSMSState = state_builder->buildGprsDealSMSState( this);
+////	this->gprsSer485ProcessState = state_builder->builderSer485ProcessState( this);
+//	this->gprsHeatBeatState = state_builder->builderGprsHeatBeatState( this);
+//	this->gprsCnntManagerState = state_builder->builderGprsCnntManagerState( this);
+//		StateLine[0]  = this->gprsSelfTestState;
+//		StateLine[1]  = this->gprsConnectState;
+//		StateLine[2]  = this->gprsEventHandleState;
+//		StateLine[3]  = this->gprsDealSMSState;
+//		StateLine[4]  = this->gprsHeatBeatState;
+//		StateLine[5]  = this->gprsCnntManagerState;
+		
+	StateLine[0] = state_builder->buildGprsSelfTestState( this);
+	StateLine[1] = state_builder->buildGprsConnectState( this);
+	StateLine[2] = state_builder->buildGprsEventHandleState( this);
+	StateLine[3] = state_builder->buildGprsDealSMSState( this);
+	StateLine[4] = state_builder->builderGprsHeatBeatState( this);
+	StateLine[5] = state_builder->builderGprsCnntManagerState( this);
 	
+	this->curState = StateLine[0];
 	
 	return ERR_OK;
 }
 
 ABS_CTOR( StateContext)
 FUNCTION_SETTING( init, StateContextInit);
+FUNCTION_SETTING( nextState, nextState);
 FUNCTION_SETTING( setCurState, setCurState);
 FUNCTION_SETTING( construct, Construct);
 END_ABS_CTOR
@@ -110,20 +162,20 @@ END_ABS_CTOR
 
 
 
-int LRTUInitState( StateContext *this)
-{
-	Builder *state_builder = ( Builder *)LocalRTUModeBuilder_new();
-	this->construct( this, state_builder);
-	this->curState = this->gprsSer485ProcessState;
-	
-	lw_oopc_delete( state_builder);
-	return ERR_OK;
-}
+//int LRTUInitState( StateContext *this)
+//{
+//	Builder *state_builder = ( Builder *)LocalRTUModeBuilder_new();
+//	this->construct( this, state_builder);
+//	this->curState = this->gprsSer485ProcessState;
+//	
+//	lw_oopc_delete( state_builder);
+//	return ERR_OK;
+//}
 
-CTOR(LocalRTUModeContext)
-SUPER_CTOR(StateContext);
-FUNCTION_SETTING(StateContext.initState, LRTUInitState);
-END_CTOR
+//CTOR(LocalRTUModeContext)
+//SUPER_CTOR(StateContext);
+//FUNCTION_SETTING(StateContext.initState, LRTUInitState);
+//END_CTOR
 
 int SMSInitState( StateContext *this)
 {
@@ -131,7 +183,7 @@ int SMSInitState( StateContext *this)
 	Builder *state_builder = ( Builder *)SMSModeBuilder_new();
 	
 	this->construct( this, state_builder);
-	this->curState = this->gprsSelfTestState;
+//	this->curState = this->gprsSelfTestState;
 	
 	lw_oopc_delete( state_builder);
 	return ERR_OK;
@@ -150,7 +202,7 @@ int RRTUInitState( StateContext *this)
 	Builder *state_builder = ( Builder *)RemoteRTUModeBuilder_new();
 	
 	this->construct( this, state_builder);
-	this->curState = this->gprsSelfTestState;
+//	this->curState = this->gprsSelfTestState;
 	
 	lw_oopc_delete( state_builder);
 	return ERR_OK;
@@ -167,7 +219,7 @@ int PThrInitState( StateContext *this)
 	Builder *state_builder = ( Builder *)PassThroughModeBuilder_new();
 	
 	this->construct( this, state_builder);
-	this->curState = this->gprsSelfTestState;
+//	this->curState = this->gprsSelfTestState;
 	
 	lw_oopc_delete( state_builder);
 	
@@ -219,8 +271,9 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 		
 		this_gprs->startup(this_gprs);
 	}
+	context->nextState( context, STATE_SelfTest);
 				
-	context->setCurState( context, context->gprsConnectState);	
+//	context->setCurState( context, context->gprsConnectState);	
 	return 	ERR_OK;
 				
 }
@@ -275,7 +328,9 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 			run = 0;
 		}
 	}	//while( run)				
-	context->setCurState( context, context->gprsEventHandleState);	
+	
+	context->nextState( context, STATE_Connect);
+//	context->setCurState( context, context->gprsEventHandleState);	
 	return 	ERR_OK;
 				
 }
@@ -312,6 +367,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	int				lszie = 0;
 	int 			i = 0;
 	void 			*gprs_event;
+	char 			*pp;
 	int 			ret = 0;
 	int 			smsSource = 0;
 	
@@ -330,6 +386,15 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			{
 				//接收到数据重置闹钟，避免发送心跳报文
 				set_alarmclock_s( ALARM_GPRSLINK(ret), Dtu_config.hartbeat_timespan_s);
+				
+				//在线模式下，需要使用短信配置系统之前，要下发SMSMODE来进入短信模式
+				pp = strstr((const char*)this->dataBuf,"SMSMODE");
+				if( pp)
+				{
+					Dtu_config.work_mode = MODE_SMS;
+//					context->setCurState( context, context->gprsDealSMSState);	
+					return ERR_OK;
+				}
 				
 				self->modbusProcess->process( this->dataBuf, lszie, TcpModbusAckCB	, &ret) ;
 				self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
@@ -371,7 +436,8 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 					
 	}	//while(1)
 				
-	context->setCurState( context, context->gprsDealSMSState);	
+//	context->setCurState( context, context->gprsHeatBeatState);	
+	context->nextState( context, STATE_EventHandle);
 	return 	ERR_OK;
 				
 }
@@ -397,27 +463,35 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	lszie = this->bufLen;
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 	
-	ret = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
-	if( ret >= 0)
+	while( 1)
 	{
-		for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
+		ret = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
+		if( ret >= 0)
 		{
-			if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
+			for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 			{
+				if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
+				{
+					
+					smsSource =  i;
+					self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
+					self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
+					
+					
+					break;
+				}
 				
-				smsSource =  i;
-				self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
-				self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
-				
-				
-				break;
 			}
-			
+			this_gprs->delete_sms( this_gprs, ret);
+		}	
+		else
+		{
+			break;
 		}
-		this_gprs->delete_sms( this_gprs, ret);
 	}	
 	
-	context->setCurState( context, context->gprsSer485ProcessState);	
+//	context->setCurState( context, context->gprsSer485ProcessState);	
+	context->nextState( context, STATE_SMSHandle);
 	return 	ERR_OK;
 				
 }
@@ -434,33 +508,33 @@ int Ser485ModbusAckCB( char *data, int len, void *arg)
 	
 	return s485_Uart_write( data, len);
 }
-int Ser485ProcessStateRun( WorkState *this, StateContext *context)
-{
-	Ser485ProcessState *self = SUB_PTR( this, WorkState, Ser485ProcessState);
-	gprs_t	*this_gprs = GprsGetInstance();
-	int ret = 0;
-	
-	ret = s485_Uart_read( this->dataBuf, this->bufLen);
-				
-				
-	if( ret <= 0)
-	{
-		context->setCurState( context, context->gprsEventHandleState);	
-		return ERR_OK;
-	}
-	self->modbusProcess->process( this->dataBuf, ret, Ser485ModbusAckCB	, NULL) ;
-	self->forwardNet->process( this->dataBuf, ret, NULL	, this_gprs) ;
-	self->forwardSMS->process( this->dataBuf, ret, NULL	, this_gprs) ;
-			
-	context->setCurState( context, context->gprsHeatBeatState);	
-	return 	ERR_OK;
-				
-}
+//int Ser485ProcessStateRun( WorkState *this, StateContext *context)
+//{
+//	Ser485ProcessState *self = SUB_PTR( this, WorkState, Ser485ProcessState);
+//	gprs_t	*this_gprs = GprsGetInstance();
+//	int ret = 0;
+//	
+//	ret = s485_Uart_read( this->dataBuf, this->bufLen);
+//				
+//				
+//	if( ret <= 0)
+//	{
+//		context->setCurState( context, context->gprsEventHandleState);	
+//		return ERR_OK;
+//	}
+//	self->modbusProcess->process( this->dataBuf, ret, Ser485ModbusAckCB	, NULL) ;
+//	self->forwardNet->process( this->dataBuf, ret, NULL	, this_gprs) ;
+//	self->forwardSMS->process( this->dataBuf, ret, NULL	, this_gprs) ;
+//			
+//	context->setCurState( context, context->gprsHeatBeatState);	
+//	return 	ERR_OK;
+//				
+//}
 
-CTOR( Ser485ProcessState)
-SUPER_CTOR( WorkState);
-FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
-END_CTOR
+//CTOR( Ser485ProcessState)
+//SUPER_CTOR( WorkState);
+//FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
+//END_CTOR
 ///-----------------------------------------------------------------------------
 
 int GprsHeatBeatRun( WorkState *this, StateContext *context)
@@ -479,7 +553,8 @@ int GprsHeatBeatRun( WorkState *this, StateContext *context)
 	}
 
 			
-	context->setCurState( context, context->gprsCnntManagerState);	
+//	context->setCurState( context, context->gprsCnntManagerState);	
+	context->nextState( context, STATE_HeatBeatHandle);
 	return 	ERR_OK;
 				
 }
@@ -497,45 +572,73 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	int cnntNum = 0;	
+	int	safecount = 0;
 	
-	
-	if( Dtu_config.multiCent_mode == 0)
+	//连接无法建立时，处理下短信
+	//这样可以让用户通过短信配置系统
+	cnntNum = this_gprs->get_firstCnt_seq(this_gprs);
+	if( cnntNum < 0)
 	{
-		cnntNum = this_gprs->get_firstCnt_seq(this_gprs);
-		if( cnntNum >= 0)
-		{
-			context->setCurState( context, context->gprsEventHandleState);	
-		}
-		else
-		{
-			
-			strcpy( this->dataBuf, "None connnect, reconnect...");
-			this->print( this, this->dataBuf);
-			context->setCurState( context, context->gprsSelfTestState);	
-		}
-		return 	ERR_OK;
+		strcpy( this->dataBuf, "None connnect, reconnect...");
+		this->print( this, this->dataBuf);
+		context->setCurState( context, StateLine[ STATE_SMSHandle] );	
+		return ERR_OK;
 	}
-	else 
+	
+	
+//	if( Dtu_config.multiCent_mode == 0)
+//	{
+//		
+//		if( cnntNum >= 0)
+//		{
+//			context->setCurState( context, context->gprsEventHandleState);	
+//		}
+//		else
+//		{
+//			
+//			strcpy( this->dataBuf, "None connnect, reconnect...");
+//			this->print( this, this->dataBuf);
+//			context->setCurState( context, context->gprsSelfTestState);	
+//		}
+//		return 	ERR_OK;
+//	}
+//	else 
+	
+	context->setCurState( context, StateLine[ STATE_EventHandle] );	
+	if( Dtu_config.multiCent_mode)
 	{
-		cnntNum = this_gprs->get_firstDiscnt_seq(this_gprs);
-		if( cnntNum >= 0)
+		
+		
+		while( 1)
 		{
-			sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
-				Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
-			this->print( this, this->dataBuf);
-			if( this_gprs->tcpip_cnnt( this_gprs, cnntNum, Dtu_config.protocol[ cnntNum], Dtu_config.DateCenter_ip[cnntNum], Dtu_config.DateCenter_port[cnntNum]) == ERR_OK)
+			cnntNum = this_gprs->get_firstDiscnt_seq(this_gprs);
+			if( cnntNum >= 0)
 			{
-				this->print( this," succeed !\n");
-			}
-			else
-			{
-				this->print( this, " failed !\n");
+				sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
+					Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
+				this->print( this, this->dataBuf);
 				
-			}	
+				if( this_gprs->tcpip_cnnt( this_gprs, cnntNum, Dtu_config.protocol[ cnntNum], Dtu_config.DateCenter_ip[cnntNum], Dtu_config.DateCenter_port[cnntNum]) == ERR_OK)
+				{
+					this->print( this," succeed !\n");
+				}
+				else
+				{
+					this->print( this, " failed !\n");
+					
+				}	
+			}
+			safecount ++;
+			if( safecount > IPMUX_NUM)
+				break;
 		}
-		context->setCurState( context, context->gprsEventHandleState);	
-		return 	ERR_OK;			
+		if( safecount > IPMUX_NUM)
+			context->setCurState( context, StateLine[ STATE_SMSHandle]);	
+//		context->nextState( context, STATE_CnntManager);
+			
 	}		
+	
+	return 	ERR_OK;		
 }
 
 CTOR(  GprsCnntManagerState)
@@ -546,55 +649,55 @@ END_CTOR
 
 //建造者
 
-WorkState* LRTUBuildGprsSelfTestState( StateContext *this )
-{
-	return NULL;
-	
-}
-WorkState*  LRTUBuildGprsConnectState( StateContext *this )
-{
-	return NULL;
-	
-}
-WorkState* LRTUBuildGprsEventHandleState(StateContext *this )
-{
-	return NULL;
-}
-WorkState* LRTUBuildGprsDealSMSState(StateContext *this )
-{
-	return NULL;
-}
-WorkState* LRTUBuilderSer485ProcessState(StateContext *this )
-{
-	Ser485ProcessState *concretestate = Ser485ProcessState_new();
-	WorkState *state = ( WorkState *)concretestate;
-	
-	concretestate->forwardNet = GetEmptyProcess();
-	concretestate->forwardSMS = GetEmptyProcess();
-	concretestate->modbusProcess = GetModbusBusiness();
-	
-	state->init( state, this->dataBuf, this->bufLen);
-	return state;
-}
-WorkState* LRTUBuilderGprsHeatBeatState(StateContext *this )
-{
-	return NULL;
-}
-WorkState* LRTUBuilderGprsCnntManagerState(StateContext *this )
-{
-	return NULL;
-}
+//WorkState* LRTUBuildGprsSelfTestState( StateContext *this )
+//{
+//	return NULL;
+//	
+//}
+//WorkState*  LRTUBuildGprsConnectState( StateContext *this )
+//{
+//	return NULL;
+//	
+//}
+//WorkState* LRTUBuildGprsEventHandleState(StateContext *this )
+//{
+//	return NULL;
+//}
+//WorkState* LRTUBuildGprsDealSMSState(StateContext *this )
+//{
+//	return NULL;
+//}
+//WorkState* LRTUBuilderSer485ProcessState(StateContext *this )
+//{
+//	Ser485ProcessState *concretestate = Ser485ProcessState_new();
+//	WorkState *state = ( WorkState *)concretestate;
+//	
+//	concretestate->forwardNet = GetEmptyProcess();
+//	concretestate->forwardSMS = GetEmptyProcess();
+//	concretestate->modbusProcess = GetModbusBusiness();
+//	
+//	state->init( state, this->dataBuf, this->bufLen);
+//	return state;
+//}
+//WorkState* LRTUBuilderGprsHeatBeatState(StateContext *this )
+//{
+//	return NULL;
+//}
+//WorkState* LRTUBuilderGprsCnntManagerState(StateContext *this )
+//{
+//	return NULL;
+//}
 
-CTOR( LocalRTUModeBuilder)
+//CTOR( LocalRTUModeBuilder)
 
-FUNCTION_SETTING(Builder.buildGprsSelfTestState, LRTUBuildGprsSelfTestState);
-FUNCTION_SETTING(Builder.buildGprsConnectState, LRTUBuildGprsConnectState);
-FUNCTION_SETTING(Builder.buildGprsEventHandleState, LRTUBuildGprsEventHandleState);
-FUNCTION_SETTING(Builder.buildGprsDealSMSState, LRTUBuildGprsDealSMSState);
-FUNCTION_SETTING(Builder.builderSer485ProcessState, LRTUBuilderSer485ProcessState);
-FUNCTION_SETTING(Builder.builderGprsHeatBeatState, LRTUBuilderGprsHeatBeatState);
-FUNCTION_SETTING(Builder.builderGprsCnntManagerState, LRTUBuilderGprsCnntManagerState);
-END_CTOR
+//FUNCTION_SETTING(Builder.buildGprsSelfTestState, LRTUBuildGprsSelfTestState);
+//FUNCTION_SETTING(Builder.buildGprsConnectState, LRTUBuildGprsConnectState);
+//FUNCTION_SETTING(Builder.buildGprsEventHandleState, LRTUBuildGprsEventHandleState);
+//FUNCTION_SETTING(Builder.buildGprsDealSMSState, LRTUBuildGprsDealSMSState);
+//FUNCTION_SETTING(Builder.builderSer485ProcessState, LRTUBuilderSer485ProcessState);
+//FUNCTION_SETTING(Builder.builderGprsHeatBeatState, LRTUBuilderGprsHeatBeatState);
+//FUNCTION_SETTING(Builder.builderGprsCnntManagerState, LRTUBuilderGprsCnntManagerState);
+//END_CTOR
 
 
 WorkState* SMSModeBuildGprsSelfTestState(StateContext *this )
@@ -610,24 +713,27 @@ WorkState* SMSModeBuildGprsSelfTestState(StateContext *this )
 WorkState*  SMSModeBuildGprsConnectState(StateContext *this )
 {
 	
-	WorkState *state = ( WorkState *)GprsConnectState_new();
-	state->init( state, this->dataBuf, this->bufLen);
-	return state;
+//	WorkState *state = ( WorkState *)GprsConnectState_new();
+//	state->init( state, this->dataBuf, this->bufLen);
+//	return state;
+	return NULL;
 	
 }
 WorkState* SMSModeBuildGprsEventHandleState(StateContext *this )
 {
-	GprsEventHandleState *concretestate = GprsEventHandleState_new();
-	WorkState *state = ( WorkState *)concretestate;
+//	GprsEventHandleState *concretestate = GprsEventHandleState_new();
+//	WorkState *state = ( WorkState *)concretestate;
+//	
+//	concretestate->forwardNet = GetForwardNet();
+//	concretestate->forwardSMS = GetForwardSMS();
+//	concretestate->forwardSer485 = GetForwardSer485();
+//	concretestate->configSystem = GetConfigSystem();
+//	concretestate->modbusProcess = GetEmptyProcess();
+//	
+//	state->init( state, this->dataBuf, this->bufLen);
+//	return state;
 	
-	concretestate->forwardNet = GetForwardNet();
-	concretestate->forwardSMS = GetForwardSMS();
-	concretestate->forwardSer485 = GetForwardSer485();
-	concretestate->configSystem = GetConfigSystem();
-	concretestate->modbusProcess = GetEmptyProcess();
-	
-	state->init( state, this->dataBuf, this->bufLen);
-	return state;
+	return NULL;
 	
 }
 WorkState* SMSModeBuildGprsDealSMSState(StateContext *this )
@@ -644,31 +750,35 @@ WorkState* SMSModeBuildGprsDealSMSState(StateContext *this )
 	
 	return state;
 }
-WorkState* SMSModeBuilderSer485ProcessState(StateContext *this )
-{
-	Ser485ProcessState *concretestate = Ser485ProcessState_new();
-	WorkState *state = ( WorkState *)concretestate;
-	
-	concretestate->forwardNet = GetForwardNet();
-	concretestate->forwardSMS = GetForwardSMS();
-	concretestate->modbusProcess = GetModbusBusiness();
-	
-	state->init( state, this->dataBuf, this->bufLen);
-	
-	return state;
-}
+//WorkState* SMSModeBuilderSer485ProcessState(StateContext *this )
+//{
+//	Ser485ProcessState *concretestate = Ser485ProcessState_new();
+//	WorkState *state = ( WorkState *)concretestate;
+//	
+//	concretestate->forwardNet = GetForwardNet();
+//	concretestate->forwardSMS = GetForwardSMS();
+//	concretestate->modbusProcess = GetModbusBusiness();
+//	
+//	state->init( state, this->dataBuf, this->bufLen);
+//	
+//	return state;
+//}
 WorkState* SMSModeBuilderGprsHeatBeatState(StateContext *this )
 {
 	
-	WorkState *state = ( WorkState *)GprsHeatBeatState_new();
-	state->init( state, this->dataBuf, this->bufLen);
-	return state;
+//	WorkState *state = ( WorkState *)GprsHeatBeatState_new();
+//	state->init( state, this->dataBuf, this->bufLen);
+//	return state;
+	
+	return NULL;
 }
 WorkState* SMSModeBuilderGprsCnntManagerState(StateContext *this )
 {
-	WorkState *state = ( WorkState *)GprsCnntManagerState_new();
-	state->init( state, this->dataBuf, this->bufLen);
-	return state;
+//	WorkState *state = ( WorkState *)GprsCnntManagerState_new();
+//	state->init( state, this->dataBuf, this->bufLen);
+//	return state;
+	
+	return NULL;
 }
 
 CTOR( SMSModeBuilder)
@@ -677,7 +787,7 @@ FUNCTION_SETTING(Builder.buildGprsSelfTestState, SMSModeBuildGprsSelfTestState);
 FUNCTION_SETTING(Builder.buildGprsConnectState, SMSModeBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, SMSModeBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, SMSModeBuildGprsDealSMSState);
-FUNCTION_SETTING(Builder.builderSer485ProcessState, SMSModeBuilderSer485ProcessState);
+//FUNCTION_SETTING(Builder.builderSer485ProcessState, SMSModeBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, SMSModeBuilderGprsHeatBeatState);
 FUNCTION_SETTING(Builder.builderGprsCnntManagerState, SMSModeBuilderGprsCnntManagerState);
 END_CTOR
@@ -701,9 +811,16 @@ WorkState* RRTUBuildGprsEventHandleState(StateContext *this )
 	GprsEventHandleState *concretestate = GprsEventHandleState_new();
 	WorkState *state = ( WorkState *)concretestate;
 	
-	concretestate->forwardNet = GetForwardNet();
-	concretestate->forwardSMS = GetForwardSMS();
-	concretestate->forwardSer485 = GetForwardSer485();
+//	concretestate->forwardNet = GetForwardNet();
+//	concretestate->forwardSMS = GetForwardSMS();
+//	concretestate->forwardSer485 = GetForwardSer485();
+//	concretestate->configSystem = GetConfigSystem();
+//	concretestate->modbusProcess = GetModbusBusiness();
+	
+	
+	concretestate->forwardNet = GetEmptyProcess();
+	concretestate->forwardSMS = GetEmptyProcess();
+	concretestate->forwardSer485 = GetEmptyProcess();
 	concretestate->configSystem = GetConfigSystem();
 	concretestate->modbusProcess = GetModbusBusiness();
 	
@@ -723,17 +840,17 @@ WorkState* RRTUBuildGprsDealSMSState(StateContext *this )
 	return state;
 }
 
-WorkState* RRTUBuilderSer485ProcessState(StateContext *this )
-{
-	
-	Ser485ProcessState *concretestate = Ser485ProcessState_new();
-	WorkState *state = ( WorkState *)concretestate;
-	
-	concretestate->forwardNet = GetForwardNet();
-	concretestate->forwardSMS = GetForwardSMS();
-	concretestate->modbusProcess = GetModbusBusiness();
-	return state;
-}
+//WorkState* RRTUBuilderSer485ProcessState(StateContext *this )
+//{
+//	
+//	Ser485ProcessState *concretestate = Ser485ProcessState_new();
+//	WorkState *state = ( WorkState *)concretestate;
+//	
+//	concretestate->forwardNet = GetForwardNet();
+//	concretestate->forwardSMS = GetForwardSMS();
+//	concretestate->modbusProcess = GetModbusBusiness();
+//	return state;
+//}
 
 
 WorkState* RRTUBuilderGprsHeatBeatState(StateContext *this )
@@ -755,7 +872,7 @@ FUNCTION_SETTING(Builder.buildGprsSelfTestState, RRTUBuildGprsSelfTestState);
 FUNCTION_SETTING(Builder.buildGprsConnectState, RRTUBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, RRTUBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, RRTUBuildGprsDealSMSState);
-FUNCTION_SETTING(Builder.builderSer485ProcessState, RRTUBuilderSer485ProcessState);
+//FUNCTION_SETTING(Builder.builderSer485ProcessState, RRTUBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, RRTUBuilderGprsHeatBeatState);
 FUNCTION_SETTING(Builder.builderGprsCnntManagerState, RRTUBuilderGprsCnntManagerState);
 END_CTOR
@@ -781,7 +898,7 @@ WorkState* PassThroughModeBuildGprsEventHandleState(StateContext *this )
 	WorkState *state = ( WorkState *)concretestate;
 	
 	concretestate->forwardNet = GetForwardNet();
-	concretestate->forwardSMS = GetConfigSystem();
+	concretestate->forwardSMS = GetEmptyProcess();
 	concretestate->forwardSer485 = GetForwardSer485();
 	concretestate->configSystem = GetConfigSystem();
 	concretestate->modbusProcess = GetEmptyProcess();
@@ -804,16 +921,16 @@ WorkState* PassThroughModeBuildGprsDealSMSState(StateContext *this )
 	return state;
 }
 
-WorkState* PassThroughModeBuilderSer485ProcessState( StateContext *this )
-{
-	Ser485ProcessState *concretestate = Ser485ProcessState_new();
-	WorkState *state = ( WorkState *)concretestate;
-	
-	concretestate->forwardNet = GetForwardNet();
-	concretestate->forwardSMS = GetForwardSMS();
-	concretestate->modbusProcess = GetEmptyProcess();
-	return state;
-}
+//WorkState* PassThroughModeBuilderSer485ProcessState( StateContext *this )
+//{
+//	Ser485ProcessState *concretestate = Ser485ProcessState_new();
+//	WorkState *state = ( WorkState *)concretestate;
+//	
+//	concretestate->forwardNet = GetForwardNet();
+//	concretestate->forwardSMS = GetForwardSMS();
+//	concretestate->modbusProcess = GetEmptyProcess();
+//	return state;
+//}
 
 WorkState* PassThroughModeBuilderGprsHeatBeatState(StateContext *this )
 {
@@ -840,7 +957,7 @@ FUNCTION_SETTING(Builder.buildGprsSelfTestState, PassThroughModeBuildGprsSelfTes
 FUNCTION_SETTING(Builder.buildGprsConnectState, PassThroughModeBuildGprsConnectState);
 FUNCTION_SETTING(Builder.buildGprsEventHandleState, PassThroughModeBuildGprsEventHandleState);
 FUNCTION_SETTING(Builder.buildGprsDealSMSState, PassThroughModeBuildGprsDealSMSState);
-FUNCTION_SETTING(Builder.builderSer485ProcessState, PassThroughModeBuilderSer485ProcessState);
+//FUNCTION_SETTING(Builder.builderSer485ProcessState, PassThroughModeBuilderSer485ProcessState);
 FUNCTION_SETTING(Builder.builderGprsHeatBeatState, PassThroughModeBuilderGprsHeatBeatState);
 FUNCTION_SETTING(Builder.builderGprsCnntManagerState, PassThroughModeBuilderGprsCnntManagerState);
 END_CTOR

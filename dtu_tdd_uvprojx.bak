@@ -618,6 +618,16 @@
               <FileType>5</FileType>
               <FilePath>.\sdh_lib\modbusRTU_cli.h</FilePath>
             </File>
+            <File>
+              <FileName>bufManager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sdh_lib\bufManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>bufManager.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sdh_lib\bufManager.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
