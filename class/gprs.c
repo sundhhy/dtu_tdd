@@ -948,7 +948,7 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 	
 	sprintf( Gprs_cmd_buf, "AT+CIPSEND=%d,%d\x00D\x00A", cnnt_num, len);
 	UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
-	osDelay(100);
+	osDelay(10);
 	UART_SEND( data, len);
 	while(1)
 	{
@@ -977,7 +977,7 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 		
 		retry --;
 		
-		osDelay(100);
+		osDelay(10);
 		if( retry == 0)
 			return ERR_OK;
 	}
@@ -1129,7 +1129,7 @@ void read_event(void *buf, void *arg)
 		return ;
 	
 	cthis = ( gprs_t *)arg;
-	pp = strstr((const char*)buf,"CLOSED");
+	pp = strstr((const char*)buf,"CLOSED,");
 	if( pp)
 	{
 		event = malloc_event();
@@ -1145,6 +1145,7 @@ void read_event(void *buf, void *arg)
 			}
 			
 		}
+		memset( buf, 0, strlen( buf));
 		
 	}
 	//+RECEIVE,0,6:\0D\0A
@@ -2056,7 +2057,7 @@ static int prepare_ip(gprs_t *self)
 				retry --;
 				if( retry == 0)
 					return ERR_FAIL;
-				osDelay(100);
+//				osDelay(100);
 				break;
 				
 			case 2:
@@ -2081,7 +2082,6 @@ static int prepare_ip(gprs_t *self)
 				retry --;
 				if( retry == 0)
 					return ERR_FAIL;
-				osDelay(100);
 				break;
 			
 			case 3:
@@ -2116,7 +2116,7 @@ static int prepare_ip(gprs_t *self)
 				retry --;
 				if( retry == 0)
 					return ERR_FAIL;
-				osDelay(100);
+//				osDelay(100);
 				break;
 			case 4:
 				strcpy( Gprs_cmd_buf, "AT+CIICR\x00D\x00A" );		//º§ªÓ“∆∂Ø≥°æ∞

@@ -153,6 +153,7 @@ int main (void) {
 		{
 			sim800 = GprsGetInstance();
 			sim800->init( sim800);
+//			Grps_SetCipmode( CIPMODE_TRSP);
 			sim800->startup(sim800);
 		}
 		
