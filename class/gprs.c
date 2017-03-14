@@ -35,6 +35,8 @@ static int prepare_ip(gprs_t *self);
 static int get_sms_phNO(char *databuf, char *phbuf);
 static int get_seq( char **data);
 static int check_apn(char *apn);
+void free_event( gprs_t *self, void *event);
+
 static gprs_event_t *malloc_event();
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
@@ -79,7 +81,9 @@ static char TCP_data[TCPDATA_LEN];
 
 static short	Gprs_currentState = SHUTDOWN;
 static short	FlagSmsReady = 0;
-static int 		RcvSms_seq = 0;
+static short 	RcvSms_seq = 0;
+static short 	g_CipMode = CIPMODE_OPAQUE;
+
 vectorBufManager_t	g_TcpVbm;
 
 gprs_t *GprsGetInstance(void)
@@ -93,6 +97,18 @@ gprs_t *GprsGetInstance(void)
 	return singleton;
 	
 }
+
+int Grps_SetCipmode( short mode)
+{
+	if( ( mode != CIPMODE_TRSP) && ( mode != CIPMODE_OPAQUE))
+		return ERR_BAD_PARAMETER;
+	
+	
+	g_CipMode = mode;
+	return ERR_OK;
+}
+
+
 
 int init(gprs_t *self)
 {
@@ -923,6 +939,13 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 	if( Ip_cnnState.cnn_state[ cnnt_num] != CNNT_ESTABLISHED)
 		return ERR_UNINITIALIZED;
 	
+	if( g_CipMode == CIPMODE_TRSP)
+	{
+		UART_SEND( data, len);
+		return ERR_OK;
+		
+	}
+	
 	sprintf( Gprs_cmd_buf, "AT+CIPSEND=%d,%d\x00D\x00A", cnnt_num, len);
 	UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
 	osDelay(100);
@@ -1179,11 +1202,35 @@ void read_event(void *buf, void *arg)
 		
 	}
 	
+		
+		
+	
+	if( g_CipMode == CIPMODE_TRSP)
+	{
+		event = malloc_event();
+		if( event)
+		{
+			
+			event->type = tcp_receive;
+			//			event->arg = get_seq(&pp);
+
+			tmp = strlen( buf); 
+
+			VecBuf_write( &g_TcpVbm,  buf, tmp);
+			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+			{
+				
+				goto CB_WRFAIL;
+				
+			}
+		}
+	}
+	
 	return ;
 	
 	CB_WRFAIL:
 		
-		free( event);
+		free_event( NULL, event);
 	
 }
 
@@ -1980,9 +2027,39 @@ static int prepare_ip(gprs_t *self)
 				}
 				
 				break;
-				
-				
+			
 			case 1:
+				if( g_CipMode == CIPMODE_OPAQUE)
+				{
+					step ++;
+					break;
+					
+				}
+						
+				strcpy( Gprs_cmd_buf, "AT+CIPMODE=1\x00D\x00A" );		//设置连接为透明模式
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,100);
+				pp = strstr((const char*)Gprs_cmd_buf,"OK");
+				if(pp)
+				{
+					retry = RETRY_TIMES;
+					step ++;
+					break;
+				}
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
+				if(pp)
+				{
+					strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		//Deactivate GPRS PDP context
+					serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+					break;
+					
+				}
+				retry --;
+				if( retry == 0)
+					return ERR_FAIL;
+				osDelay(100);
+				break;
+				
+			case 2:
 				strcpy( Gprs_cmd_buf, "AT+CIPMUX=1\x00D\x00A" );		//设置连接为多连接
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
@@ -2007,7 +2084,7 @@ static int prepare_ip(gprs_t *self)
 				osDelay(100);
 				break;
 			
-			case 2:
+			case 3:
 				if( !check_apn( Dtu_config.apn))
 				{
 					if( self->operator == COPS_CHINA_UNICOM)
@@ -2041,7 +2118,7 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
-			case 3:
+			case 4:
 				strcpy( Gprs_cmd_buf, "AT+CIICR\x00D\x00A" );		//激活移动场景
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
@@ -2057,7 +2134,7 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
-			case 4:
+			case 5:
 				strcpy( Gprs_cmd_buf, "AT+CIFSR\x00D\x00A" );			//获取ip地址
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
 				pp = strstr((const char*)Gprs_cmd_buf,".");
@@ -2072,7 +2149,7 @@ static int prepare_ip(gprs_t *self)
 					return ERR_FAIL;
 				osDelay(100);
 				break;
-			case 5:
+			case 6:
 				
 					
 				self->set_dns_ip( self, Dtu_config.dns_ip);

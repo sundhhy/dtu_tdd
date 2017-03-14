@@ -54,7 +54,7 @@ static struct usart_control_t {
 	short	tx_waittime_ms;
 	short	rx_waittime_ms;
 	
-	char *rxbuf;
+	char *rxbuf;		//为了方便在接收中断中处理一些事件数据时，快速获得接收内存而定义的
 	
 }Gprs_uart_ctl;
 

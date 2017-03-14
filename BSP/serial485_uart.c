@@ -400,11 +400,8 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
     DMA_Init(DMA_s485_usart.dma_tx_base, &DMA_InitStructure);               // 
-
     DMA_ClearFlag( DMA_s485_usart.dma_tx_flag );                                 // 清除标志
-
-	DMA_Cmd(DMA_s485_usart.dma_tx_base, DISABLE); 												// 关闭DMA
-
+		DMA_Cmd(DMA_s485_usart.dma_tx_base, DISABLE); 												// 关闭DMA
     DMA_ITConfig(DMA_s485_usart.dma_tx_base, DMA_IT_TC, ENABLE);            // 允许传输完成中断
 
  #endif  
@@ -412,7 +409,7 @@ void DMA_s485Uart_Init(void)
 /*--- UART_Rx_DMA_Channel DMA Config ---*/
 
  
-	switch_receivebuf( &g_S485_ppbuf, &rxbuf, &rxbuflen);
+		switch_receivebuf( &g_S485_ppbuf, &rxbuf, &rxbuflen);
     DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE);                           
     DMA_DeInit(DMA_s485_usart.dma_rx_base);                                 
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&SER485_USART->DR);
@@ -428,7 +425,7 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            
     DMA_Init(DMA_s485_usart.dma_rx_base, &DMA_InitStructure);               
     DMA_ClearFlag( DMA_s485_usart.dma_rx_flag);      
-	DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
+		DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
 
     DMA_Cmd(DMA_s485_usart.dma_rx_base, ENABLE);                            
 

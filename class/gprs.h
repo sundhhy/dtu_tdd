@@ -12,6 +12,11 @@
 #define COPS_CHINA_MOBILE		0x33
 #define COPS_CHINA_UNICOM		0x55
 #define COPS_UNKOWN				0xaa
+
+
+#define CIPMODE_OPAQUE		0		//非透明传输
+#define CIPMODE_TRSP		  1		//透明传输
+
 //SIM900 ATCMD
 #define AT_SET_DNSIP  "AT+CDNSCFG=" 
 
@@ -118,5 +123,6 @@ int check_phoneNO(char *NO);
 int copy_phoneNO(char *dest_NO, char *src_NO);
 int check_ip(char *ip);
 int get_apn( gprs_t *self, char *buf);
+int Grps_SetCipmode( short mode);
 
 #endif
