@@ -13,58 +13,109 @@
 */
 #include "Ping_PongBuf.h"
 #include <string.h>
-void  init_pingponfbuf( PPBuf_t *ppbuf)
+void  init_pingponfbuf( PPBuf_t *ppbuf, char *buf, int len , int sw)
 {
-	ppbuf->ping_status = PPBUF_STATUS_IDLE;
-	ppbuf->pong_status = PPBUF_STATUS_IDLE;
-	ppbuf->loading_buf = BUF_NONE;
-	ppbuf->playload_buf = BUF_NONE;
+	ppbuf->sw = sw;
+	if( sw)
+	{
+		
+		ppbuf->ping_buf = buf;
+		ppbuf->buf_len = len/2;
+		ppbuf->pong_buf = buf + ppbuf->buf_len;
+		
+		ppbuf->idleBuf[ 0] = ppbuf->ping_buf;
+		ppbuf->idleBuf[ 1] = ppbuf->pong_buf;
+		ppbuf->loadBuf = NULL;
+		ppbuf->dataBuf = NULL;	
+	}
+	else
+	{
+		ppbuf->ping_buf = buf;
+		ppbuf->buf_len = len;
+		ppbuf->pong_buf = NULL;
+		
+		ppbuf->idleBuf[ 0] = NULL;
+		ppbuf->idleBuf[ 1] = NULL;
+		ppbuf->loadBuf = ppbuf->ping_buf;
+		ppbuf->dataBuf = ppbuf->ping_buf;	
+		
+	}
+		
+	
+//	ppbuf->ping_status = PPBUF_STATUS_IDLE;
+//	ppbuf->pong_status = PPBUF_STATUS_IDLE;
+//	ppbuf->loading_buf = BUF_NONE;
+//	ppbuf->playload_buf = BUF_NONE;
 }
 //
 void switch_receivebuf( PPBuf_t *ppbuf, char **buf, short *len)
 {
-	if( ppbuf->ping_status == PPBUF_STATUS_IDLE)
+	int i = 0;
+	if( ppbuf->sw == 0)
 	{
-		if( ppbuf->loading_buf == BUF_PONG)	//上一次装载的缓存是PONG，说明已经有数据存入了
+		*buf = ppbuf->loadBuf;
+		*len = ppbuf->buf_len;
+		return ;
+	}
+	
+	for( i = 0; i < NUM_PINGPONGBUF; i++)
+	{
+		if( ppbuf->idleBuf[ i])
 		{
-			ppbuf->playload_buf = BUF_PONG;
+			ppbuf->dataBuf = ppbuf->loadBuf;
+			ppbuf->loadBuf = ppbuf->idleBuf[ i];
+			ppbuf->idleBuf[ i] = NULL;
 		}
-		*buf = ppbuf->ping_buf;
-		*len = ppbuf->ping_len;
-		ppbuf->loading_buf = BUF_PING;
-		ppbuf->ping_status = PPBUF_STATUS_LOADING;
 		
 	}
-	else if( ppbuf->pong_status == PPBUF_STATUS_IDLE)
-	{
-		if( ppbuf->loading_buf == BUF_PING)	//上一次装载的缓存是PING，说明已经有数据存入了
-		{
-			ppbuf->playload_buf = BUF_PING;
-		}
-		*buf = ppbuf->pong_buf;
-		*len = ppbuf->pong_len;
-		ppbuf->loading_buf = BUF_PONG;
-		ppbuf->pong_status = PPBUF_STATUS_LOADING;
-		
-	}
-	else		//没有空闲的缓冲区，就不切换
-	{
-		//返回上一次使用的缓存
-		if( ppbuf->loading_buf == BUF_PING)
-		{
-		
-			*buf = ppbuf->ping_buf;
-			*len = ppbuf->ping_len;
-		}
-		else if( ppbuf->loading_buf == BUF_PONG)
-		{
-			*buf = ppbuf->pong_buf;
-			*len = ppbuf->pong_len;
-			
-		}
-			
-		
-	}
+	
+	*buf = ppbuf->loadBuf;
+	*len = ppbuf->buf_len;
+	
+//	ppbuf->playload_buf = ppbuf->loading_buf;
+//	
+//	if( ppbuf->ping_status == PPBUF_STATUS_IDLE)
+//	{
+////		if( ppbuf->loading_buf == BUF_PONG)	//上一次装载的缓存是PONG，说明已经有数据存入了
+////		{
+////			ppbuf->playload_buf = BUF_PONG;
+////		}
+//		*buf = ppbuf->ping_buf;
+//		*len = ppbuf->ping_len;
+//		ppbuf->loading_buf = BUF_PING;
+//		ppbuf->ping_status = PPBUF_STATUS_LOADING;
+//		
+//	}
+//	else if( ppbuf->pong_status == PPBUF_STATUS_IDLE)
+//	{
+////		if( ppbuf->loading_buf == BUF_PING)	//上一次装载的缓存是PING，说明已经有数据存入了
+////		{
+////			ppbuf->playload_buf = BUF_PING;
+////		}
+//		*buf = ppbuf->pong_buf;
+//		*len = ppbuf->pong_len;
+//		ppbuf->loading_buf = BUF_PONG;
+//		ppbuf->pong_status = PPBUF_STATUS_LOADING;
+//		
+//	}
+//	else		//没有空闲的缓冲区，就不切换
+//	{
+//		//返回上一次使用的缓存
+//		if( ppbuf->loading_buf == BUF_PING)
+//		{
+//		
+//			*buf = ppbuf->ping_buf;
+//			*len = ppbuf->ping_len;
+//		}
+//		else if( ppbuf->loading_buf == BUF_PONG)
+//		{
+//			*buf = ppbuf->pong_buf;
+//			*len = ppbuf->pong_len;
+//			
+//		}
+//			
+//		
+//	}
 }
 
 
@@ -72,35 +123,65 @@ void switch_receivebuf( PPBuf_t *ppbuf, char **buf, short *len)
 char *get_playloadbuf( PPBuf_t *ppbuf)
 {
 	
-	if( ppbuf->playload_buf == BUF_PING)
-	{
-		ppbuf->ping_status = PPBUF_STATUS_IDLE;
-		return ppbuf->ping_buf;
-		
-	}
-	else if( ppbuf->playload_buf == BUF_PONG)
-	{
-		ppbuf->pong_status = PPBUF_STATUS_IDLE;
-		return ppbuf->pong_buf;
-		
-	}
-	else
-	{
-		
-		return ppbuf->ping_buf;
-	}
+
+	return ppbuf->dataBuf;
+//	if( ppbuf->playload_buf == BUF_PING)
+//	{
+//		ppbuf->ping_status = PPBUF_STATUS_IDLE;
+//		return ppbuf->ping_buf;
+//		
+//	}
+//	else if( ppbuf->playload_buf == BUF_PONG)
+//	{
+//		ppbuf->pong_status = PPBUF_STATUS_IDLE;
+//		return ppbuf->pong_buf;
+//		
+//	}
+//	else
+//	{
+//		
+//		return ppbuf->ping_buf;
+//	}
 }
 void free_playloadbuf( PPBuf_t *ppbuf)
 {
-	if( ppbuf->playload_buf == BUF_PING)
+	int i = 0;
+	
+	
+	if( ppbuf->dataBuf )
+		memset( ppbuf->dataBuf, 0, ppbuf->buf_len);
+	
+	if( ppbuf->sw == 0)
 	{
-		memset( ppbuf->ping_buf, 0, ppbuf->ping_len);
+		
+		return ;
 	}
-	else if( ppbuf->playload_buf == BUF_PONG)
+	
+	
+	for( i = 0; i < NUM_PINGPONGBUF; i++)
 	{
-		memset( ppbuf->pong_buf, 0, ppbuf->pong_len);
+		if( ppbuf->idleBuf[ i] == ppbuf->dataBuf)
+		{	
+			break;
+		}
+		if( ppbuf->idleBuf[ i] == NULL)
+		{
+			ppbuf->idleBuf[ i] = ppbuf->dataBuf;
+			break;
+		}
 		
 	}
+	ppbuf->dataBuf = ppbuf->loadBuf;
+
+//	if( ppbuf->playload_buf == BUF_PING)
+//	{
+//		memset( ppbuf->ping_buf, 0, ppbuf->ping_len);
+//	}
+//	else if( ppbuf->playload_buf == BUF_PONG)
+//	{
+//		memset( ppbuf->pong_buf, 0, ppbuf->pong_len);
+//		
+//	}
 //	ppbuf->playload_buf = BUF_NONE;
 	
 }
@@ -111,7 +192,7 @@ int get_loadbuflen( PPBuf_t *ppbuf)
 {
 //	if( ppbuf->playload_buf == BUF_PING)
 //	{
-		return ppbuf->ping_len;
+		return ppbuf->buf_len;
 //	}
 //	else
 //	{

@@ -73,12 +73,9 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 	if( first == 0)
 	{
 		SemId_s485txFinish = osSemaphoreCreate(osSemaphore(Sem_s485txFinish), 1);
-		SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), 1);
-		g_S485_ppbuf.ping_buf = S485Uart_buf;
-		g_S485_ppbuf.pong_buf = S485Uart_buf + S485RX_BUF_LEN/2;
-		g_S485_ppbuf.ping_len = S485RX_BUF_LEN/2;
-		g_S485_ppbuf.pong_len = S485RX_BUF_LEN/2;
-		init_pingponfbuf( &g_S485_ppbuf);
+		SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), NUM_PINGPONGBUF);
+
+		init_pingponfbuf( &g_S485_ppbuf, S485Uart_buf, S485RX_BUF_LEN, 1);
 		
 		
 		
@@ -284,7 +281,7 @@ int s485Obtain_Playloadbuf(char **data)
 int s485GiveBack_Rxbuf(char *data)
 {
 	free_playloadbuf( &g_S485_ppbuf);
-	
+	return 0;
 }
 
 

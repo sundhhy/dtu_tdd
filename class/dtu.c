@@ -581,8 +581,8 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 			if( safecount > IPMUX_NUM)
 				break;
 		}
-		if( safecount > IPMUX_NUM)
-			context->setCurState( context, STATE_SMSHandle);	
+//		if( safecount > IPMUX_NUM)
+//			context->setCurState( context, STATE_SMSHandle);	
 //		context->nextState( context, STATE_CnntManager);
 			
 	}		

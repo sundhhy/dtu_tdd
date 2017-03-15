@@ -124,5 +124,6 @@ int copy_phoneNO(char *dest_NO, char *src_NO);
 int check_ip(char *ip);
 int get_apn( gprs_t *self, char *buf);
 int Grps_SetCipmode( short mode);
+int Grps_SetCipmux( short mux);
 
 #endif

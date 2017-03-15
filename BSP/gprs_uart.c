@@ -23,6 +23,9 @@
 #include "def.h"
 #include "Ping_PongBuf.h"
 
+
+
+
 static PPBuf_t	GprsUart_ppbuf;
 
 
@@ -45,6 +48,7 @@ struct {
 }GprsRxirqCB;
 
 char	GprsUart_buf[GPRS_UART_BUF_LEN];			//用于DMA接收缓存
+//char	GprsUart_TXbuf[512];			//用于DMA接收缓存
 static struct usart_control_t {
 	short	tx_block;		//阻塞标志
 	short	rx_block;
@@ -71,18 +75,24 @@ static void DMA_GprsUart_Init(void);
 **/
 int gprs_uart_init(void)
 {
+
+
 	SemId_txFinish = osSemaphoreCreate(osSemaphore(Sem_txFinish), 1);
 	SemId_rxFrame = osSemaphoreCreate(osSemaphore(Sem_rxFrame), 1);
-	
+
 
 	
 	USART_DeInit( GPRS_USART);
 
-	GprsUart_ppbuf.ping_buf = GprsUart_buf;
-	GprsUart_ppbuf.pong_buf = GprsUart_buf + GPRS_UART_BUF_LEN/2;
-	GprsUart_ppbuf.ping_len = GPRS_UART_BUF_LEN/2;
-	GprsUart_ppbuf.pong_len = GPRS_UART_BUF_LEN/2;
-	init_pingponfbuf( &GprsUart_ppbuf);
+//	GprsUart_ppbuf.ping_buf = GprsUart_buf;
+//	GprsUart_ppbuf.pong_buf = GprsUart_buf + GPRS_UART_BUF_LEN/2;
+//	GprsUart_ppbuf.ping_len = GPRS_UART_BUF_LEN/2;
+//	GprsUart_ppbuf.pong_len = GPRS_UART_BUF_LEN/2;
+//	init_pingponfbuf( &GprsUart_ppbuf);
+
+
+	init_pingponfbuf( &GprsUart_ppbuf, GprsUart_buf, GPRS_UART_BUF_LEN, 0);
+
 	DMA_GprsUart_Init();
 
 	USART_Init( GPRS_USART, &Conf_GprsUsart);
@@ -166,6 +176,7 @@ int gprs_Uart_read(char *data, uint16_t size)
 	int  ret;
 	int len = size;
 	char *playloadbuf ;
+
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
 		
@@ -191,10 +202,12 @@ int gprs_Uart_read(char *data, uint16_t size)
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
 		memset( data, 0, size);
+
 		playloadbuf = get_playloadbuf( &GprsUart_ppbuf);
 		memcpy( data, playloadbuf, len);
 //		memset( get_playloadbuf( &GprsUart_ppbuf), 0, len);
 		free_playloadbuf( &GprsUart_ppbuf);
+
 		return len;
 	}
 	

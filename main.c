@@ -149,13 +149,7 @@ int main (void) {
 			Init_rtu();
 		}
 		
-		if( NEED_GPRS( Dtu_config.work_mode)) 
-		{
-			sim800 = GprsGetInstance();
-			sim800->init( sim800);
-//			Grps_SetCipmode( CIPMODE_TRSP);
-			sim800->startup(sim800);
-		}
+		
 		
 		Init_ThrdDtu();
 		Init_Thread_rtu();

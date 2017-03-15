@@ -45,12 +45,27 @@ StateContext *MyContext;
 int Init_ThrdDtu (void) {
 	
 #ifdef NEW_CODE	
+	gprs_t *sim800 ;
 	DtuContextFactory* factory = DCFctGetInstance();
 	
 	MyContext = factory->createContext( Dtu_config.work_mode);
 	
 	if( MyContext == NULL)
 		return 0;
+	
+	
+	if( NEED_GPRS( Dtu_config.work_mode)) 
+	{
+		sim800 = GprsGetInstance();
+		sim800->init( sim800);
+		if( Dtu_config.multiCent_mode == 0)
+		{
+			
+			Grps_SetCipmode( CIPMODE_TRSP);
+			Grps_SetCipmux(0);
+		}
+		sim800->startup(sim800);
+	}
 	
 	MyContext->init( MyContext, DTU_Buf, DTU_BUF_LEN);
 	MyContext->initState( MyContext);
