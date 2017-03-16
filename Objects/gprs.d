@@ -41,3 +41,4 @@
 .\objects\gprs.o: ..\dtu_tdd\osObjects.h
 .\objects\gprs.o: .\sdh_lib\list.h
 .\objects\gprs.o: .\sdh_lib\bufManager.h
+.\objects\gprs.o: .\BSP\times.h

@@ -264,14 +264,16 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 	{
 		sprintf( this->dataBuf, "detected sim succeed! ...");
 		this->print( this, this->dataBuf);
+		context->nextState( context, STATE_SelfTest);
 		
 	}
 	else 
 	{
 		
 		this_gprs->startup(this_gprs);
+		context->setCurState( context, STATE_SelfTest);	
 	}
-	context->nextState( context, STATE_SelfTest);
+//	context->nextState( context, STATE_SelfTest);
 				
 //	context->setCurState( context, context->gprsConnectState);	
 	return 	ERR_OK;
@@ -534,26 +536,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 		return ERR_OK;
 	}
 	
-	
-//	if( Dtu_config.multiCent_mode == 0)
-//	{
-//		
-//		if( cnntNum >= 0)
-//		{
-//			context->setCurState( context, context->gprsEventHandleState);	
-//		}
-//		else
-//		{
-//			
-//			strcpy( this->dataBuf, "None connnect, reconnect...");
-//			this->print( this, this->dataBuf);
-//			context->setCurState( context, context->gprsSelfTestState);	
-//		}
-//		return 	ERR_OK;
-//	}
-//	else 
-	
-	context->setCurState( context, STATE_EventHandle );	
+	//多中心的话，对未连接上的链路进行链接
 	if( Dtu_config.multiCent_mode)
 	{
 		
@@ -563,9 +546,9 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 			cnntNum = this_gprs->get_firstDiscnt_seq(this_gprs);
 			if( cnntNum >= 0)
 			{
-				sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
-					Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
-				this->print( this, this->dataBuf);
+//				sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
+//					Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
+//				this->print( this, this->dataBuf);
 				
 				if( this_gprs->tcpip_cnnt( this_gprs, cnntNum, Dtu_config.protocol[ cnntNum], Dtu_config.DateCenter_ip[cnntNum], Dtu_config.DateCenter_port[cnntNum]) == ERR_OK)
 				{
@@ -581,12 +564,10 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 			if( safecount > IPMUX_NUM)
 				break;
 		}
-//		if( safecount > IPMUX_NUM)
-//			context->setCurState( context, STATE_SMSHandle);	
-//		context->nextState( context, STATE_CnntManager);
+
 			
 	}		
-	
+	context->setCurState( context, STATE_EventHandle );	
 	return 	ERR_OK;		
 }
 

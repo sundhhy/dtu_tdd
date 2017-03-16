@@ -145,6 +145,12 @@ void NVIC_Configuration(void)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_rx_irq;    
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 
 	NVIC_InitStructure.NVIC_IRQChannel = DMA_adc.dma_rx_irq;   // ADC接收
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置

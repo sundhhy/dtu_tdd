@@ -171,9 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>1168</LineNumber>
+          <LineNumber>1327</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134263102</Address>
+          <Address>134263486</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -216,27 +216,32 @@
           <WinNumber>1</WinNumber>
           <ItemText>\\dtu_tdd\class/gprs.c\Gprs_cmd_buf</ItemText>
         </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>sendTcpdata</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>GprsUart_ppbuf</ItemText>
+          <ItemText>Gprs_uart_ctl</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>GprsUart_ppbuf</ItemText>
+          <ItemText>S485_uart_ctl</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>2</WinNumber>
-          <ItemText>GprsUart_ppbuf</ItemText>
+          <ItemText>g_S485_ppbuf</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>2</WinNumber>
-          <ItemText>GprsUart_ppbuf</ItemText>
+          <ItemText>g_S485_ppbuf</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
@@ -245,6 +250,26 @@
         </Ww>
         <Ww>
           <count>5</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>GprsUart_ppbuf</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>GprsUart_ppbuf</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>GprsUart_ppbuf</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>GprsUart_ppbuf</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
           <WinNumber>2</WinNumber>
           <ItemText>GprsUart_ppbuf</ItemText>
         </Ww>

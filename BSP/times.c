@@ -28,7 +28,7 @@ uint32_t get_time_ms(void)
 	return g_time2.time_ms ;
 	
 }
-
+//runtimes 0 不限次数， 大于0 指定的次数
 void regist_timejob( uint16_t period_ms, time_job job)
 {
 	time_task_manager *current_job;
@@ -42,11 +42,17 @@ void regist_timejob( uint16_t period_ms, time_job job)
 	next_job = (time_task_manager *)current_job->next;
 	while( next_job)
 	{
+		if( current_job->my_job == job)
+		{
+			current_job->count_ms = 0;
+			return;
+		}
 		current_job = next_job;
 		next_job = (time_task_manager *)current_job->next;
 	}
 	
 	//本节点已经被占用就新申请一个节点
+	
 	if( current_job->period_ms)
 	{
 		current_job->next = malloc( sizeof( time_task_manager));
@@ -56,6 +62,7 @@ void regist_timejob( uint16_t period_ms, time_job job)
 	
 	current_job->period_ms = period_ms;
 	current_job->my_job = job;
+
 	current_job->next = NULL;
 }
 
@@ -127,7 +134,14 @@ void TIM2_IRQHandler(void)          //定时器中断约10ms
 				if( current_job->count_ms >= current_job->period_ms)
 				{
 					current_job->count_ms = 0;
+					
+					
+					
 					current_job->my_job();
+					
+					
+					
+					
 				}
 				current_job = (time_task_manager *)current_job->next;
 			}

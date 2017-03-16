@@ -26,6 +26,7 @@
 #include "bufManager.h"
 #include "CircularBuffer.h"
 
+#include "times.h"
 
 
 static int set_sms2TextMode(gprs_t *self);
@@ -125,7 +126,7 @@ int init(gprs_t *self)
 {
 	Gprs_currentState = SHUTDOWN;
 	gprs_uart_init();
-	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, 800);
+	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, 2000);
 	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, 2000);
 	self->event_cbuf = malloc( sizeof( sCircularBuffer ));
 	self->event_cbuf->buf = malloc( EVENT_MAX * sizeof(tElement));
@@ -239,7 +240,7 @@ void startup(gprs_t *self)
 	osDelay(1100);
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	
-	
+	FlagSmsReady = 0;
 	Gprs_currentState = STARTUP;
 	
 	return ;
@@ -277,7 +278,7 @@ int	check_simCard( gprs_t *self)
 			
 			case 0:
 				strcpy( Gprs_cmd_buf, "ATE0\r\n" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,100);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -307,7 +308,7 @@ int	check_simCard( gprs_t *self)
 				
 			case 1:
 				step ++;
-				osDelay(1000);
+				break;
 
 //				UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
 //				pp = strstr((const char*)Gprs_cmd_buf,"Ready");
@@ -357,7 +358,7 @@ int	check_simCard( gprs_t *self)
 						DPRINTF(" check_simCard succeed !\r\n");
 						if( Gprs_currentState < INIT_FINISH_OK)
 							Gprs_currentState = INIT_FINISH_OK;
-						FlagSmsReady = 1;
+//						FlagSmsReady = 1;
 						return ERR_OK;
 				}
 				osDelay(500);
@@ -374,6 +375,7 @@ int	check_simCard( gprs_t *self)
 				break;
 				
 		}		//switch
+		osDelay(1000);
 	}	//while(1)
 	
 }
@@ -874,6 +876,9 @@ int delete_sms( gprs_t *self, int seq)
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
 				if( pp)
 					step ++;
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+				if( pp)
+					step ++;
 				break;
 			case 3:
 				if( g_CipMux)
@@ -960,9 +965,148 @@ int delete_sms( gprs_t *self, int seq)
  * @retval	ERR_UNINITIALIZED 连接未建立
  * @retval	ERR_FAIL 发送命令没有收到正确的回复
  */
+
+// static void SendEnd( )
+// {
+//	char end = 0x1A;
+//	char *pp;
+//	 int retry = RETRY_TIMES;
+//	
+//	
+//	 if( send_state  == 0)
+//		 return;
+//	 UART_SEND( &end, 1);
+//	send_state = 0;
+//	 
+//	while(1)
+//	{
+
+//		UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
+
+//		pp = strstr((const char*)Gprs_cmd_buf,"OK");		
+//		if( pp)
+//			return ;
+//		pp = strstr((const char*)Gprs_cmd_buf,"FAIL");		
+//		if( pp)
+//			return ;
+//		pp = strstr((const char*)Gprs_cmd_buf,"ERROR");		
+//		if( pp)
+//		{
+//			Ip_cnnState.cnn_state[ sending_cnnt_num] = CNNT_SENDERROR;
+//			return ;
+//		}
+//		//花生壳调试时，本地未开启服务器时，会出现连接后马上断开的情况
+//		pp = strstr((const char*)Gprs_cmd_buf,"CLOS");		
+//		if( pp)
+//		{
+//			Ip_cnnState.cnn_state[ sending_cnnt_num] = CNNT_DISCONNECT;
+//			return ;
+//		}
+//		osDelay(10);
+//		retry--;
+//		if( retry == 0)
+//			return ;
+//	}
+//	 
+// }
+// 
+// 
+// static int SendStart( int cnnt_num)
+// {
+//	 if( sending_cnnt_num != cnnt_num)
+//	 {
+//		 SendEnd( );
+//		 
+//	 }
+//	 if( send_state)
+//		 return ERR_OK;
+//	 
+//	if( g_CipMux)
+//		sprintf( Gprs_cmd_buf, "AT+CIPSEND=%d\x00D\x00A", cnnt_num);
+//	else
+//		sprintf( Gprs_cmd_buf, "AT+CIPSEND\x00D\x00A");
+//	UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
+//	sending_cnnt_num = cnnt_num;
+//	send_state = 1;
+//	regist_timejob( 200, SendEnd);
+
+//	return ERR_OK;
+// }
+// 
+// static void SendData( char *data, int len)
+// {
+//	 if( send_state == 0)
+//		 return;
+//	 
+//	UART_SEND( data, len);
+//	osDelay(1);
+// }
+ #define TCPSENDBUF_LEN     512
+static short sendDataIdx = 0;
+static char sending_cnnt_num = -1;
+static char sendFlag = 0;
+
+char  sendTcpdata[TCPSENDBUF_LEN];
+
+
+static void SendBufData(void)
+{
+	gprs_t	*this_gprs = GprsGetInstance();
+	if( sending_cnnt_num < 0)
+		return;
+	if( sendDataIdx == 0)
+		return;
+	sendFlag = 1;
+	this_gprs->sendto_tcp( this_gprs, sending_cnnt_num, sendTcpdata, sendDataIdx);
+	sendDataIdx = 0;
+	memset( sendTcpdata, 0 , TCPSENDBUF_LEN);
+	sending_cnnt_num = -1;
+	sendFlag = 0;
+}
+ 
+static void SaveData( int cnnt_num, char *data, int len)
+{
+	gprs_t	*this_gprs = GprsGetInstance();
+	
+	if( len > TCPSENDBUF_LEN)
+		return;
+	
+	if( sending_cnnt_num < 0)
+		sending_cnnt_num = cnnt_num;
+	
+	//要切换发生的通道前刷新缓存
+	if(  (cnnt_num != sending_cnnt_num) && sendDataIdx != 0)
+	{
+		sendFlag = 1;
+		this_gprs->sendto_tcp( this_gprs, sending_cnnt_num, sendTcpdata, sendDataIdx);
+		sendDataIdx = 0;
+		sendFlag = 0;
+		memset( sendTcpdata, 0 , TCPSENDBUF_LEN);
+
+	}
+	
+	sending_cnnt_num = cnnt_num;
+	
+	//缓存不足的时候刷新缓存
+	if( ( len + sendDataIdx ) >=  TCPSENDBUF_LEN)
+	{
+		sendFlag = 1;
+		this_gprs->sendto_tcp( this_gprs, sending_cnnt_num, sendTcpdata, sendDataIdx);
+		sendDataIdx = 0;
+		sendFlag = 0;
+		memset( sendTcpdata, 0 , TCPSENDBUF_LEN);
+		
+	}
+	
+	memcpy( sendTcpdata + sendDataIdx, data, len);
+	sendDataIdx += len;
+	regist_timejob( 500, SendBufData);
+}
+ 
 int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 {
 	char *pp;
+	int 	ret = 0;
 	int retry = RETRY_TIMES;
 	if( cnnt_num > IPMUX_NUM)
 		return ERR_BAD_PARAMETER;
@@ -976,12 +1120,23 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 		return ERR_OK;
 		
 	}
+	if( sendFlag == 0)
+	{
+		SaveData( cnnt_num, data, len);
+	//	SendStart( cnnt_num);
+	//	SendData(  data, len);
+		return ERR_OK;
+	}
+	
 	if( g_CipMux)
 		sprintf( Gprs_cmd_buf, "AT+CIPSEND=%d,%d\x00D\x00A", cnnt_num, len);
 	else
 		sprintf( Gprs_cmd_buf, "AT+CIPSEND=%d\x00D\x00A", len);
-	UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
-	osDelay(10);
+	ret = UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
+	if( ret == ERR_DEV_TIMEOUT)
+		osDelay(1000);
+	else
+		osDelay(10);
 	UART_SEND( data, len);
 	while(1)
 	{
@@ -1010,9 +1165,12 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 		
 		retry --;
 		
-		osDelay(10);
+		osDelay(100);
 		if( retry == 0)
-			return ERR_OK;
+		{
+			Ip_cnnState.cnn_state[ cnnt_num] = CNNT_DISCONNECT;
+			return ERR_UNINITIALIZED;
+		}
 	}
 	
 }
@@ -1162,13 +1320,15 @@ void read_event(void *buf, void *arg)
 		return ;
 	
 	cthis = ( gprs_t *)arg;
-	pp = strstr((const char*)buf,"CLOSED,");
+	//0,CLOSED
+	pp = strstr((const char*)buf,",CLOSED");
 	if( pp)
 	{
 		event = malloc_event();
 		if( event)
 		{
 			event->type = tcp_close;
+			pp = ( char*)buf;
 			event->arg = get_seq(&pp);
 			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
 			{
@@ -1366,11 +1526,12 @@ int	get_firstDiscnt_seq( gprs_t *self)
 	int count = IPMUX_NUM;
 	while( count)
 	{
-		if( Ip_cnnState.cnn_state[ i] != CNNT_ESTABLISHED)
-			return i;
 		i ++;
 		i %= IPMUX_NUM;
 		count --;
+		if( Ip_cnnState.cnn_state[ i] != CNNT_ESTABLISHED)
+			return i;
+		
 		
 	}
 //	for(  ; i < IPMUX_NUM; i ++)
@@ -2202,7 +2363,7 @@ static int prepare_ip(gprs_t *self)
 				break;
 			case 5:
 				strcpy( Gprs_cmd_buf, "AT+CIICR\x00D\x00A" );		//激活移动场景
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,100);
+				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{

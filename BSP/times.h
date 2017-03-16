@@ -17,6 +17,7 @@ typedef struct
 	void 		*next;
 	uint16_t 	period_ms;
 	uint16_t	count_ms;
+
 	time_job 	my_job;
 	
 }time_task_manager;

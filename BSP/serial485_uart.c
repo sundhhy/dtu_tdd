@@ -394,7 +394,7 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据宽度1B
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址宽度1B
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // 单次传输模式
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
+    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;                 // 优先级
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
     DMA_Init(DMA_s485_usart.dma_tx_base, &DMA_InitStructure);               // 
     DMA_ClearFlag( DMA_s485_usart.dma_tx_flag );                                 // 清除标志
@@ -418,11 +418,11 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           
-    DMA_InitStructure.DMA_Priority = DMA_Priority_High;                 
+    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;                 
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            
     DMA_Init(DMA_s485_usart.dma_rx_base, &DMA_InitStructure);               
     DMA_ClearFlag( DMA_s485_usart.dma_rx_flag);      
-		DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
+	DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
 
     DMA_Cmd(DMA_s485_usart.dma_rx_base, ENABLE);                            
 
@@ -439,23 +439,35 @@ void DMA1_Channel7_IRQHandler(void)
 
     if(DMA_GetITStatus(DMA1_FLAG_TC7))
     {
-			osSemaphoreRelease( SemId_s485txFinish);
+			
 			DMA_ClearFlag(DMA_s485_usart.dma_tx_flag);         // 清除标志
 			DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
+			osSemaphoreRelease( SemId_s485txFinish);
 		
     }
 }
 
-//dma将缓存填满以后，就不要去接收剩下的字节了
-//void DMA1_Channel6_IRQHandler(void)
-//{
-
-//    if(DMA_GetITStatus(DMA1_FLAG_TC6))
-//    {
-//		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE); 
-//        DMA_ClearFlag(DMA_s485_usart.dma_rx_flag);         // 清除标志
-//    }
-//}
+//dma将缓存填满以后,切换接收缓存
+void DMA1_Channel6_IRQHandler(void)
+{
+	short rxbuflen;
+	char *rxbuf;
+	
+    if(DMA_GetITStatus(DMA1_FLAG_TC6))
+    {
+		DMA_Cmd(DMA_s485_usart.dma_rx_base, DISABLE); 
+        DMA_ClearFlag(DMA_s485_usart.dma_rx_flag);         // 清除标志
+		S485_uart_ctl.recv_size = get_loadbuflen( &g_S485_ppbuf)  - \
+		DMA_GetCurrDataCounter( DMA_s485_usart.dma_rx_base); //获得接收到的字节
+		
+		switch_receivebuf( &g_S485_ppbuf, &rxbuf, &rxbuflen);
+		DMA_s485_usart.dma_rx_base->CMAR = (uint32_t)rxbuf;
+		DMA_s485_usart.dma_rx_base->CNDTR = rxbuflen;
+		DMA_Cmd( DMA_s485_usart.dma_rx_base, ENABLE);
+		LED_com->turnon(LED_com);
+		osSemaphoreRelease( SemId_s485rxFrame);
+    }
+}
 
 void USART2_IRQHandler(void)
 {

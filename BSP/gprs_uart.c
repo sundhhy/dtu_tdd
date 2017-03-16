@@ -78,7 +78,7 @@ int gprs_uart_init(void)
 
 
 	SemId_txFinish = osSemaphoreCreate(osSemaphore(Sem_txFinish), 1);
-	SemId_rxFrame = osSemaphoreCreate(osSemaphore(Sem_rxFrame), 1);
+	SemId_rxFrame = osSemaphoreCreate(osSemaphore(Sem_rxFrame), 10);
 
 
 	
@@ -188,16 +188,16 @@ int gprs_Uart_read(char *data, uint16_t size)
 			ret = osSemaphoreWait( SemId_rxFrame, Gprs_uart_ctl.rx_waittime_ms );
 		
 		
-		if( ret < 0)
-		{
-			return ERR_DEV_TIMEOUT;
-		}
+//		if( ret < 0)
+//		{
+//			return ERR_DEV_TIMEOUT;
+//		}
 		
 	}
 	else 
 		ret = osSemaphoreWait( SemId_rxFrame, 0 );
 	
-	if( ret > 0)
+	if( Gprs_uart_ctl.recv_size > 0)
 	{
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
@@ -327,7 +327,7 @@ void DMA_GprsUart_Init(void)
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据宽度1B
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址宽度1B
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // 单次传输模式
-    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;                 // 优先级
+    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
     DMA_Init(DMA_gprs_usart.dma_tx_base, &DMA_InitStructure);               // 
 
@@ -373,10 +373,9 @@ void DMA1_Channel2_IRQHandler(void)
 
     if(DMA_GetITStatus(DMA1_FLAG_TC2))
     {
-
+		osSemaphoreRelease( SemId_txFinish);
         DMA_ClearFlag(DMA_gprs_usart.dma_tx_flag);         // 清除标志
 		DMA_Cmd( DMA_gprs_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
-		osSemaphoreRelease( SemId_txFinish);
     }
 }
 
