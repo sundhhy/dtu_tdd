@@ -154,12 +154,19 @@ int main (void) {
 		Init_ThrdDtu();
 		Init_Thread_rtu();
 		osKernelStart (); 
-
+		sim800 =  GprsGetInstance();
+		u32_val = 0;
 		while(1)
 		{
-			osDelay(25);
+			osDelay(5);
+			u32_val ++;
+			if( NEED_GPRS( Dtu_config.work_mode)) 
+				sim800->run( sim800);
 			if( !NEED_ADC( Dtu_config.work_mode)) 
 				continue;
+			if( u32_val < 10)
+				continue;
+			u32_val = 0;
 			Collect_job();
 //			osThreadYield (); 
 		}
@@ -349,7 +356,7 @@ static void Led_job()
 
 static int Select_apptype()
 {
-	int i = 30;
+	int i = 100;
 	int ret = 0;
 	char	uart_buf[32] = {0};
 	while(i)
@@ -359,7 +366,7 @@ static int Select_apptype()
 		if( ret <=  0)
 		{
 			i --;
-			osDelay(100);
+			osDelay(10);
 			continue;
 		}
 		if( enter_TTCP( uart_buf) == ERR_OK)

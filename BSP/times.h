@@ -4,6 +4,7 @@
 //#define MAX_COMMA 256
 #define MAX_ALARM_TOP		8			//支持的最多的闹铃数量 4个TCP连接和1个模式转换闹铃共5个
 #define ALARM_CHGWORKINGMODE	0			//485从默认模式转换到工作模式的时间
+#define ALARM_SENDTCPBUF		0			//发送TCP缓存中的数据的闹钟
 #define ALARM_GPRSLINK(n)		(1+n)			//GPRS link
 typedef struct TIME2_T
 {
@@ -27,6 +28,7 @@ void clean_time2_flags(void);
 uint32_t get_time_s(void);
 uint32_t get_time_ms(void);
 void set_alarmclock_s(int alarm_id, int sec);
+void set_alarmclock_ms(int alarm_id, int msec);
 int Ringing(int alarm_id);
 void time_test(void);
 #endif

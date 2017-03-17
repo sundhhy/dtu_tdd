@@ -55,15 +55,15 @@ int RtuInit( RtuInstance *self, int workmode)
 void RtuRun( RtuInstance *self)
 {
 	int recvlen = 0;
-	gprs_t	*this_gprs = GprsGetInstance();
+//	gprs_t	*this_gprs = GprsGetInstance();
 	recvlen = s485Obtain_Playloadbuf( &self->dataBuf);
 	if( recvlen == 0)
 	{
 		return;
 	}
 	self->modbusProcess->process( self->dataBuf, recvlen, Ser485ModbusAckCB	, NULL) ;
-	self->forwardNet->process( self->dataBuf, recvlen, NULL	, this_gprs) ;
-	self->forwardSMS->process( self->dataBuf, recvlen, NULL	, this_gprs) ;
+	self->forwardNet->process( self->dataBuf, recvlen, NULL	, NULL) ;
+	self->forwardSMS->process( self->dataBuf, recvlen, NULL	, NULL) ;
 	s485GiveBack_Rxbuf( self->dataBuf);
 }
 

@@ -35,6 +35,9 @@ CLASS(gprs_t)
 	// public
 	int ( *init)( gprs_t *self);
 	
+	int ( *lock)(  gprs_t *self);
+	int ( *unlock)(  gprs_t *self);
+	
 	void (*startup)( gprs_t *self);
 	void (*shutdown)( gprs_t *self);
 	
@@ -50,6 +53,7 @@ CLASS(gprs_t)
 	int (*get_apn)( gprs_t *self, char *buf);
 	int (*set_dns_ip)( gprs_t *self, char *dns_ip);
 	int (*tcpip_cnnt)( gprs_t *self, int cnnt_num, char *prtl, char *addr, int portnum);
+	int ( *tcpClose)( gprs_t *self, int cnntNum); 
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
 	
@@ -68,6 +72,8 @@ CLASS(gprs_t)
 	
 	int	(*get_firstDiscnt_seq)( gprs_t *self);
 	int	(*get_firstCnt_seq)( gprs_t *self);
+	
+	void ( *run)( gprs_t *self);
 	
 
 };
