@@ -92,6 +92,37 @@ void setCurState( StateContext *this, int targetState)
 		this->curState = StateLine[ targetState];
 }
 
+void switchToSmsMode( StateContext *this)
+{
+	
+	//销毁不必要的工作状态
+	if(  StateLine[ STATE_Connect])
+	{
+		lw_oopc_delete( StateLine[ STATE_Connect]);
+		StateLine[ STATE_Connect] = NULL;
+	}
+	if(  StateLine[ STATE_EventHandle])
+	{
+		lw_oopc_delete( StateLine[ STATE_EventHandle]);
+		StateLine[ STATE_EventHandle] = NULL;
+	}
+	if(  StateLine[ STATE_HeatBeatHandle])
+	{
+		lw_oopc_delete( StateLine[ STATE_HeatBeatHandle]);
+		StateLine[ STATE_HeatBeatHandle] = NULL;
+	}
+	if(  StateLine[ STATE_CnntManager])
+	{
+		lw_oopc_delete( StateLine[ STATE_CnntManager]);
+		StateLine[ STATE_CnntManager] = NULL;
+	}
+		
+
+	//设置当前工作状态为短信处理
+	this->curState = StateLine[ STATE_SMSHandle];
+	
+}
+
 void nextState( StateContext *this, int myState)
 {
 	int i = 0;
@@ -156,6 +187,8 @@ FUNCTION_SETTING( init, StateContextInit);
 FUNCTION_SETTING( nextState, nextState);
 FUNCTION_SETTING( setCurState, setCurState);
 FUNCTION_SETTING( construct, Construct);
+FUNCTION_SETTING( switchToSmsMode, switchToSmsMode);
+
 END_ABS_CTOR
 
 
@@ -414,7 +447,8 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			if( pp)
 			{
 				this_gprs->tcpClose( this_gprs, ret);
-				Dtu_config.work_mode = MODE_SMS;
+				context->switchToSmsMode( context);
+//				Dtu_config.work_mode = MODE_SMS;
 	//					context->setCurState( context, context->gprsDealSMSState);	
 				goto evenExit;
 			}
@@ -1099,7 +1133,12 @@ END_CTOR
 
 int ForwardSer485Process( char *data, int len, hookFunc cb, void *arg)
 {
-	s485_Uart_write( data, len);
+	int ret = 0;
+	ret = s485_Uart_write( data, len);
+	if( ret == ERR_DEV_TIMEOUT)
+		osDelay(100);
+	else
+		osDelay(10);
 	return ERR_OK;
 }
 

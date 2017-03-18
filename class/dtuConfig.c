@@ -42,6 +42,14 @@ void Config_job(void)
 			continue;
 		}
 		
+		if( enter_TTCP( p_buf) == ERR_OK)
+		{
+			get_TTCPVer( p_buf);
+			while( s485_Uart_write(p_buf, strlen(p_buf) ) != ERR_OK)
+					;
+
+		}
+		
 		if( decodeTTCP_begin( p_buf) == ERR_OK)
 		{
 //			TText_source = TTEXTSRC_485;

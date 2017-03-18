@@ -878,18 +878,41 @@ int delete_sms( gprs_t *self, int seq)
  
  int tcpClose( gprs_t *self, int cnntNum)
  {
+	 char *pp;
+	 
+	 short safeCount = 10;
+	 short i = 0;
 	 if( g_CipMux)
 	 {
 		 
 		sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,0\x00D\x00A", cnntNum);		//quick close
 		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
-		
+		 
+		Ip_cnnState.cnn_state[ cnntNum] = CNNT_DISCONNECT;
 	 }
 	 else
 	 {
+		 //退出数据模式
+		 while(1)
+		 {
+			 osDelay(1200);
+			 sprintf( Gprs_cmd_buf, "+++");		//quick close
+			 serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,700);
+			 pp = strstr((const char*)Gprs_cmd_buf,"OK");
+			 if( pp)
+				 break;
+			 if( safeCount)
+				 safeCount --;
+			 else
+				 break;
+			 
+			 
+			 
+		 }
 		sprintf( Gprs_cmd_buf, "AT+CIPCLOSE\x00D\x00A");		//quick close
 		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
-		 
+		for( i = 0; i < IPMUX_NUM; i++)
+				Ip_cnnState.cnn_state[ i] = CNNT_DISCONNECT;
 	 }
 	 return ERR_OK;
  }
@@ -918,13 +941,24 @@ int delete_sms( gprs_t *self, int seq)
 					return ERR_FAIL;
 				step ++;
 			case 1:		//先关闭这个连接
-				sprintf( Gprs_cmd_buf, "AT+CIPSTATUS=%d\x00D\x00A", cnnt_num);
+				if( g_CipMux)
+					sprintf( Gprs_cmd_buf, "AT+CIPSTATUS=%d\x00D\x00A", cnnt_num);
+				else
+					sprintf( Gprs_cmd_buf, "AT+CIPSTATUS\x00D\x00A");
 				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,500);
 				pp = strstr((const char*)Gprs_cmd_buf,"CONNECTED");	
 				if( pp)
 				{
 					step ++;
 					break;
+				}
+				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+				if( pp)
+				{
+					Gprs_currentState = GPRSERROR;
+					strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		//Deactivate GPRS PDP context
+					serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+					return ERR_FAIL;
 				}
 				step += 2;
 				break;

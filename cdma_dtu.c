@@ -32,12 +32,15 @@ osThreadDef (thrd_dtu, osPriorityNormal, 1, 0);                   // thread obje
 gprs_t *SIM800 ;
 
 char	DTU_Buf[DTU_BUF_LEN];
-static void Config_ack( char *data, void *arg);
 
 #define TTEXTSRC_485 0
 #define TTEXTSRC_SMS(n)	( n + 1)
-static int TText_source = TTEXTSRC_485;	
 
+#ifndef NEW_CODE
+static void Config_ack( char *data, void *arg);
+
+static int TText_source = TTEXTSRC_485;	
+#endif
 
 
 StateContext *MyContext;
@@ -105,6 +108,17 @@ int Init_ThrdDtu (void) {
 
 
 void thrd_dtu (void const *argument) {
+	
+	
+#ifdef NEW_CODE		
+	while(1)
+	{
+		threadActive();
+		MyContext->curState->run( MyContext->curState, MyContext);
+		osThreadYield();         
+		
+	}
+#else
 	short step = 0;
 	short cnnt_seq = 0;
 	int ret = 0;
@@ -116,16 +130,9 @@ void thrd_dtu (void const *argument) {
 	int retry = 20;
 	sprintf(DTU_Buf, "starting up gprs ...");
 	
-#ifdef NEW_CODE		
-	while(1)
-	{
-		threadActive();
-		MyContext->curState->run( MyContext->curState, MyContext);
-		osThreadYield();         
-		
-	}
+
 	
-#else	
+	
 	
 	prnt_485( DTU_Buf);
 	if( Dtu_config.work_mode != MODE_LOCALRTU)
@@ -453,9 +460,10 @@ void thrd_dtu (void const *argument) {
 #endif
 }
 
+#ifndef NEW_CODE
 static void Config_ack( char *data, void *arg)
 {
 	int source = *(int *)arg;
 	SIM800->send_text_sms( SIM800, Dtu_config.admin_Phone[source - 1], data);
 }
-
+#endif

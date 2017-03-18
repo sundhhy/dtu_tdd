@@ -59,7 +59,7 @@ ABS_CLASS( StateContext)
 	void ( *setCurState)( StateContext *this, int targetState);
 	void	(*nextState)( StateContext *this, int myState); 
 	int ( *construct)( StateContext *this , Builder *state_builder);
-	
+	void (*switchToSmsMode)( StateContext *this);
 	//abs
 	int (*initState)( StateContext *this);
 };
