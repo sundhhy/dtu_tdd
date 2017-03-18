@@ -15,7 +15,6 @@ DtuCfg_t	Dtu_config;
 static other_ack g_other_ack = NULL;
 static	void *g_ack_arg = NULL;
 
-
 static int get_dtuCfg(DtuCfg_t *conf);
 static void dtu_conf(char *data);
 

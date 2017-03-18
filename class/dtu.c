@@ -259,7 +259,10 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	
+	this->print( this, "gprs selftest state \r\n");
+
 	this_gprs->lock( this_gprs);
+
 
 	if( this_gprs->check_simCard(this_gprs) == ERR_OK)
 	{
@@ -295,7 +298,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 	short cnnt_seq = 0;
 	short run = 1;
 	int ret = 0;
-	
+	this->print( this, "gprs cnnect state \r\n");
 	this_gprs->lock( this_gprs);
 
 	while( run)
@@ -387,7 +390,9 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	char 			*pp;
 	int 			ret = 0;
 	int 			smsSource = 0;
-	
+	this->print( this, "gprs event handle state \r\n");
+
+	this_gprs->lock( this_gprs);			
 	while( 1)
 	{
 		lszie = this->bufLen;
@@ -411,7 +416,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 				this_gprs->tcpClose( this_gprs, ret);
 				Dtu_config.work_mode = MODE_SMS;
 	//					context->setCurState( context, context->gprsDealSMSState);	
-				return ERR_OK;
+				goto evenExit;
 			}
 			
 			self->modbusProcess->process( this->dataBuf, lszie, TcpModbusAckCB	, &ret) ;
@@ -456,6 +461,8 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 				
 //	context->setCurState( context,  STATE_HeatBeatHandle);	
 	context->nextState( context, STATE_EventHandle);
+	this_gprs->unlock( this_gprs);
+	evenExit:
 	return 	ERR_OK;
 				
 }
@@ -508,7 +515,8 @@ int GprsHeatBeatRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	int i = 0;
-	
+	this->print( this, "gprs heatbeat state \r\n");
+
 	
 	for( i = 0; i < IPMUX_NUM; i ++)
 	{
@@ -543,7 +551,8 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	gprs_t	*this_gprs = GprsGetInstance();
 	int cnntNum = 0;	
 	int	safecount = 0;
-	
+	this->print( this, "gprs cnnt manager state \r\n");
+
 	//连接无法建立时，处理下短信
 	//这样可以让用户通过短信配置系统
 	cnntNum = this_gprs->get_firstCnt_seq(this_gprs);
@@ -569,7 +578,6 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 				sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
 					Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
 				this->print( this, this->dataBuf);
-				
 				if( this_gprs->tcpip_cnnt( this_gprs, cnntNum, Dtu_config.protocol[ cnntNum], Dtu_config.DateCenter_ip[cnntNum], Dtu_config.DateCenter_port[cnntNum]) == ERR_OK)
 				{
 					this->print( this," succeed !\n");
@@ -578,15 +586,14 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 				{
 					this->print( this, " failed !\n");
 					
-				}	
+				}
 			}
 			safecount ++;
 			if( safecount > IPMUX_NUM)
 				break;
 		}
 
-		this_gprs->unlock( this_gprs);
-			
+		this_gprs->unlock( this_gprs);		
 	}		
 	context->setCurState( context, STATE_EventHandle );	
 	return 	ERR_OK;		
@@ -610,6 +617,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	
 	lszie = this->bufLen;
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+	this->print( this, "gprs deal sms state \r\n");
 
 	this_gprs->lock( this_gprs);
 	context->nextState( context, STATE_SMSHandle);
@@ -1103,11 +1111,13 @@ int ForwardNetProcess( char *data, int len, hookFunc cb, void *arg)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	int i = 0;
-	this_gprs->lock( this_gprs);
+//	this_gprs->lock( this_gprs);
 	
 	for( i = 0; i < IPMUX_NUM; i ++)
-		this_gprs->sendto_tcp( this_gprs, i, data, len);
-	this_gprs->unlock( this_gprs);
+		set_alarmclock_s( ALARM_GPRSLINK(i), Dtu_config.hartbeat_timespan_s);
+
+	this_gprs->sendto_tcp_buf( this_gprs, data, len);
+//	this_gprs->unlock( this_gprs);
 	
 	return ERR_OK;
 }

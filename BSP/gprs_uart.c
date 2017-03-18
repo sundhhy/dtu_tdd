@@ -46,9 +46,9 @@ struct {
 	rxirq_cb cb;
 	void *arg;
 }GprsRxirqCB;
+char GprsUart_buf[GPRS_UART_BUF_LEN];			//用于DMA接收缓存
+char gpprs_Uart_Txbuf[ GPRS_UART_TXBUF_LEN];
 
-char	GprsUart_buf[GPRS_UART_BUF_LEN];			//用于DMA接收缓存
-//char	GprsUart_TXbuf[512];			//用于DMA接收缓存
 static struct usart_control_t {
 	short	tx_block;		//阻塞标志
 	short	rx_block;
@@ -132,12 +132,30 @@ void regRxIrq_cb(rxirq_cb cb, void *arg)
 ** @param size 
 ** @return
 **/
+
+
 int gprs_Uart_write(char *data, uint16_t size)
 {
 	int ret;
+	char *sendbuf ;
 	if( data == NULL)
 		return ERR_BAD_PARAMETER;
-	DMA_gprs_usart.dma_tx_base->CMAR = (uint32_t)data;
+	
+	if( size < GPRS_UART_TXBUF_LEN)
+	{
+		memset( gpprs_Uart_Txbuf, 0, GPRS_UART_TXBUF_LEN);
+		memcpy( gpprs_Uart_Txbuf, data, size);
+		sendbuf = gpprs_Uart_Txbuf;
+	
+	}
+	else
+	{
+		sendbuf = data;
+		
+	}
+	
+	
+	DMA_gprs_usart.dma_tx_base->CMAR = (uint32_t)sendbuf;
 	DMA_gprs_usart.dma_tx_base->CNDTR = (uint16_t)size; 
 	DMA_Cmd( DMA_gprs_usart.dma_tx_base, ENABLE);        //开始DMA发送
 
@@ -327,7 +345,7 @@ void DMA_GprsUart_Init(void)
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据宽度1B
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址宽度1B
     DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                           // 单次传输模式
-    DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;                 // 优先级
+    DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                 // 优先级
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            // 关闭内存到内存模式
     DMA_Init(DMA_gprs_usart.dma_tx_base, &DMA_InitStructure);               // 
 

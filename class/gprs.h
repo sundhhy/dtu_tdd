@@ -55,6 +55,7 @@ CLASS(gprs_t)
 	int (*tcpip_cnnt)( gprs_t *self, int cnnt_num, char *prtl, char *addr, int portnum);
 	int ( *tcpClose)( gprs_t *self, int cnntNum); 
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
+	int (*sendto_tcp_buf)( gprs_t *self, char *data, int len);
 	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
 	
 

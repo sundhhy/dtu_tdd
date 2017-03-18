@@ -171,15 +171,63 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>503</LineNumber>
+          <LineNumber>2574</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134271108</Address>
+          <Address>134263234</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\class\gprs.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>1506</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134264090</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\class\gprs.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\class/gprs.c\1506</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>1507</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>.\class\gprs.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>2575</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
           <Filename>.\class\gprs.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
@@ -216,44 +264,22 @@
           <WinNumber>1</WinNumber>
           <ItemText>\\dtu_tdd\class/gprs.c\Gprs_cmd_buf</ItemText>
         </Ww>
-      </WatchWindow1>
-      <WatchWindow2>
         <Ww>
-          <count>0</count>
-          <WinNumber>2</WinNumber>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
           <ItemText>sendTcpdata</ItemText>
         </Ww>
         <Ww>
-          <count>1</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>data</ItemText>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>gpprs_Uart_Txbuf</ItemText>
         </Ww>
         <Ww>
-          <count>2</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>sms</ItemText>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>buf</ItemText>
         </Ww>
-        <Ww>
-          <count>3</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>self</ItemText>
-        </Ww>
-        <Ww>
-          <count>4</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>g_S485_ppbuf</ItemText>
-        </Ww>
-        <Ww>
-          <count>5</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>self</ItemText>
-        </Ww>
-        <Ww>
-          <count>6</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>sms</ItemText>
-        </Ww>
-      </WatchWindow2>
+      </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>

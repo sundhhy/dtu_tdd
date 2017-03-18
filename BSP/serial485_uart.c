@@ -137,7 +137,7 @@ int s485_Uart_write(char *data, uint16_t size)
 #if ( SER485_SENDMODE == SENDMODE_INTR ) || ( SER485_SENDMODE == SENDMODE_DMA)
 	if( size < S485_UART_BUF_LEN)
 	{
-		memset( S485Uart_Txbuf, 0, size);
+		memset( S485Uart_Txbuf, 0, S485_UART_BUF_LEN);
 		memcpy( S485Uart_Txbuf, data, size);
 		sendbuf = S485Uart_Txbuf;
 	
@@ -428,7 +428,7 @@ void DMA_s485Uart_Init(void)
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                            
     DMA_Init(DMA_s485_usart.dma_rx_base, &DMA_InitStructure);               
     DMA_ClearFlag( DMA_s485_usart.dma_rx_flag);      
-	DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
+//	DMA_ITConfig(DMA_s485_usart.dma_rx_base, DMA_IT_TC, ENABLE); 	 // 允许传输完成中断
 
     DMA_Cmd(DMA_s485_usart.dma_rx_base, ENABLE);                            
 

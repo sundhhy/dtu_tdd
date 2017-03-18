@@ -36,7 +36,8 @@
 #include "stm32f10x_iwdg.h"
 #include "osObjects.h"
 
-static int32_t	reset = 0;
+static int16_t	reset = 0;
+static int16_t	active_count = 0;
 /*----------------------------------------------------------------------------
  *      RTX User configuration part BEGIN
  *---------------------------------------------------------------------------*/
@@ -236,6 +237,11 @@ void os_reboot(void)
 {
 	reset = 1;
 	
+}
+
+void threadActive()
+{
+	active_count ++;
 }
 
 

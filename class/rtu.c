@@ -57,14 +57,18 @@ void RtuRun( RtuInstance *self)
 	int recvlen = 0;
 //	gprs_t	*this_gprs = GprsGetInstance();
 	recvlen = s485Obtain_Playloadbuf( &self->dataBuf);
+	threadActive();
 	if( recvlen == 0)
 	{
-		return;
+		goto rtuExit;
 	}
+	
 	self->modbusProcess->process( self->dataBuf, recvlen, Ser485ModbusAckCB	, NULL) ;
 	self->forwardNet->process( self->dataBuf, recvlen, NULL	, NULL) ;
 	self->forwardSMS->process( self->dataBuf, recvlen, NULL	, NULL) ;
 	s485GiveBack_Rxbuf( self->dataBuf);
+rtuExit:
+	osThreadYield();       
 }
 
 
@@ -108,6 +112,11 @@ static void ModbusRTURegTpye3_wrCB(void)
 		Dtu_config.the_485cfg.USART_Parity = USART_Parity_Odd;
 	else if( val16 == 2)
 		Dtu_config.the_485cfg.USART_Parity = USART_Parity_Even;
+	
+	
+	Dtu_config.ver[SOFTER_VER] = regType3_read( 6, REG_LINE);
+	Dtu_config.ver[HARD_VER] = regType3_read( 7, REG_LINE);
+
 	
 	for( i = 0; i < 3; i++)
 	{
@@ -195,6 +204,9 @@ void Init_rtu(void)
 		regType3_write( 5, REG_LINE, 1);
 	else
 		regType3_write( 5, REG_LINE, 0);
+	
+	regType3_write( 6, REG_LINE, Dtu_config.ver[SOFTER_VER] );
+	regType3_write( 7, REG_LINE, Dtu_config.ver[HARD_VER] );
 	
 	for( i = 0; i < 3; i++)
 	{

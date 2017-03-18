@@ -111,6 +111,7 @@ void NVIC_Configuration(void)
 
     /* Enable the USART1 Interrupt */
     NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
@@ -119,13 +120,13 @@ void NVIC_Configuration(void)
     /* Enable the USART2 Interrupt*/
     NVIC_InitStructure.NVIC_IRQChannel=USART2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority=0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority=1;
     NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
     /* Enable the USART3 Interrupt*/
     NVIC_InitStructure.NVIC_IRQChannel=USART3_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority=0;
     NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
     NVIC_Init(&NVIC_InitStructure);
@@ -135,22 +136,22 @@ void NVIC_Configuration(void)
 /* Enable the DMA Interrupt */
 
     NVIC_InitStructure.NVIC_IRQChannel = DMA_gprs_usart.dma_tx_irq;   // 发送DMA配置
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     // 优先级配置
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
 	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_tx_irq;   // 发送DMA配置
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     // 优先级配置
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 	
-	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_rx_irq;    
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;     
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+//	NVIC_InitStructure.NVIC_IRQChannel = DMA_s485_usart.dma_rx_irq;    
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
 
 	NVIC_InitStructure.NVIC_IRQChannel = DMA_adc.dma_rx_irq;   // ADC接收
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // 优先级配置
@@ -166,7 +167,7 @@ void NVIC_Configuration(void)
 	
 	
     NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);

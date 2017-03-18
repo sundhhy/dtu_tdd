@@ -42,6 +42,18 @@ static int TText_source = TTEXTSRC_485;
 
 StateContext *MyContext;
 
+static void prnt_485( char *data)
+{
+	if( Dtu_config.output_mode)
+	{
+		
+		s485_Uart_write(data, strlen(data) );
+	}
+	
+	DPRINTF(" %s \n", data);
+	
+}
+
 int Init_ThrdDtu (void) {
 	
 #ifdef NEW_CODE	
@@ -53,7 +65,7 @@ int Init_ThrdDtu (void) {
 	if( MyContext == NULL)
 		return 0;
 	
-	
+	prnt_485("gprs threat startup ! \r\n");
 	if( NEED_GPRS( Dtu_config.work_mode)) 
 	{
 		sim800 = GprsGetInstance();
@@ -69,6 +81,7 @@ int Init_ThrdDtu (void) {
 	
 	MyContext->init( MyContext, DTU_Buf, DTU_BUF_LEN);
 	MyContext->initState( MyContext);
+	
 #else	
 	//使用用户的配置来重新启动485串口
 	SIM800 = GprsGetInstance();
@@ -88,17 +101,7 @@ int Init_ThrdDtu (void) {
 }
 
 
-static void prnt_485( char *data)
-{
-	if( Dtu_config.output_mode)
-	{
-		
-		s485_Uart_write(data, strlen(data) );
-	}
-	
-	DPRINTF(" %s \n", data);
-	
-}
+
 
 
 void thrd_dtu (void const *argument) {
@@ -116,6 +119,7 @@ void thrd_dtu (void const *argument) {
 #ifdef NEW_CODE		
 	while(1)
 	{
+		threadActive();
 		MyContext->curState->run( MyContext->curState, MyContext);
 		osThreadYield();         
 		

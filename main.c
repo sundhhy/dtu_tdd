@@ -96,7 +96,7 @@ int main (void) {
 	 
   // initialize peripherals here
 	RCC_Configuration();
-//	IWDG_Configuration();
+	IWDG_Configuration();
 	NVIC_Configuration();
 	
 	GPIO_Configuration();
@@ -159,6 +159,7 @@ int main (void) {
 		while(1)
 		{
 			osDelay(5);
+			threadActive();
 			u32_val ++;
 			if( NEED_GPRS( Dtu_config.work_mode)) 
 				sim800->run( sim800);

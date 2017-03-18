@@ -6,7 +6,8 @@
 #include "serial485_uart.h"
 #include "sw_filesys.h"
 
-
+#define SOFTER_VER	0
+#define HARD_VER	1
 
 #define MODE_PASSTHROUGH					0			//
 #define MODE_SMS					1			//
@@ -49,6 +50,7 @@ typedef struct {
 	char	multiCent_mode;			//多中心模式
 	char	work_mode;					//工作模式
 	uint8_t	ver[2];						//版本
+	
 	
 	char	dns_ip[IP_LEN];
 	char	smscAddr[16];
