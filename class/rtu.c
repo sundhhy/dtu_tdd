@@ -107,22 +107,31 @@ static void ModbusRTURegTpye3_wrCB(void)
 	Dtu_config.the_485cfg.USART_StopBits = ( cr2_stop[ val16] & 0x3) << 12;
 	val16 = regType3_read( 5, REG_LINE);
 	if( val16 == 0)
+	{
 		Dtu_config.the_485cfg.USART_Parity = USART_Parity_No;
+		Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_8b;
+	}
 	else if( val16 == 1)
 		Dtu_config.the_485cfg.USART_Parity = USART_Parity_Odd;
 	else if( val16 == 2)
 		Dtu_config.the_485cfg.USART_Parity = USART_Parity_Even;
 	
-	
-	Dtu_config.ver[SOFTER_VER] = regType3_read( 6, REG_LINE);
-	Dtu_config.ver[HARD_VER] = regType3_read( 7, REG_LINE);
+//	Dtu_config.ver[SOFTER_VER] = regType3_read( 6, REG_LINE);
+//	Dtu_config.ver[HARD_VER] = regType3_read( 7, REG_LINE);
 
 	
 	for( i = 0; i < 3; i++)
 	{
 		Dtu_config.chn_type[i] = regType3_read( 8 + i * 3, REG_LINE);
-		Dtu_config.sign_range[i].rangeH = regType3_read( 9 + i * 3, REG_LINE);
-		Dtu_config.sign_range[i].rangeL = regType3_read( 10 + i * 3, REG_LINE);
+		Dtu_config.sign_range[i].rangeL = regType3_read( 9 + i * 3, REG_LINE);
+		Dtu_config.sign_range[i].rangeH = regType3_read( 10 + i * 3, REG_LINE);
+		
+	}
+	
+	for( i = 0; i < 3; i++)
+	{
+		Dtu_config.sign_range[i].alarmL = regType3_read( 17 + i * 2, REG_LINE);
+		Dtu_config.sign_range[i].alarmH = regType3_read( 18 + i * 2, REG_LINE);
 		
 	}
 	
@@ -190,29 +199,50 @@ void Init_rtu(void)
 	regType3_write( 2, REG_LINE, u32_half);
 	
 	if( Dtu_config.the_485cfg.USART_WordLength == USART_WordLength_8b)
-		regType3_write( 3, REG_LINE, 8);
+		regType3_write( 3, REG_LINE, 7);
 	else if( Dtu_config.the_485cfg.USART_WordLength == USART_WordLength_9b)
-		regType3_write( 3, REG_LINE, 9);
+		regType3_write( 3, REG_LINE, 8);
 	else
-		regType3_write( 3, REG_LINE, 0);
+		regType3_write( 3, REG_LINE, 8);
 	val16 = ( Dtu_config.the_485cfg.USART_StopBits >> 12) & 0x3;
 	regType3_write( 4, REG_LINE, stopbits[ val16]);
 	
 	if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Odd)
 		regType3_write( 5, REG_LINE, 2);
 	else if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Even)
+	{
 		regType3_write( 5, REG_LINE, 1);
+		
+	}
 	else
+	{
 		regType3_write( 5, REG_LINE, 0);
+		regType3_write( 3, REG_LINE, 8);
+	}
 	
-	regType3_write( 6, REG_LINE, Dtu_config.ver[SOFTER_VER] );
-	regType3_write( 7, REG_LINE, Dtu_config.ver[HARD_VER] );
+//	regType3_write( 6, REG_LINE, Dtu_config.ver[SOFTER_VER] );
+//	regType3_write( 7, REG_LINE, Dtu_config.ver[HARD_VER] );
+	
+	regType3_write( 6, REG_LINE, SOFTER_VER );
+	regType3_write( 7, REG_LINE, HARD_VER );
 	
 	for( i = 0; i < 3; i++)
 	{
 		regType3_write( 8 + i * 3, REG_LINE, Dtu_config.chn_type[i]);
-		regType3_write( 9 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeH);
-		regType3_write( 10 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeL);
+		regType3_write( 9 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeL);
+		regType3_write( 10 + i * 3, REG_LINE, Dtu_config.sign_range[i].rangeH);
+//		Set_chnType( i, Dtu_config.chn_type[i]);
+		Set_rangH( i, Dtu_config.sign_range[i].rangeH);
+		Set_rangL( i, Dtu_config.sign_range[i].rangeL);
+		Set_alarmH( i, Dtu_config.sign_range[i].alarmH);
+		Set_alarmL( i, Dtu_config.sign_range[i].alarmL);
+
+	}
+	
+	for( i = 0; i < 3; i++)
+	{
+		regType3_write( 17 + i * 2, REG_LINE, Dtu_config.sign_range[i].alarmL);
+		regType3_write( 18 + i * 2, REG_LINE, Dtu_config.sign_range[i].alarmH);
 //		Set_chnType( i, Dtu_config.chn_type[i]);
 //		Set_rangH( i, Dtu_config.sign_range[i].rangeH);
 //		Set_rangL( i, Dtu_config.sign_range[i].rangeL);

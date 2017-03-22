@@ -2411,9 +2411,11 @@ static int set_sms2TextMode(gprs_t *self)
 
 static int check_apn(char *apn)
 {
+	char c = 0;
 	while( *apn != '\0' && apn != NULL)
 	{
-		if( *apn++ != ' ')
+		c = *apn++;
+		if( c != ' ' && c != ',')
 			return 1;
 	}
 	

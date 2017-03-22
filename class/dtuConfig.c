@@ -474,14 +474,29 @@ static void dtu_conf(char *data)
 			
 			if( parg[0] == '?')
 			{
+				
+				//stm32中，校验位要占据一个数据位
 				if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_No)
+				{
 					parity = 'N';
+					i_data = 0;
+				}
 				else if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Odd)
+				{
 					parity = 'O';
+					i_data = 1;
+					
+				}
 				else if( Dtu_config.the_485cfg.USART_Parity == USART_Parity_Even)
+				{
 					parity = 'E';
+					i_data = 1;
+				}
+				
+				
+				
 				sprintf( data, "%d,%c,%c,%c", Dtu_config.the_485cfg.USART_BaudRate, \
-												 com_Wordbits[Dtu_config.the_485cfg.USART_WordLength/0x1000], \
+												 com_Wordbits[Dtu_config.the_485cfg.USART_WordLength/0x1000] - i_data, \
 												 parity, \
 												 com_stopbit[Dtu_config.the_485cfg.USART_StopBits/0x2000]	);
 	
@@ -500,9 +515,12 @@ static void dtu_conf(char *data)
 					i++;
 					break;
 				case 1:
-					if( parg[0] == '8')
+					//stm32中，校验位要占据一个数据位
+					if( parg[0] == '7')
+					{
 						Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_8b;
-					else if( parg[0] == '9')
+					}
+					else if( parg[0] == '8')
 						Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_9b;
 					else
 					{
@@ -513,12 +531,24 @@ static void dtu_conf(char *data)
 					i++;
 					break;
 				case 2:
+
 					if( parg[0] == 'N')
+					{
+						
+						//stm32的数据位与校验位是算到一起的
+						//所以用户如果配置成8位数据位，无校验；其实是就是指数据位是8位
+						//stm32在无校验的情况下，只允许配置成8位数据位
+						Dtu_config.the_485cfg.USART_WordLength = USART_WordLength_8b;
 						Dtu_config.the_485cfg.USART_Parity = USART_Parity_No;
+					}
 					else if( parg[0] == 'E')
+					{
 						Dtu_config.the_485cfg.USART_Parity = USART_Parity_Even;
+					}
 					else if( parg[0] == 'O')
+					{
 						Dtu_config.the_485cfg.USART_Parity = USART_Parity_Odd;
+					}
 					else
 					{
 						strcpy( data, "ERROR");
@@ -621,6 +651,13 @@ static void dtu_conf(char *data)
 			}
 			else
 			{
+				if( strlen( parg) > 20)
+				{
+					strcpy( data, "ERROR");
+					ack_str( data);
+					goto exit;
+				}
+					
 				if( i == 0)
 				{
 					strcpy( Dtu_config.apn, parg);
@@ -629,7 +666,7 @@ static void dtu_conf(char *data)
 				else if( i <= 2)
 				{
 					strcat( Dtu_config.apn, ",");
-					strcpy( Dtu_config.apn, parg);
+					strcat( Dtu_config.apn, parg);
 				}
 				i ++;
 				
@@ -736,7 +773,7 @@ static void dtu_conf(char *data)
 			
 			if( *parg == '?')
 			{
-				memset( data, 0 ,sizeof( data));
+				memset( data, 0 ,sizeof( CONFIG_BUF_LEN));
 				
 				for( i = 0; i < 3; i ++)
 				{

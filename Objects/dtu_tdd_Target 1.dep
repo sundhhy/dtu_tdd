@@ -41,8 +41,8 @@ I (.\sdh_lib\TTextConfProt.h)(0x580E0B61)
 I (.\BSP\times.h)(0x58CBD249)
 I (.\class\led.h)(0x58884086)
 I (.\class\dtu.h)(0x58CD3A8B)
-I (.\sdh_lib\modbusRTU_cli.h)(0x58BFEE15)
-F (.\main.c)(0x58CD3D99)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (.\sdh_lib\modbusRTU_cli.h)(0x58D27CC2)
+F (.\main.c)(0x58D28D5D)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (osObjects.h)(0x58CCE50D)
 I (d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h)(0x55A4B2DA)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5475F300)
@@ -127,7 +127,7 @@ I (.\BSP\debug.h)(0x58C53BC9)
 I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5475F300)
 I (.\class\rtu.h)(0x58C68C53)
 I (.\class\dtu.h)(0x58CD3A8B)
-F (.\class\gprs.c)(0x58CD4E14)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\gprs.o --omf_browse .\objects\gprs.crf --depend .\objects\gprs.d)
+F (.\class\gprs.c)(0x58CFD6C8)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\gprs.o --omf_browse .\objects\gprs.crf --depend .\objects\gprs.d)
 I (class\gprs.h)(0x58CC9DBF)
 I (.\lw_oopc_v1.2\lw_oopc.h)(0x58C00C3A)
 I (D:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5475F300)
@@ -210,7 +210,7 @@ I (d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\stm3
 I (d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc\misc.h)(0x52F9EB20)
 I (.\BSP\spi.h)(0x58022286)
 F (.\class\led.h)(0x58884086)()
-F (.\class\rtu.c)(0x58CD31D9)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\rtu.o --omf_browse .\objects\rtu.crf --depend .\objects\rtu.d)
+F (.\class\rtu.c)(0x58D2854D)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\rtu.o --omf_browse .\objects\rtu.crf --depend .\objects\rtu.d)
 I (d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h)(0x55A4B2DA)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5475F300)
 I (D:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5475F300)
@@ -253,10 +253,10 @@ I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5475F300)
 I (.\sdh_lib\TTextConfProt.h)(0x580E0B61)
 I (.\BSP\times.h)(0x58CBD249)
 I (class\led.h)(0x58884086)
-I (.\sdh_lib\modbusRTU_cli.h)(0x58BFEE15)
+I (.\sdh_lib\modbusRTU_cli.h)(0x58D27CC2)
 I (.\BSP\adc.h)(0x58C2D3CE)
 F (.\class\rtu.h)(0x58C68C53)()
-F (.\class\dtuConfig.c)(0x58CD3E51)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\dtuconfig.o --omf_browse .\objects\dtuconfig.crf --depend .\objects\dtuconfig.d)
+F (.\class\dtuConfig.c)(0x58D28061)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\dtuconfig.o --omf_browse .\objects\dtuconfig.crf --depend .\objects\dtuconfig.d)
 I (d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h)(0x55A4B2DA)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5475F300)
 I (D:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5475F300)
@@ -297,7 +297,7 @@ I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5475F300)
 I (.\sdh_lib\TTextConfProt.h)(0x580E0B61)
 I (.\BSP\times.h)(0x58CBD249)
 I (class\led.h)(0x58884086)
-I (.\sdh_lib\modbusRTU_cli.h)(0x58BFEE15)
+I (.\sdh_lib\modbusRTU_cli.h)(0x58D27CC2)
 F (.\class\dtuConfig.h)(0x58CD3191)()
 F (.\class\dtu.c)(0x58CD4A37)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\dtu.o --omf_browse .\objects\dtu.crf --depend .\objects\dtu.d)
 I (d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC\cmsis_os.h)(0x55A4B2DA)
@@ -341,7 +341,7 @@ I (.\sdh_lib\TTextConfProt.h)(0x580E0B61)
 I (.\BSP\times.h)(0x58CBD249)
 I (class\led.h)(0x58884086)
 I (class\dtu.h)(0x58CD3A8B)
-I (.\sdh_lib\modbusRTU_cli.h)(0x58BFEE15)
+I (.\sdh_lib\modbusRTU_cli.h)(0x58D27CC2)
 F (.\class\dtu.h)(0x58CD3A8B)()
 F (.\BSP\hardwareConfig.c)(0x58CC9FE7)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\hardwareconfig.o --omf_browse .\objects\hardwareconfig.crf --depend .\objects\hardwareconfig.d)
 I (BSP\hardwareConfig.h)(0x58CC9FE7)
@@ -633,12 +633,12 @@ F (.\sdh_lib\Ping_PongBuf.c)(0x58C966A7)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB
 I (sdh_lib\Ping_PongBuf.h)(0x58C9664D)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5475F300)
 I (D:\Keil_v5\ARM\ARMCC\include\string.h)(0x5475F300)
-F (.\sdh_lib\modbusRTU_cli.c)(0x58C2BF60)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\modbusrtu_cli.o --omf_browse .\objects\modbusrtu_cli.crf --depend .\objects\modbusrtu_cli.d)
-I (sdh_lib\modbusRTU_cli.h)(0x58BFEE15)
+F (.\sdh_lib\modbusRTU_cli.c)(0x58D28C67)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\modbusrtu_cli.o --omf_browse .\objects\modbusrtu_cli.crf --depend .\objects\modbusrtu_cli.d)
+I (sdh_lib\modbusRTU_cli.h)(0x58D27CC2)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5475F300)
 I (..\dtu_tdd\sdhError.h)(0x57F8E267)
 I (D:\Keil_v5\ARM\ARMCC\include\string.h)(0x5475F300)
-F (.\sdh_lib\modbusRTU_cli.h)(0x58BFEE15)()
+F (.\sdh_lib\modbusRTU_cli.h)(0x58D27CC2)()
 F (.\sdh_lib\bufManager.c)(0x58C539D3)(-c --cpu Cortex-M3 -D__RTX -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I.\lw_oopc_v1.2 -I.\class -I.\BSP -I..\dtu_tdd -I.\sdh_lib --diag_suppress=1295-I E:\DTU\mycode\dtu_tdd\RTE-I E:\DTU\mycode\dtu_tdd\RTE\Device\STM32F103R8-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\Include-I d:\Keil_v5\ARM\PACK\ARM\CMSIS\4.4.0\CMSIS\RTOS\RTX\INC-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include-I d:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_STM3210B_EVAL -DHSE_VALUE="8000000"-o .\objects\bufmanager.o --omf_browse .\objects\bufmanager.crf --depend .\objects\bufmanager.d)
 I (sdh_lib\bufManager.h)(0x58C5251F)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5475F300)

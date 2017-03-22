@@ -250,7 +250,7 @@ uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int
 			/*Ð´ÊäÈë¼Ä´æÆ÷ 4Çø£¬±£³Ö¼Ä´æÆ÷------------------------------------------------------------------*/
 			case WRITE_1_HOLD:	
 																					//regNum=127;	  ??????
-				if((startReg >= HOLD_SIZE) || (regNum >= 125) || ((startReg + regNum) > HOLD_SIZE) ) 
+				if((startReg >= HOLD_SIZE)  ) 
 				{
 					err = MB_ADDR_ERR;	
 					break;
