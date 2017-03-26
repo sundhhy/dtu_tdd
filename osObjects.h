@@ -69,9 +69,11 @@ typedef struct sample_name type_sample_name;            // object data type
 osMailQId qid_sample_name;                              // mail queue id
 osMailQDef (sample_name, 16, type_sample_name);         // mail queue object
 */
+typedef void ( *ShutDownJob)();
 
-
+extern ShutDownJob g_shutdow;
 void os_reboot(void);
 void threadActive();
 void feed_iwwg(void);
+void SystemShutdown();
 #endif  // __osObjects

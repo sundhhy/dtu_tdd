@@ -1046,19 +1046,19 @@ void Calculate(unsigned char channel)
 
 						   }
 
-							 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						   {
-							   RTU[channel].Alarm = 0x00;
-						   }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//					   {
+//						   RTU[channel].Alarm = 0x00;
+//					   }
 
 							 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						   {
 								 RTU[channel].Alarm = 0x00;
 						   }
-						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						   {
-								 RTU[channel].Alarm = 0x00;
-						   }
+//						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						   {
+//								 RTU[channel].Alarm = 0x00;
+//						   }
 
 						  
 						 
@@ -1104,19 +1104,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
  
 
 						 
@@ -1216,19 +1216,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 
             }
@@ -1281,19 +1281,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 
             }
@@ -1402,19 +1402,19 @@ void Calculate(unsigned char channel)
 
 						   }
 
-						   if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						   {
-							   RTU[channel].Alarm = 0x00;
-						   }
+//						   if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						   {
+//							   RTU[channel].Alarm = 0x00;
+//						   }
 
 						   if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						   {
 							   RTU[channel].Alarm = 0x00;
 						   }
-						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						   {
-							   RTU[channel].Alarm = 0x00;
-						   }
+//						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						   {
+//							   RTU[channel].Alarm = 0x00;
+//						   }
 
 						  
 						 
@@ -1458,19 +1458,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 						 
            }
 					 
@@ -1567,19 +1567,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
            }
 					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
 					 {
@@ -1630,19 +1630,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
            }
 					 
@@ -1749,19 +1749,19 @@ void Calculate(unsigned char channel)
 
 						   }
 
-						   if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						   {
-							   RTU[channel].Alarm = 0x00;
-						   }
+//						   if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						   {
+//							   RTU[channel].Alarm = 0x00;
+//						   }
 
 						   if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						   {
 							   RTU[channel].Alarm = 0x00;
 						   }
-						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						   {
-							   RTU[channel].Alarm = 0x00;
-						   }
+//						   if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						   {
+//							   RTU[channel].Alarm = 0x00;
+//						   }
 						  	 
            }
 					 else if (RTU[channel].Type==V_1_5)           // 1--5V 信号类型
@@ -1803,19 +1803,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 						 
           }
 					 
@@ -1911,19 +1911,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
            }
 					 else if (RTU[channel].Type==mA4_20) // 4--20mA 信号类型
 					 {
@@ -1973,19 +1973,19 @@ void Calculate(unsigned char channel)
 
 						 }
 
-						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV<(RTU[channel].RangeH-Deadline))  //超量程上限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
 
 						 if(RTU[channel].RSV>(RTU[channel].LowAlm+Deadline))  //低于报警下限报警解除
 						 {
 							 RTU[channel].Alarm = 0x00;
 						 }
-						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
-						 {
-							 RTU[channel].Alarm = 0x00;
-						 }
+//						 if(RTU[channel].RSV>(RTU[channel].RangeL+Deadline))  //低于量程下限报警解除
+//						 {
+//							 RTU[channel].Alarm = 0x00;
+//						 }
            }
 				break;
 					 

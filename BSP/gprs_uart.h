@@ -49,9 +49,9 @@ void gprs_Uart_ioctl(int cmd, ...);
  */
 int gprs_uart_test(char *buf, int size);
 
-typedef void (*rxirq_cb)(void *rxbuf, void *arg);
+typedef void (*rxirq_cb)(void *rxbuf, void *arg, int len);
 void regRxIrq_cb(rxirq_cb cb, void *arg);
-#define GPRS_UART_BUF_LEN		1024
+#define GPRS_UART_BUF_LEN		512
 #define GPRS_UART_TXBUF_LEN  256
 
 

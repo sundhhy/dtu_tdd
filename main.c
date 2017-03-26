@@ -30,9 +30,12 @@
 #define APPTYPE_CONFIG			0x37		//配置任务	
 #define APPTYPE_CALIBRATION		0xa9		//标定任务
 
+
 static void Led_job();
 static int Select_apptype();		//选择工作类型
 int Init_Thread_rtu (void);
+
+ShutDownJob g_shutdow = NULL;
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
      set to 'Yes') calls __io_putchar() */
@@ -79,10 +82,12 @@ char Test_buf[TEST_BUF_SIZE];
  * main: initialize and start the system
  */
 
-
+char ShutdownFlag = 0 ;
+ShutDownJob g_shutdow;
 int main (void) {
 	gprs_t *sim800;
 	int u32_val = 0;
+	
 #if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) || defined(TDD_ADC ) 
 	int i = 0;
 	char c = 0;
@@ -159,6 +164,15 @@ int main (void) {
 		while(1)
 		{
 			osDelay(5);
+			if( ShutdownFlag)
+			{
+				LED_run->destory(LED_run);
+				fs_flush();
+				if( g_shutdow)
+					g_shutdow();
+				
+				os_reboot();
+			}
 			threadActive();
 			u32_val ++;
 			if( NEED_GPRS( Dtu_config.work_mode)) 
@@ -386,5 +400,12 @@ static int Select_apptype()
 	}
 	
 	return APPTYPE_NORMAL;
+	
+}
+
+
+void SystemShutdown()
+{
+	ShutdownFlag = 1;
 	
 }

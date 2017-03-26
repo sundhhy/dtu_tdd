@@ -423,6 +423,11 @@
               <FileType>1</FileType>
               <FilePath>.\Thread_rtu.c</FilePath>
             </File>
+            <File>
+              <FileName>osObjects.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\osObjects.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

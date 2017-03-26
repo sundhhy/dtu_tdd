@@ -45,6 +45,7 @@ const osSemaphoreDef_t os_semaphore_def_Sem_rxFrame = { (os_semaphore_cb_Sem_rxF
 struct {
 	rxirq_cb cb;
 	void *arg;
+	int  len;
 }GprsRxirqCB;
 char GprsUart_buf[GPRS_UART_BUF_LEN];			//用于DMA接收缓存
 char gpprs_Uart_Txbuf[ GPRS_UART_TXBUF_LEN];
@@ -200,8 +201,9 @@ int gprs_Uart_read(char *data, uint16_t size)
 		
 	if( Gprs_uart_ctl.rx_block)
 	{
-		if( Gprs_uart_ctl.rx_waittime_ms == 0)
-			ret = osSemaphoreWait( SemId_rxFrame, osWaitForever );
+		//不允许永远等待
+		if( Gprs_uart_ctl.rx_waittime_ms == 0 || Gprs_uart_ctl.rx_waittime_ms == osWaitForever)
+			ret = osSemaphoreWait( SemId_rxFrame, 0 );
 		else
 			ret = osSemaphoreWait( SemId_rxFrame, Gprs_uart_ctl.rx_waittime_ms );
 		
@@ -412,11 +414,13 @@ void USART3_IRQHandler(void)
 		DMA_ClearFlag( DMA_gprs_usart.dma_rx_flag );           // 清除DMA标志
 		
 		
-		if( GprsRxirqCB.cb != NULL)
-			GprsRxirqCB.cb( Gprs_uart_ctl.rxbuf,  GprsRxirqCB.arg);
+
 		
 		Gprs_uart_ctl.recv_size = get_loadbuflen( &GprsUart_ppbuf)  - \
-			DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
+		DMA_GetCurrDataCounter(DMA_gprs_usart.dma_rx_base); //获得接收到的字节
+		
+		if( GprsRxirqCB.cb != NULL)
+			GprsRxirqCB.cb( Gprs_uart_ctl.rxbuf,  GprsRxirqCB.arg, Gprs_uart_ctl.recv_size);
 		
 		switch_receivebuf( &GprsUart_ppbuf, &rxbuf, &rxbuflen);
 		DMA_gprs_usart.dma_rx_base->CMAR = (uint32_t)rxbuf;

@@ -212,8 +212,11 @@ int s485_Uart_read(char *data, uint16_t size)
 	
 	if( S485_uart_ctl.rx_block)
 	{
-		if( S485_uart_ctl.rx_waittime_ms == 0)
-			ret = osSemaphoreWait( SemId_s485rxFrame, osWaitForever );
+		//不允许永远等等待
+		if( S485_uart_ctl.rx_waittime_ms == 0 || S485_uart_ctl.rx_waittime_ms == osWaitForever)
+			ret = osSemaphoreWait( SemId_s485rxFrame, 0 );
+//		if( S485_uart_ctl.rx_waittime_ms == 0)
+//			ret = osSemaphoreWait( SemId_s485rxFrame, osWaitForever );
 		else
 			ret = osSemaphoreWait( SemId_s485rxFrame, S485_uart_ctl.rx_waittime_ms );
 		

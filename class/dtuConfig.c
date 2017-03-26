@@ -97,7 +97,7 @@ void set_default( DtuCfg_t *conf)
 	conf->output_mode = 0;
 	for( i = 0; i < 3; i ++)
 	{
-		Dtu_config.chn_type[i] = SIGTYPE_4_20_MA;
+		Dtu_config.chn_type[i] = SIGTYPE_0_5_V;
 		Dtu_config.sign_range[i].rangeH = 0xFFFF;
 		Dtu_config.sign_range[i].rangeL = 0;
 		Dtu_config.sign_range[i].alarmH = 0xFFFF;
@@ -111,7 +111,7 @@ void set_default( DtuCfg_t *conf)
 	{
 		strcpy( conf->DateCenter_ip[i], DEF_IPADDR);
 		strcpy( conf->protocol[i], DEF_PROTOTOCOL);
-		conf->DateCenter_port[i] = DEF_PORTNUM;
+		conf->DateCenter_port[i] = DEF_PORTNUM+ i;
 		
 	}
 	
@@ -861,7 +861,9 @@ static void dtu_conf(char *data)
 			
 			LED_run->destory(LED_run);
 			fs_flush();
-			os_reboot();
+			if( g_shutdow)
+				g_shutdow();
+			os_reboot();			
 			
 			goto exit;
 		}

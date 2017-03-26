@@ -235,6 +235,7 @@ void os_idle_demon (void) {
 
 void os_reboot(void)
 {
+	
 	reset = 1;
 	
 }

@@ -84,11 +84,11 @@ CLASS(gprs_t)
 typedef enum {
 	GPRSERROR,
 	SHUTDOWN,
+	TCP_IP_ERROR,
 	STARTUP,
     GPRS_OPEN_FINISH,       /// GPRS 打开成功了
 	INIT_FINISH_OK,
     TCP_IP_OK,
-    TCP_IP_NO,
 }SIM_STATUS ;
 // { |len| data[0]| ... | data[len - 1]|}
 #define EXTRASPACE		2		//维护缓存的额外空间，缓存中长度字段类型是u16
@@ -132,5 +132,7 @@ int check_ip(char *ip);
 int get_apn( gprs_t *self, char *buf);
 int Grps_SetCipmode( short mode);
 int Grps_SetCipmux( short mux);
+void GprsTcpCnnectBeagin();
+void GprsTcpCnnectFinish();
 
 #endif

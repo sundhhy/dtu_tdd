@@ -300,17 +300,18 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 	if( this_gprs->check_simCard(this_gprs) == ERR_OK)
 	{
 		sprintf( this->dataBuf, "detected sim succeed! ...");
-		this->print( this, this->dataBuf);
+//		this->print( this, this->dataBuf);
 		context->nextState( context, STATE_SelfTest);
 		
 	}
 	else 
 	{
-		
+		this->print( this, "detected sim failed,restart gprs\r\n");
 		this_gprs->startup(this_gprs);
 		context->setCurState( context, STATE_SelfTest);	
 	}
 	this_gprs->unlock( this_gprs);
+//	this->print( this, "gprs selftest state finish\r\n");
 
 //	context->nextState( context, STATE_SelfTest);
 				
@@ -333,7 +334,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 	int ret = 0;
 	this->print( this, "gprs cnnect state \r\n");
 	this_gprs->lock( this_gprs);
-
+	GprsTcpCnnectBeagin();
 	while( run)
 	{
 		sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnnt_seq,Dtu_config.DateCenter_ip[ cnnt_seq],\
@@ -348,11 +349,19 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 				ret = this_gprs->sendto_tcp( this_gprs, cnnt_seq, Dtu_config.registry_package, strlen(Dtu_config.registry_package) );
 				if( ret == ERR_OK)
 				{
-						//启动心跳包的闹钟
-						set_alarmclock_s( ALARM_GPRSLINK(cnnt_seq), Dtu_config.hartbeat_timespan_s);
+						
 						this->print(this, "succeed !\n");
 						if( Dtu_config.multiCent_mode == 0)
+						{
+							//启动心跳包的闹钟
+							set_alarmclock_s( ALARM_GPRSLINK(0), Dtu_config.hartbeat_timespan_s);
 							run = 0;
+						}
+						else
+						{
+							//启动心跳包的闹钟
+							set_alarmclock_s( ALARM_GPRSLINK(cnnt_seq), Dtu_config.hartbeat_timespan_s);
+						}
 						break;
 						
 				}
@@ -370,7 +379,8 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 			cnnt_seq = 0;
 			run = 0;
 		}
-	}	//while( run)				
+	}	//while( run)		
+	GprsTcpCnnectFinish();	
 	this_gprs->unlock( this_gprs);
 	
 	context->nextState( context, STATE_Connect);
@@ -418,16 +428,21 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	GprsEventHandleState	*self = SUB_PTR( this, WorkState, GprsEventHandleState);
 	
 	int				lszie = 0;
-	int 			i = 0;
+	short 			i = 0;
+	short			safeCount = 0;
 	void 			*gprs_event;
 	char 			*pp;
 	int 			ret = 0;
 	int 			smsSource = 0;
-	this->print( this, "gprs event handle state \r\n");
+//	this->print( this, "gprs event handle state \r\n");
 
 	this_gprs->lock( this_gprs);			
 	while( 1)
 	{
+		if( safeCount > EVENT_MAX )
+			break;
+		safeCount ++;
+
 		lszie = this->bufLen;
 		ret = this_gprs->report_event( this_gprs, &gprs_event, this->dataBuf, &lszie);
 		if( ret != ERR_OK)
@@ -446,6 +461,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			pp = strstr((const char*)this->dataBuf,"SMSMODE");
 			if( pp)
 			{
+				this->print( this, "switch to SMSMODE\r\n");
 				this_gprs->tcpClose( this_gprs, ret);
 				context->switchToSmsMode( context);
 //				Dtu_config.work_mode = MODE_SMS;
@@ -493,7 +509,6 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 					
 	}	//while(1)
 				
-//	context->setCurState( context,  STATE_HeatBeatHandle);	
 	context->nextState( context, STATE_EventHandle);
 	this_gprs->unlock( this_gprs);
 	evenExit:
@@ -516,40 +531,12 @@ int Ser485ModbusAckCB( char *data, int len, void *arg)
 	
 	return s485_Uart_write( data, len);
 }
-//int Ser485ProcessStateRun( WorkState *this, StateContext *context)
-//{
-//	Ser485ProcessState *self = SUB_PTR( this, WorkState, Ser485ProcessState);
-//	gprs_t	*this_gprs = GprsGetInstance();
-//	int ret = 0;
-//	
-//	ret = s485_Uart_read( this->dataBuf, this->bufLen);
-//				
-//				
-//	if( ret <= 0)
-//	{
-//		context->setCurState( context, context->gprsEventHandleState);	
-//		return ERR_OK;
-//	}
-//	self->modbusProcess->process( this->dataBuf, ret, Ser485ModbusAckCB	, NULL) ;
-//	self->forwardNet->process( this->dataBuf, ret, NULL	, this_gprs) ;
-//	self->forwardSMS->process( this->dataBuf, ret, NULL	, this_gprs) ;
-//			
-//	context->setCurState( context, context->gprsHeatBeatState);	
-//	return 	ERR_OK;
-//				
-//}
-
-//CTOR( Ser485ProcessState)
-//SUPER_CTOR( WorkState);
-//FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
-//END_CTOR
-///-----------------------------------------------------------------------------
 
 int GprsHeatBeatRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	int i = 0;
-	this->print( this, "gprs heatbeat state \r\n");
+//	this->print( this, "gprs heatbeat state \r\n");
 
 	
 	for( i = 0; i < IPMUX_NUM; i ++)
@@ -585,7 +572,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	gprs_t	*this_gprs = GprsGetInstance();
 	int cnntNum = 0;	
 	int	safecount = 0;
-	this->print( this, "gprs cnnt manager state \r\n");
+//	this->print( this, "gprs cnnt manager state \r\n");
 
 	//连接无法建立时，处理下短信
 	//这样可以让用户通过短信配置系统
@@ -696,60 +683,6 @@ CTOR( GprsDealSMSState)
 SUPER_CTOR( WorkState);
 FUNCTION_SETTING(WorkState.run, GprsDealSMSRun);
 END_CTOR
-///-----------------------------------------------------------------------------
-
-//建造者
-
-//WorkState* LRTUBuildGprsSelfTestState( StateContext *this )
-//{
-//	return NULL;
-//	
-//}
-//WorkState*  LRTUBuildGprsConnectState( StateContext *this )
-//{
-//	return NULL;
-//	
-//}
-//WorkState* LRTUBuildGprsEventHandleState(StateContext *this )
-//{
-//	return NULL;
-//}
-//WorkState* LRTUBuildGprsDealSMSState(StateContext *this )
-//{
-//	return NULL;
-//}
-//WorkState* LRTUBuilderSer485ProcessState(StateContext *this )
-//{
-//	Ser485ProcessState *concretestate = Ser485ProcessState_new();
-//	WorkState *state = ( WorkState *)concretestate;
-//	
-//	concretestate->forwardNet = GetEmptyProcess();
-//	concretestate->forwardSMS = GetEmptyProcess();
-//	concretestate->modbusProcess = GetModbusBusiness();
-//	
-//	state->init( state, this->dataBuf, this->bufLen);
-//	return state;
-//}
-//WorkState* LRTUBuilderGprsHeatBeatState(StateContext *this )
-//{
-//	return NULL;
-//}
-//WorkState* LRTUBuilderGprsCnntManagerState(StateContext *this )
-//{
-//	return NULL;
-//}
-
-//CTOR( LocalRTUModeBuilder)
-
-//FUNCTION_SETTING(Builder.buildGprsSelfTestState, LRTUBuildGprsSelfTestState);
-//FUNCTION_SETTING(Builder.buildGprsConnectState, LRTUBuildGprsConnectState);
-//FUNCTION_SETTING(Builder.buildGprsEventHandleState, LRTUBuildGprsEventHandleState);
-//FUNCTION_SETTING(Builder.buildGprsDealSMSState, LRTUBuildGprsDealSMSState);
-//FUNCTION_SETTING(Builder.builderSer485ProcessState, LRTUBuilderSer485ProcessState);
-//FUNCTION_SETTING(Builder.builderGprsHeatBeatState, LRTUBuilderGprsHeatBeatState);
-//FUNCTION_SETTING(Builder.builderGprsCnntManagerState, LRTUBuilderGprsCnntManagerState);
-//END_CTOR
-
 
 WorkState* SMSModeBuildGprsSelfTestState(StateContext *this )
 {
@@ -1152,8 +1085,20 @@ int ForwardNetProcess( char *data, int len, hookFunc cb, void *arg)
 	int i = 0;
 //	this_gprs->lock( this_gprs);
 	
-	for( i = 0; i < IPMUX_NUM; i ++)
-		set_alarmclock_s( ALARM_GPRSLINK(i), Dtu_config.hartbeat_timespan_s);
+	if( Dtu_config.multiCent_mode == 0)
+	{
+		//启动心跳包的闹钟
+		set_alarmclock_s( ALARM_GPRSLINK(0), Dtu_config.hartbeat_timespan_s);
+		
+	}
+	else
+	{
+		//启动心跳包的闹钟
+		for( i = 0; i < IPMUX_NUM; i ++)
+			set_alarmclock_s( ALARM_GPRSLINK(i), Dtu_config.hartbeat_timespan_s);
+	}
+	
+	
 
 	this_gprs->sendto_tcp_buf( this_gprs, data, len);
 //	this_gprs->unlock( this_gprs);
