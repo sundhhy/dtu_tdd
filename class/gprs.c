@@ -43,6 +43,9 @@ static gprs_event_t *malloc_event();
 #define UART_SEND	gprs_Uart_write
 #define UART_RECV	gprs_Uart_read
 
+
+#define UART_RXWAIT_MS  100
+#define UART_TXWAIT_MS  2000
 //fromt
 #define SMS_MSG_PDU		0
 #define SMS_MSG_TEXT		1
@@ -141,8 +144,8 @@ int init(gprs_t *self)
 {
 	Gprs_currentState = SHUTDOWN;
 	gprs_uart_init();
-	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, 1000);
-	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, 1000);
+	gprs_Uart_ioctl( GPRSUART_SET_TXWAITTIME_MS, UART_TXWAIT_MS);
+	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, UART_RXWAIT_MS);
 	self->event_cbuf = malloc( sizeof( sCircularBuffer ));
 	self->event_cbuf->buf = malloc( EVENT_MAX * sizeof(tElement));
 	if( self->event_cbuf->buf == NULL)
@@ -197,9 +200,9 @@ void startup(gprs_t *self)
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	osDelay(100);
 	GPIO_SetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	osDelay(1100);
+	osDelay(5000);
 	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
-	osDelay( 2000);
+//	osDelay( 2000);
 
 	FlagSmsReady = 0;
 	Gprs_currentState = STARTUP;
@@ -829,7 +832,7 @@ int delete_sms( gprs_t *self, int seq)
 			 return ERR_OK;
 		 
 		sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,0\x00D\x00A", cnntNum);		//quick close
-		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+		SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
 		 
 		Ip_cnnState.cnn_state[ cnntNum] = CNNT_DISCONNECT;
 	 }
@@ -855,7 +858,7 @@ int delete_sms( gprs_t *self, int seq)
 			 
 		 }
 		sprintf( Gprs_cmd_buf, "AT+CIPCLOSE\x00D\x00A");		//quick close
-		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+		SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
 		Ip_cnnState.cnn_state[ 0] = CNNT_DISCONNECT;
 	 }
 	 return ERR_OK;
@@ -944,12 +947,14 @@ int delete_sms( gprs_t *self, int seq)
 				else
 					sprintf( Gprs_cmd_buf, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\x00D\x00A", prtl, addr, portnum);
 				DPRINTF("  %s ", Gprs_cmd_buf);
-//				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,20);
+
+				
+				
 				UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
-				osDelay(10);
+				osDelay(100);
 				
 				//当中心地址不正确的时候，GPRS会花花很长时间才能返回错误
-				retry = RETRY_TIMES * 2;
+				retry = RETRY_TIMES * 10;
 				step++;
 			case 4:
 				memset( Gprs_cmd_buf, 0, CMDBUF_LEN);
@@ -1004,7 +1009,14 @@ int delete_sms( gprs_t *self, int seq)
 				retry --;
 				if( retry == 0)
 				{
-					self->tcpClose( self, cnnt_num);
+					if( g_CipMux)
+						sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d\x00D\x00A", cnnt_num);
+					else
+						sprintf( Gprs_cmd_buf, "AT+CIPCLOSE\x00D\x00A");
+					
+//					sprintf( Gprs_cmd_buf, "AT+CIPCLOSE\x00D\x00A");		//quick close
+					SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,20);
+//					self->tcpClose( self, cnnt_num);
 					return ERR_DEV_TIMEOUT;
 				}
 //				osDelay(1000);
@@ -2338,6 +2350,13 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 static int SerilTxandRx( char *buf, int bufsize, int count)
 {
 	int ret = 0;
+	
+	//先把之前未读取的数据清除掉
+	
+//	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, 10);
+	UART_RECV( buf, bufsize);
+//	gprs_Uart_ioctl( GPRSUART_SET_RXWAITTIME_MS, UART_RXWAIT_MS);
+	
 	UART_SEND( buf, strlen(buf));
 	
 	while( count)

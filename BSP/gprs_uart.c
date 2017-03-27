@@ -79,9 +79,11 @@ int gprs_uart_init(void)
 
 
 	SemId_txFinish = osSemaphoreCreate(osSemaphore(Sem_txFinish), 1);
-	SemId_rxFrame = osSemaphoreCreate(osSemaphore(Sem_rxFrame), 10);
+	SemId_rxFrame = osSemaphoreCreate(osSemaphore(Sem_rxFrame), 1);
 
-
+	osSemaphoreWait( SemId_txFinish, 0 );
+	osSemaphoreWait( SemId_rxFrame, 0 );
+	
 	
 	USART_DeInit( GPRS_USART);
 
@@ -208,16 +210,12 @@ int gprs_Uart_read(char *data, uint16_t size)
 			ret = osSemaphoreWait( SemId_rxFrame, Gprs_uart_ctl.rx_waittime_ms );
 		
 		
-//		if( ret < 0)
-//		{
-//			return ERR_DEV_TIMEOUT;
-//		}
 		
 	}
 	else 
 		ret = osSemaphoreWait( SemId_rxFrame, 0 );
 	
-	if( Gprs_uart_ctl.recv_size > 0)
+	if( ret > 0)
 	{
 		if( len > Gprs_uart_ctl.recv_size)
 			len = Gprs_uart_ctl.recv_size;
@@ -225,8 +223,8 @@ int gprs_Uart_read(char *data, uint16_t size)
 
 		playloadbuf = get_playloadbuf( &GprsUart_ppbuf);
 		memcpy( data, playloadbuf, len);
-//		memset( get_playloadbuf( &GprsUart_ppbuf), 0, len);
 		free_playloadbuf( &GprsUart_ppbuf);
+		Gprs_uart_ctl.recv_size = 0;
 
 		return len;
 	}

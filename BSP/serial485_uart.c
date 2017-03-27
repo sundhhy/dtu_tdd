@@ -70,11 +70,15 @@ static void DMA_s485Uart_Init(void);
 int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 {
 	static char first = 0;
+	int i = 0;
 	if( first == 0)
 	{
 		SemId_s485txFinish = osSemaphoreCreate(osSemaphore(Sem_s485txFinish), 1);
 		SemId_s485rxFrame = osSemaphoreCreate(osSemaphore(Sem_s485rxFrame), NUM_PINGPONGBUF);
 
+		osSemaphoreWait( SemId_s485txFinish, 0 );
+		for( i = 0; i < NUM_PINGPONGBUF; i++)
+			osSemaphoreWait( SemId_s485rxFrame, 0 );
 		init_pingponfbuf( &g_S485_ppbuf, S485Uart_buf, S485RX_BUF_LEN, 1);
 		
 		
@@ -221,10 +225,10 @@ int s485_Uart_read(char *data, uint16_t size)
 			ret = osSemaphoreWait( SemId_s485rxFrame, S485_uart_ctl.rx_waittime_ms );
 		
 		
-		if( ret < 0)
-		{
-			return ERR_DEV_TIMEOUT;
-		}
+//		if( ret < 0)
+//		{
+//			return ERR_DEV_TIMEOUT;
+//		}
 		
 	}
 	else 

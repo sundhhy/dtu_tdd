@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sun Mar 26 22:11:26 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Mon Mar 27 22:43:48 2017
 <BR><P>
 <H3>Maximum Stack Usage =        296 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -430,8 +430,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[19d]"></a>__aeabi_memcpy</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, memcpya.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sendto_tcp_buf
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
@@ -457,7 +457,7 @@ Global Symbols
 <P><STRONG><a name="[ba]"></a>__aeabi_memclr</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VecBuf_Init
 <LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sms_test
 <LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;buf_test
@@ -471,7 +471,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[129]"></a>__aeabi_memclr4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
 <LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpip_cnnt
 <LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Select_apptype
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
@@ -1055,7 +1055,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[f7]"></a>DMA_Cmd</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f10x_dma.o(i.DMA_Cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
 <LI><a href="#[16]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA1_Channel1_IRQHandler
 <LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA1_Configuration
@@ -2518,7 +2518,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
-<BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
 <LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485GiveBack_Rxbuf
 </UL>
@@ -2655,7 +2655,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[1c3]"></a>get_playloadbuf</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, ping_pongbuf.o(i.get_playloadbuf))
-<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR><BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
 <LI><a href="#[168]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485Obtain_Playloadbuf
 </UL>
@@ -2667,7 +2667,7 @@ Global Symbols
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 </UL>
 
-<P><STRONG><a name="[174]"></a>gprs_Uart_read</STRONG> (Thumb, 146 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_read))
+<P><STRONG><a name="[173]"></a>gprs_Uart_read</STRONG> (Thumb, 148 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
@@ -2684,7 +2684,7 @@ Global Symbols
 <LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
 </UL>
 
-<P><STRONG><a name="[173]"></a>gprs_Uart_write</STRONG> (Thumb, 132 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_write))
+<P><STRONG><a name="[174]"></a>gprs_Uart_write</STRONG> (Thumb, 132 bytes, Stack size 24 bytes, gprs_uart.o(i.gprs_Uart_write))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = gprs_Uart_write
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
@@ -2713,10 +2713,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GprsGetInstance
 </UL>
 
-<P><STRONG><a name="[1c5]"></a>gprs_uart_init</STRONG> (Thumb, 136 bytes, Stack size 8 bytes, gprs_uart.o(i.gprs_uart_init))
+<P><STRONG><a name="[1c5]"></a>gprs_uart_init</STRONG> (Thumb, 156 bytes, Stack size 8 bytes, gprs_uart.o(i.gprs_uart_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 76<LI>Call Chain = gprs_uart_init &rArr; DMA_GprsUart_Init &rArr; switch_receivebuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreCreate
+<BR>[Calls]<UL><LI><a href="#[1c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
+<LI><a href="#[1c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreCreate
 <LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_pingponfbuf
 <LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ITConfig
 <LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_DeInit
@@ -2728,7 +2729,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 </UL>
 
-<P><STRONG><a name="[71]"></a>init</STRONG> (Thumb, 140 bytes, Stack size 8 bytes, gprs.o(i.init))
+<P><STRONG><a name="[71]"></a>init</STRONG> (Thumb, 138 bytes, Stack size 8 bytes, gprs.o(i.init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = init &rArr; gprs_uart_init &rArr; DMA_GprsUart_Init &rArr; switch_receivebuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;regRxIrq_cb
@@ -3000,8 +3001,10 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[1c2]"></a>osSemaphoreWait</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, rt_cmsis.o(i.osSemaphoreWait))
-<BR><BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR><BR>[Called By]<UL><LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_uart_init
+<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_uart_init
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_read
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
 <LI><a href="#[168]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485Obtain_Playloadbuf
@@ -3169,7 +3172,7 @@ Global Symbols
 <P><STRONG><a name="[7e]"></a>report_event</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, gprs.o(i.report_event))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = report_event &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_ioctl
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CBRead
 </UL>
@@ -3622,7 +3625,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init_Thread_rtu
 </UL>
 
-<P><STRONG><a name="[ec]"></a>s485_Uart_read</STRONG> (Thumb, 164 bytes, Stack size 24 bytes, serial485_uart.o(i.s485_Uart_read))
+<P><STRONG><a name="[ec]"></a>s485_Uart_read</STRONG> (Thumb, 156 bytes, Stack size 24 bytes, serial485_uart.o(i.s485_Uart_read))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = s485_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
@@ -3652,10 +3655,11 @@ Global Symbols
 <LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Ser485ModbusAckCB
 </UL>
 
-<P><STRONG><a name="[142]"></a>s485_uart_init</STRONG> (Thumb, 154 bytes, Stack size 16 bytes, serial485_uart.o(i.s485_uart_init))
+<P><STRONG><a name="[142]"></a>s485_uart_init</STRONG> (Thumb, 186 bytes, Stack size 16 bytes, serial485_uart.o(i.s485_uart_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = s485_uart_init &rArr; DMA_s485Uart_Init &rArr; switch_receivebuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_s485Uart_Init
+<LI><a href="#[1c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreWait
 <LI><a href="#[1c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osSemaphoreCreate
 <LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_pingponfbuf
 <LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ITConfig
@@ -3671,8 +3675,8 @@ Global Symbols
 <P><STRONG><a name="[77]"></a>send_text_sms</STRONG> (Thumb, 396 bytes, Stack size 48 bytes, gprs.o(i.send_text_sms))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
 <LI><a href="#[1ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -3687,8 +3691,8 @@ Global Symbols
 <P><STRONG><a name="[8a]"></a>sendto_tcp</STRONG> (Thumb, 308 bytes, Stack size 40 bytes, gprs.o(i.sendto_tcp))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = sendto_tcp &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
@@ -3700,7 +3704,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = sendto_tcp_buf &rArr; gprs_Uart_write
 </UL>
 <BR>[Calls]<UL><LI><a href="#[21a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_alarmclock_ms
-<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 </UL>
@@ -3828,7 +3832,7 @@ Global Symbols
 <LI><a href="#[233]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
 </UL>
 
-<P><STRONG><a name="[74]"></a>startup</STRONG> (Thumb, 70 bytes, Stack size 8 bytes, gprs.o(i.startup))
+<P><STRONG><a name="[74]"></a>startup</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, gprs.o(i.startup))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = startup
 </UL>
 <BR>[Calls]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
@@ -4015,10 +4019,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_systick
 </UL>
 
-<P><STRONG><a name="[88]"></a>tcpClose</STRONG> (Thumb, 156 bytes, Stack size 24 bytes, gprs.o(i.tcpClose))
+<P><STRONG><a name="[88]"></a>tcpClose</STRONG> (Thumb, 152 bytes, Stack size 24 bytes, gprs.o(i.tcpClose))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = tcpClose &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
+<LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
@@ -4034,11 +4039,11 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[89]"></a>tcpip_cnnt</STRONG> (Thumb, 536 bytes, Stack size 48 bytes, gprs.o(i.tcpip_cnnt))
+<P><STRONG><a name="[89]"></a>tcpip_cnnt</STRONG> (Thumb, 564 bytes, Stack size 48 bytes, gprs.o(i.tcpip_cnnt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = tcpip_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
 <LI><a href="#[1ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 <LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
@@ -4221,15 +4226,16 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GprsRun
 </UL>
 
-<P><STRONG><a name="[172]"></a>SerilTxandRx</STRONG> (Thumb, 70 bytes, Stack size 24 bytes, gprs.o(i.SerilTxandRx))
+<P><STRONG><a name="[172]"></a>SerilTxandRx</STRONG> (Thumb, 78 bytes, Stack size 24 bytes, gprs.o(i.SerilTxandRx))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
 <BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpip_cnnt
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpClose
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_simCard
 <LI><a href="#[1ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 </UL>
@@ -4284,8 +4290,8 @@ Local Symbols
 <P><STRONG><a name="[194]"></a>serial_cmmn</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, gprs.o(i.serial_cmmn))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
+<BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
