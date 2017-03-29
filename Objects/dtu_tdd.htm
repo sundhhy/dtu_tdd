@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Mon Mar 27 22:43:48 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Wed Mar 29 22:18:30 2017
 <BR><P>
 <H3>Maximum Stack Usage =        296 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -473,6 +473,7 @@ Global Symbols
 <P><STRONG><a name="[129]"></a>__aeabi_memclr4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
 <LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpip_cnnt
+<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_text_sms
 <LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Select_apptype
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;s485_Uart_write
 <LI><a href="#[45]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GprsEventHandleRun
@@ -2357,7 +2358,7 @@ Global Symbols
 <LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;dtu_conf
 </UL>
 
-<P><STRONG><a name="[76]"></a>check_simCard</STRONG> (Thumb, 340 bytes, Stack size 24 bytes, gprs.o(i.check_simCard))
+<P><STRONG><a name="[76]"></a>check_simCard</STRONG> (Thumb, 324 bytes, Stack size 24 bytes, gprs.o(i.check_simCard))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = check_simCard &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
@@ -2741,7 +2742,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[1c7]"></a>init_pingponfbuf</STRONG> (Thumb, 72 bytes, Stack size 12 bytes, ping_pongbuf.o(i.init_pingponfbuf))
+<P><STRONG><a name="[1c7]"></a>init_pingponfbuf</STRONG> (Thumb, 74 bytes, Stack size 12 bytes, ping_pongbuf.o(i.init_pingponfbuf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = init_pingponfbuf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_uart_init
@@ -3068,7 +3069,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_Tick_Handler
 </UL>
 
-<P><STRONG><a name="[8f]"></a>read_event</STRONG> (Thumb, 396 bytes, Stack size 32 bytes, gprs.o(i.read_event))
+<P><STRONG><a name="[8f]"></a>read_event</STRONG> (Thumb, 412 bytes, Stack size 32 bytes, gprs.o(i.read_event))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = read_event &rArr; get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VecBuf_write
@@ -3082,7 +3083,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.init)
 </UL>
 <P><STRONG><a name="[78]"></a>read_phnNmbr_TextSMS</STRONG> (Thumb, 476 bytes, Stack size 72 bytes, gprs.o(i.read_phnNmbr_TextSMS))
-<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = read_phnNmbr_TextSMS &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = read_phnNmbr_TextSMS &rArr; set_sms2TextMode &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
 <LI><a href="#[1ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
@@ -3097,7 +3098,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[79]"></a>read_seq_TextSMS</STRONG> (Thumb, 320 bytes, Stack size 72 bytes, gprs.o(i.read_seq_TextSMS))
-<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = read_seq_TextSMS &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = read_seq_TextSMS &rArr; set_sms2TextMode &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
 <LI><a href="#[1ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
@@ -3672,19 +3673,20 @@ Global Symbols
 <LI><a href="#[0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[77]"></a>send_text_sms</STRONG> (Thumb, 396 bytes, Stack size 48 bytes, gprs.o(i.send_text_sms))
-<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<P><STRONG><a name="[77]"></a>send_text_sms</STRONG> (Thumb, 442 bytes, Stack size 48 bytes, gprs.o(i.send_text_sms))
+<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
 <LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
 <LI><a href="#[1ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
-<LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
+<LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
+<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
@@ -3749,11 +3751,11 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[86]"></a>set_smscAddr</STRONG> (Thumb, 176 bytes, Stack size 24 bytes, gprs.o(i.set_smscAddr))
-<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = set_smscAddr &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<P><STRONG><a name="[86]"></a>set_smscAddr</STRONG> (Thumb, 174 bytes, Stack size 24 bytes, gprs.o(i.set_smscAddr))
+<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = set_smscAddr &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_phoneNO
-<LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
+<LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
@@ -3999,7 +4001,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> dtu.o(i.StateContext_ctor)
 </UL>
-<P><STRONG><a name="[fd]"></a>switch_receivebuf</STRONG> (Thumb, 76 bytes, Stack size 12 bytes, ping_pongbuf.o(i.switch_receivebuf))
+<P><STRONG><a name="[fd]"></a>switch_receivebuf</STRONG> (Thumb, 80 bytes, Stack size 12 bytes, ping_pongbuf.o(i.switch_receivebuf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = switch_receivebuf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[31]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
@@ -4039,8 +4041,8 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[89]"></a>tcpip_cnnt</STRONG> (Thumb, 564 bytes, Stack size 48 bytes, gprs.o(i.tcpip_cnnt))
-<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = tcpip_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<P><STRONG><a name="[89]"></a>tcpip_cnnt</STRONG> (Thumb, 560 bytes, Stack size 64 bytes, gprs.o(i.tcpip_cnnt))
+<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = tcpip_cnnt &rArr; prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
 <LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
@@ -4236,7 +4238,10 @@ Local Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpip_cnnt
 <LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpClose
+<LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_smscAddr
+<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_text_sms
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_simCard
+<LI><a href="#[1ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[1ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 </UL>
 
@@ -4273,7 +4278,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_event
 </UL>
 
-<P><STRONG><a name="[1ea]"></a>prepare_ip</STRONG> (Thumb, 712 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
+<P><STRONG><a name="[1ea]"></a>prepare_ip</STRONG> (Thumb, 710 bytes, Stack size 24 bytes, gprs.o(i.prepare_ip))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = prepare_ip &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
@@ -4298,21 +4303,18 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpip_cnnt
 <LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tcpClose
 <LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shutdown
-<LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_smscAddr
 <LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_dns_ip
-<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_text_sms
 <LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_smscAddr
 <LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_seq_TextSMS
 <LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;read_phnNmbr_TextSMS
 <LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delete_sms
-<LI><a href="#[1ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_sms2TextMode
 <LI><a href="#[1ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prepare_ip
 </UL>
 
 <P><STRONG><a name="[1ed]"></a>set_sms2TextMode</STRONG> (Thumb, 118 bytes, Stack size 24 bytes, gprs.o(i.set_sms2TextMode))
-<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = set_sms2TextMode &rArr; serial_cmmn &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = set_sms2TextMode &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_cmmn
+<BR>[Calls]<UL><LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr

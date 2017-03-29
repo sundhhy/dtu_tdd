@@ -171,9 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>934</LineNumber>
+          <LineNumber>326</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134276106</Address>
+          <Address>134250614</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -182,39 +182,55 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\class\gprs.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\dtu_tdd\class/gprs.c\934</Expression>
+          <Expression>\\dtu_tdd\class/gprs.c\326</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>1012</LineNumber>
+          <LineNumber>477</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134276386</Address>
+          <Address>134234078</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\class\gprs.c</Filename>
+          <Filename>.\BSP\serial485_uart.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\dtu_tdd\class/gprs.c\1012</Expression>
+          <Expression>\\dtu_tdd\BSP/serial485_uart.c\477</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>961</LineNumber>
+          <LineNumber>68</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134276232</Address>
+          <Address>134244038</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\class\rtu.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\dtu_tdd\class/rtu.c\68</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>327</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
           <Filename>.\class\gprs.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\dtu_tdd\class/gprs.c\961</Expression>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -268,20 +284,45 @@
           <WinNumber>1</WinNumber>
           <ItemText>DTU_Buf</ItemText>
         </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>S485Uart_buf</ItemText>
+        </Ww>
+        <Ww>
+          <count>11</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>parg</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>dataBuf</ItemText>
+          <ItemText>g_S485_ppbuf</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>this_event</ItemText>
+          <ItemText>g_S485_ppbuf</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>g_S485_ppbuf</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>dataBuf</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>this_event</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
           <WinNumber>2</WinNumber>
           <ItemText>Set_AlarmClock_flag</ItemText>
         </Ww>

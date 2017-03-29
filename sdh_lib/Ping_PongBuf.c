@@ -25,7 +25,11 @@ void  init_pingponfbuf( PPBuf_t *ppbuf, char *buf, int len , int sw)
 		
 		ppbuf->idleBuf[ 0] = ppbuf->ping_buf;
 		ppbuf->idleBuf[ 1] = ppbuf->pong_buf;
-		ppbuf->loadBuf = NULL;
+		
+		//优先使用ping_buf
+		//初始化的时候把载入buf设置为ping_buf，是为了在第一次切换内存的时候
+		//让dataBuf 与loadbuf一致
+		ppbuf->loadBuf = ppbuf->ping_buf;
 		ppbuf->dataBuf = NULL;	
 	}
 	else
@@ -62,9 +66,11 @@ void switch_receivebuf( PPBuf_t *ppbuf, char **buf, short *len)
 	{
 		if( ppbuf->idleBuf[ i])
 		{
+			
 			ppbuf->dataBuf = ppbuf->loadBuf;
 			ppbuf->loadBuf = ppbuf->idleBuf[ i];
 			ppbuf->idleBuf[ i] = NULL;
+			break;
 		}
 		
 	}
@@ -72,50 +78,6 @@ void switch_receivebuf( PPBuf_t *ppbuf, char **buf, short *len)
 	*buf = ppbuf->loadBuf;
 	*len = ppbuf->buf_len;
 	
-//	ppbuf->playload_buf = ppbuf->loading_buf;
-//	
-//	if( ppbuf->ping_status == PPBUF_STATUS_IDLE)
-//	{
-////		if( ppbuf->loading_buf == BUF_PONG)	//上一次装载的缓存是PONG，说明已经有数据存入了
-////		{
-////			ppbuf->playload_buf = BUF_PONG;
-////		}
-//		*buf = ppbuf->ping_buf;
-//		*len = ppbuf->ping_len;
-//		ppbuf->loading_buf = BUF_PING;
-//		ppbuf->ping_status = PPBUF_STATUS_LOADING;
-//		
-//	}
-//	else if( ppbuf->pong_status == PPBUF_STATUS_IDLE)
-//	{
-////		if( ppbuf->loading_buf == BUF_PING)	//上一次装载的缓存是PING，说明已经有数据存入了
-////		{
-////			ppbuf->playload_buf = BUF_PING;
-////		}
-//		*buf = ppbuf->pong_buf;
-//		*len = ppbuf->pong_len;
-//		ppbuf->loading_buf = BUF_PONG;
-//		ppbuf->pong_status = PPBUF_STATUS_LOADING;
-//		
-//	}
-//	else		//没有空闲的缓冲区，就不切换
-//	{
-//		//返回上一次使用的缓存
-//		if( ppbuf->loading_buf == BUF_PING)
-//		{
-//		
-//			*buf = ppbuf->ping_buf;
-//			*len = ppbuf->ping_len;
-//		}
-//		else if( ppbuf->loading_buf == BUF_PONG)
-//		{
-//			*buf = ppbuf->pong_buf;
-//			*len = ppbuf->pong_len;
-//			
-//		}
-//			
-//		
-//	}
 }
 
 

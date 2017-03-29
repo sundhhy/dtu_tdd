@@ -51,7 +51,8 @@ static gprs_event_t *malloc_event();
 #define SMS_MSG_TEXT		1
 #define SMS_MSG_ERR			2
 
-#define SMS_CHRC_SET_GSM	0
+#define SMS_CHRC_SET_ERR	-1
+#define SMS_CHRC_SET_GSM	0xe
 #define SMS_CHRC_SET_UCS2	1
 #define SMS_CHRC_SET_IRA	2
 #define SMS_CHRC_SET_HEX	3
@@ -99,7 +100,7 @@ vectorBufManager_t	g_TcpVbm;
 
 void GprsTcpCnnectBeagin()
 {
-	g_cnnectFlag = 1;
+	g_cnnectFlag = 0;
 }
 
 void GprsTcpCnnectFinish()
@@ -170,7 +171,7 @@ int init(gprs_t *self)
 //	TcpRecvData.free_size = TCPDATA_LEN;
 	
 	regRxIrq_cb( read_event, (void *)self);
-	Gprs_state.sms_msgFromt = -1;
+	Gprs_state.sms_msgFromt = SMS_CHRC_SET_ERR;
 	Gprs_state.sms_chrcSet = -1;
 	return ERR_OK;
 }
@@ -328,8 +329,8 @@ int	check_simCard( gprs_t *self)
 						successCount ++;
 						
 						//防止漏收SMS READY 而永远无法进入成功状态
-						if( successCount > 3)
-							FlagSmsReady = 1;
+//						if( successCount > 3)
+//							FlagSmsReady = 1;
 						return ERR_OK;
 				}
 				osDelay(1000);
@@ -403,7 +404,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				}
 			
 				strcpy( Gprs_cmd_buf, "AT+CSCS=\"GSM\"\x00D\x00A" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,100);
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
 //				
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
@@ -425,6 +426,8 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				osDelay(100);
 				sms[ sms_len] = endchar;		//把字符串的结尾0替换成gprs模块的结束符0x1A
 				sms_len ++;
+			
+				
 				if( UART_SEND( sms, sms_len) == ERR_DEV_TIMEOUT)
 					osDelay(1000);
 				else
@@ -434,10 +437,12 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				retry = 30 ;			///短信应答的最长延时是60s，接口的接收超时是2s。
 				break;
 			case 3:
+				memset( Gprs_cmd_buf, 0, CMDBUF_LEN);
 				UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
+					osDelay(1000);
 					return ERR_OK;
 				}
 				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
@@ -448,10 +453,18 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 //					osDelay(100);
 //					UART_SEND( sms, sms_len + 1);
 					Gprs_state.sms_msgFromt = SMS_MSG_ERR;
+					Gprs_state.sms_chrcSet = SMS_CHRC_SET_ERR;
 					return ERR_FAIL;
 				}
+				
+				//在发短信时，出现电话时会出现这个应答
+				pp = strstr((const char*)Gprs_cmd_buf,"+++");
+				if(pp)
+				{
+					Gprs_state.sms_chrcSet = SMS_CHRC_SET_ERR;
+				}
 					
-				osDelay(200);
+				osDelay(1000);
 				retry --;
 				if( retry == 0)
 					return ERR_DEV_TIMEOUT;
@@ -929,16 +942,16 @@ int delete_sms( gprs_t *self, int seq)
 				step += 2;
 				break;
 			case 2:
-				
-				 
-				self->tcpClose( self, cnnt_num);
-//				sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,0\x00D\x00A", cnnt_num);		//quick close
-//				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
-				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
-				if( pp)
-					step ++;
-				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
-				if( pp)
+				if( g_CipMux)
+					sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d\x00D\x00A", cnnt_num);
+				else
+					sprintf( Gprs_cmd_buf, "AT+CIPCLOSE\x00D\x00A");					
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,20);
+//				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+//				if( pp)
+//					step ++;
+//				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+//				if( pp)
 					step ++;
 				break;
 			case 3:
@@ -954,7 +967,7 @@ int delete_sms( gprs_t *self, int seq)
 				osDelay(100);
 				
 				//当中心地址不正确的时候，GPRS会花花很长时间才能返回错误
-				retry = RETRY_TIMES * 10;
+				retry = RETRY_TIMES * 20;
 				step++;
 			case 4:
 				memset( Gprs_cmd_buf, 0, CMDBUF_LEN);
@@ -968,6 +981,12 @@ int delete_sms( gprs_t *self, int seq)
 						Gprs_currentState = TCP_IP_ERROR;
 						return ERR_ADDR_ERROR;
 					}
+					pp = strstr((const char*)Gprs_cmd_buf,"CONNECT FAIL");
+					if( pp)
+					{	
+						return ERR_BAD_PARAMETER;
+					}
+					
 					if( g_CipMode)
 					{
 						//透明模式下的成功返回不带OK
@@ -978,6 +997,7 @@ int delete_sms( gprs_t *self, int seq)
 							osDelay(1000);
 							return ERR_OK;
 						}
+						
 					}
 					else
 					{
@@ -988,11 +1008,7 @@ int delete_sms( gprs_t *self, int seq)
 							osDelay(1000);
 							return ERR_OK;
 						}
-						pp = strstr((const char*)Gprs_cmd_buf,"CONNECT FAIL");
-						if( pp)
-						{	
-							return ERR_BAD_PARAMETER;
-						}
+						
 						
 					}
 					
@@ -1322,7 +1338,7 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 	if( ret == ERR_DEV_TIMEOUT)
 		osDelay(100);
 	else
-		osDelay(50);
+		osDelay(10);
 	ret = UART_SEND( data, len);
 	if( ret == ERR_DEV_TIMEOUT)
 		osDelay(1000);
@@ -1513,7 +1529,10 @@ void read_event(void *buf, void *arg, int len)
 	
 	cthis = ( gprs_t *)arg;
 	
-	
+	//由tcp close指令引起的关闭不作为事件处理
+	pp = strstr((const char*)buf,"STATE: TCP CLOSED");
+	if( pp)
+		return;
 	//0,CLOSED
 	if( g_CipMode == CIPMODE_TRSP)
 	{
@@ -1934,7 +1953,7 @@ int set_smscAddr(gprs_t *self, char *addr)
 		{
 			case 0:
 				strcpy( Gprs_cmd_buf,"AT+CSCA=?\r\n");
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
 				if( pp)
 				{
@@ -1949,7 +1968,7 @@ int set_smscAddr(gprs_t *self, char *addr)
 				break;
 			case 1:
 				sprintf( Gprs_cmd_buf,"AT+CSCA=\"%s\"\r\n", addr);
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,1000);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
 				if( pp)
 				{
@@ -2400,7 +2419,7 @@ static int set_sms2TextMode(gprs_t *self)
 				step ++;
 			case 1:
 				strcpy( Gprs_cmd_buf, "AT+CMGF=1\x00D\x00A" );
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
@@ -2591,7 +2610,7 @@ static int prepare_ip(gprs_t *self)
 				{
 						
 					strcpy( Gprs_cmd_buf, "AT+CIPCCFG=3,2,1024,1\x00D\x00A" );		
-					SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,500);
+					SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
 					pp = strstr((const char*)Gprs_cmd_buf,"OK");
 					if(pp)
 					{

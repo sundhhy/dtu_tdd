@@ -79,14 +79,14 @@ int s485_uart_init(ser_485Cfg *cfg, u485RxirqCB *cb)
 		osSemaphoreWait( SemId_s485txFinish, 0 );
 		for( i = 0; i < NUM_PINGPONGBUF; i++)
 			osSemaphoreWait( SemId_s485rxFrame, 0 );
-		init_pingponfbuf( &g_S485_ppbuf, S485Uart_buf, S485RX_BUF_LEN, 1);
+		
 		
 		
 		
 		first = 1;
 	}
 	
-
+	init_pingponfbuf( &g_S485_ppbuf, S485Uart_buf, S485RX_BUF_LEN, 1);
 	USART_Cmd(SER485_USART, DISABLE);
 	USART_DeInit( SER485_USART);
 	
