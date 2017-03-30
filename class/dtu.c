@@ -636,7 +636,6 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	int				ret = 0;
 	int 			smsSource = 0;
 	
-	lszie = this->bufLen;
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 	this->print( this, "gprs deal sms state \r\n");
 
@@ -645,6 +644,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	
 	while( 1)
 	{
+		lszie = this->bufLen;
 		ret = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
 		if( ret >= 0)
 		{
@@ -674,7 +674,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 		}
 	}	
 	this_gprs->unlock( this_gprs);
-	
+	osDelay(10000);
 	return 	ERR_OK;
 				
 }

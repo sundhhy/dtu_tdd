@@ -329,8 +329,8 @@ int	check_simCard( gprs_t *self)
 						successCount ++;
 						
 						//防止漏收SMS READY 而永远无法进入成功状态
-//						if( successCount > 3)
-//							FlagSmsReady = 1;
+						if( successCount > 30)
+							FlagSmsReady = 1;
 						return ERR_OK;
 				}
 				osDelay(1000);
@@ -424,15 +424,16 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				sprintf(Gprs_cmd_buf,"AT+CMGS=\"%s\"\x00D\x00A",phnNmbr);
 				UART_SEND( Gprs_cmd_buf, strlen(Gprs_cmd_buf));
 				osDelay(100);
-				sms[ sms_len] = endchar;		//把字符串的结尾0替换成gprs模块的结束符0x1A
-				sms_len ++;
+//				sms[ sms_len] = endchar;		//把字符串的结尾0替换成gprs模块的结束符0x1A
+//				sms_len ++;
 			
 				
 				if( UART_SEND( sms, sms_len) == ERR_DEV_TIMEOUT)
 					osDelay(1000);
 				else
 					osDelay(100);
-				sms[ sms_len] = 0;
+				UART_SEND( &endchar, 1);
+//				sms[ sms_len] = 0;
 				step ++;
 				retry = 30 ;			///短信应答的最长延时是60s，接口的接收超时是2s。
 				break;
@@ -458,11 +459,11 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				}
 				
 				//在发短信时，出现电话时会出现这个应答
-				pp = strstr((const char*)Gprs_cmd_buf,"+++");
-				if(pp)
-				{
-					Gprs_state.sms_chrcSet = SMS_CHRC_SET_ERR;
-				}
+//				pp = strstr((const char*)Gprs_cmd_buf,"+++");
+//				if(pp)
+//				{
+//					Gprs_state.sms_chrcSet = SMS_CHRC_SET_ERR;
+//				}
 					
 				osDelay(1000);
 				retry --;
@@ -496,7 +497,9 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 {
 	char step = 0;
 	char i = 0;
+	
 	short retry = RETRY_TIMES;
+	short bufLen = *len;
 	
 	char *pp = NULL;
 	char	*ptarget = out_buf;
@@ -536,7 +539,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 			
 //				+CPMS: <mem1>,<used1>,<total1>,<mem2>,<used2>,<total2>,
 //						<mem3>,<used3>,<total3>
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1);
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
 			
 			
 				//找到总数
@@ -578,8 +581,8 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
 				sprintf( in_buf, "AT+CMGR=%d\x00D\x00A", i);
-				RcvSms_seq = i;
-				serial_cmmn( in_buf, *len, 1000);
+				
+				SerilTxandRx( in_buf, bufLen, 1000);
 			
 				pp = in_buf;			///假定pp的值是正常的
 				if(  legal_phno)			//输入的号码合法，就进行匹配
@@ -621,6 +624,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 							
 							*ptarget  = '\0';
 							*len = number;
+							RcvSms_seq = i + 1;
 							return i;
 						}
 						
@@ -1607,27 +1611,27 @@ void read_event(void *buf, void *arg, int len)
 		return;
 
 	}
-	pp = strstr((const char*)buf,"CMTI");
-	if( pp)
-	{
-		
-		event = malloc_event();
-		if( event)
-		{
-			event->type = sms_urc;
-			event->arg = get_seq(&pp);
-			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
-			{
-				
-				goto CB_WRFAIL;
-				
-			}
-		}
-		
-		return;
+//	pp = strstr((const char*)buf,"CMTI");
+//	if( pp)
+//	{
+//		
+//		event = malloc_event();
+//		if( event)
+//		{
+//			event->type = sms_urc;
+//			event->arg = get_seq(&pp);
+//			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+//			{
+//				
+//				goto CB_WRFAIL;
+//				
+//			}
+//		}
+//		
+//		return;
 
-		
-	}
+//		
+//	}
 	pp = strstr((const char*)buf,"SMS Ready");
 	if( pp)
 	{
