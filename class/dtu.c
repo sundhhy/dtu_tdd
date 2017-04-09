@@ -433,10 +433,11 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	void 			*gprs_event;
 	char 			*pp;
 	int 			ret = 0;
+	int				smsSeq = 0;
 	int 			smsSource = 0;
 //	this->print( this, "gprs event handle state \r\n");
 
-	this_gprs->lock( this_gprs);			
+		
 	while( 1)
 	{
 		if( safeCount > EVENT_MAX )
@@ -450,8 +451,9 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			
 			break;
 		}
-		
+		this_gprs->lock( this_gprs);		
 		ret = this_gprs->deal_tcprecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie);
+		this_gprs->unlock( this_gprs);
 		if( ret >= 0)
 		{
 			//接收到数据重置闹钟，避免发送心跳报文
@@ -479,22 +481,24 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 		lszie = this->bufLen;
 		memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 		
-		ret = this_gprs->deal_smsrecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie, DtuTempBuf);			
-		
-		if( ret > 0)
+		this_gprs->lock( this_gprs);	
+		smsSeq = this_gprs->deal_smsrecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie, DtuTempBuf);			
+		this_gprs->unlock( this_gprs);
+		if( smsSeq > 0)
 		{
 			for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 			{
 				if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
 				{
 					smsSource =  i;
-					self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
-					self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
+					ret = self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
+					if( ret != ERR_OK)
+						self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
 					
 				}
 					
 			}
-			this_gprs->delete_sms( this_gprs, ret);
+			this_gprs->delete_sms( this_gprs, smsSeq);
 			this_gprs->free_event( this_gprs, gprs_event);
 			continue;
 		}
@@ -510,7 +514,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	}	//while(1)
 				
 	context->nextState( context, STATE_EventHandle);
-	this_gprs->unlock( this_gprs);
+	
 	evenExit:
 	return 	ERR_OK;
 				
@@ -601,6 +605,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 				this->print( this, this->dataBuf);
 				if( this_gprs->tcpip_cnnt( this_gprs, cnntNum, Dtu_config.protocol[ cnntNum], Dtu_config.DateCenter_ip[cnntNum], Dtu_config.DateCenter_port[cnntNum]) == ERR_OK)
 				{
+					this_gprs->sendto_tcp( this_gprs, cnntNum, Dtu_config.registry_package, strlen(Dtu_config.registry_package) );
 					this->print( this," succeed !\n");
 				}
 				else
@@ -630,39 +635,51 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	GprsDealSMSState	*self = SUB_PTR( this, WorkState, GprsDealSMSState);
+	static	uint8_t skip = 0;		//为了避免每次都无意义的查询
 	
 	int			lszie = 0;
 	short 		i = 0;
+	int				smsSeq = 0;
 	int				ret = 0;
 	int 			smsSource = 0;
 	
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 	this->print( this, "gprs deal sms state \r\n");
 
-	this_gprs->lock( this_gprs);
+	
 	context->nextState( context, STATE_SMSHandle);
 	
+	if( skip)
+	{
+		skip --;
+		return 	ERR_OK;
+	}
+	skip = 200;
+	this_gprs->lock( this_gprs);
 	while( 1)
 	{
 		lszie = this->bufLen;
-		ret = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
-		if( ret >= 0)
+		smsSeq = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
+		if( smsSeq >= 0)
 		{
+			//有收到短信下回就不跳过
+			skip = 0;
 			for( i = 0; i < ADMIN_PHNOE_NUM; i ++)
 			{
 				if( compare_phoneNO( DtuTempBuf, Dtu_config.admin_Phone[i]) == 0)
 				{
 					
-					smsSource =  i;
-					self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
-					self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
 					
+					smsSource =  i;
+					ret = self->configSystem->process( this->dataBuf, lszie, ( hookFunc)SMSConfigSystem_ack, &smsSource);
+					if( ret != ERR_OK)
+						self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
 					
 					break;
 				}
 				
 			}
-			this_gprs->delete_sms( this_gprs, ret);
+			this_gprs->delete_sms( this_gprs, smsSeq);
 		}	
 		else
 		{
@@ -674,7 +691,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 		}
 	}	
 	this_gprs->unlock( this_gprs);
-	osDelay(10000);
+
 	return 	ERR_OK;
 				
 }
@@ -705,19 +722,19 @@ WorkState*  SMSModeBuildGprsConnectState(StateContext *this )
 }
 WorkState* SMSModeBuildGprsEventHandleState(StateContext *this )
 {
-//	GprsEventHandleState *concretestate = GprsEventHandleState_new();
-//	WorkState *state = ( WorkState *)concretestate;
-//	
-//	concretestate->forwardNet = GetForwardNet();
-//	concretestate->forwardSMS = GetForwardSMS();
-//	concretestate->forwardSer485 = GetForwardSer485();
-//	concretestate->configSystem = GetConfigSystem();
-//	concretestate->modbusProcess = GetEmptyProcess();
-//	
-//	state->init( state, this->dataBuf, this->bufLen);
-//	return state;
+	GprsEventHandleState *concretestate = GprsEventHandleState_new();
+	WorkState *state = ( WorkState *)concretestate;
 	
-	return NULL;
+	concretestate->forwardNet = GetEmptyProcess();
+	concretestate->forwardSMS = GetEmptyProcess();
+	concretestate->forwardSer485 = GetForwardSer485();
+	concretestate->configSystem = GetConfigSystem();
+	concretestate->modbusProcess = GetEmptyProcess();
+	
+	state->init( state, this->dataBuf, this->bufLen);
+	return state;
+	
+//	return NULL;
 	
 }
 WorkState* SMSModeBuildGprsDealSMSState(StateContext *this )
@@ -1056,8 +1073,7 @@ END_CTOR
 int ConfigSystemProcess( char *data, int len, hookFunc cb, void *arg)
 {
 	other_ack configAck = ( other_ack)cb;
-	Config_server( data, configAck, arg);
-	return ERR_OK;
+	return Config_server( data, configAck, arg);
 }
 
 CTOR( ConfigSystem)
@@ -1067,6 +1083,7 @@ END_CTOR
 int ForwardSer485Process( char *data, int len, hookFunc cb, void *arg)
 {
 	int ret = 0;
+	
 	ret = s485_Uart_write( data, len);
 	if( ret == ERR_DEV_TIMEOUT)
 		osDelay(100);

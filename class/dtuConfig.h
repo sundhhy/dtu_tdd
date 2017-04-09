@@ -90,6 +90,6 @@ int Init_system_config(void);
 void set_default( DtuCfg_t *conf);
 void Config_job(void);
 
-void Config_server( char *data, other_ack ack, void * arg);
+int  Config_server( char *data, other_ack ack, void * arg);
 
 #endif

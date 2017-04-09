@@ -62,7 +62,7 @@ void Config_job(void)
 	
 }
 
-void Config_server( char *data, other_ack ack, void *arg)
+int Config_server( char *data, other_ack ack, void *arg)
 {
 	
 	if( decodeTTCP_begin( data) == ERR_OK)
@@ -71,8 +71,10 @@ void Config_server( char *data, other_ack ack, void *arg)
 		g_ack_arg = arg;
 		dtu_conf(data);
 		decodeTTCP_finish();
+		return 0;
 	}
 	g_other_ack = NULL;
+	return -1;
 }
 
 void set_default( DtuCfg_t *conf)
@@ -593,10 +595,11 @@ static void dtu_conf(char *data)
 			else
 			{
 				i =  strlen(parg);
-				if( i > 31)
-					i = 31;
+				if( i > 29)
+					i = 29;
 				memset(  Dtu_config.registry_package, 0, sizeof( Dtu_config.registry_package));		
 				memcpy( Dtu_config.registry_package, parg, i );
+				strcat( Dtu_config.registry_package, "\r\n");
 				strcpy( data, "OK");
 				ack_str( data);
 			}

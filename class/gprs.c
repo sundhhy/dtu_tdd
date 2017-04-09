@@ -233,7 +233,7 @@ void shutdown(gprs_t *self)
 int	check_simCard( gprs_t *self)
 {
 	short step = 0;
-	static char successCount = 0;
+//	static char successCount = 0;
 	short	retry = RETRY_TIMES;
 	char *pp = NULL;
 
@@ -326,11 +326,11 @@ int	check_simCard( gprs_t *self)
 						DPRINTF(" check_simCard succeed !\r\n");
 						if( Gprs_currentState < INIT_FINISH_OK)
 							Gprs_currentState = INIT_FINISH_OK;
-						successCount ++;
+//						successCount ++;
 						
 						//防止漏收SMS READY 而永远无法进入成功状态
-						if( successCount > 30)
-							FlagSmsReady = 1;
+//						if( successCount > 30)
+//							FlagSmsReady = 1;
 						return ERR_OK;
 				}
 				osDelay(1000);
@@ -351,7 +351,7 @@ int	check_simCard( gprs_t *self)
 	}	//while(1)
 	
 	errOut:
-	successCount = 0;
+//	successCount = 0;
 	return ERR_FAIL; 
 }
 
@@ -443,7 +443,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
-					osDelay(1000);
+//					osDelay(1000);
 					return ERR_OK;
 				}
 				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
@@ -458,12 +458,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 					return ERR_FAIL;
 				}
 				
-				//在发短信时，出现电话时会出现这个应答
-//				pp = strstr((const char*)Gprs_cmd_buf,"+++");
-//				if(pp)
-//				{
-//					Gprs_state.sms_chrcSet = SMS_CHRC_SET_ERR;
-//				}
+
 					
 				osDelay(1000);
 				retry --;
@@ -539,8 +534,13 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 			
 //				+CPMS: <mem1>,<used1>,<total1>,<mem2>,<used2>,<total2>,
 //						<mem3>,<used3>,<total3>
-				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
-			
+				
+				if( SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,50) == 0)
+				{
+					//这情况下，可能是GPRS被关机了
+					Gprs_state.sms_msgFromt = SMS_MSG_ERR;
+					return ERR_FAIL;
+				}
 			
 				//找到总数
 				pp = strstr(Gprs_cmd_buf,",");
@@ -566,6 +566,10 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				{
 					return -1;
 				}
+				retry --;
+				if( retry == 0)
+					return ERR_FAIL;
+				
 //				tmp = strcspn( pp, "0123456789");			
 //				pp = Gprs_cmd_buf + tmp;
 //				tmp = strcspn( pp, ",");	
@@ -582,7 +586,12 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 			case 2:		///一次读取短信，并从中读取发送方是指定号码的短信
 				sprintf( in_buf, "AT+CMGR=%d\x00D\x00A", i);
 				
-				SerilTxandRx( in_buf, bufLen, 1000);
+				
+				if( SerilTxandRx( in_buf, bufLen, 10) == 0)
+				{
+					Gprs_state.sms_msgFromt = SMS_MSG_ERR;
+					return ERR_FAIL;
+				}
 			
 				pp = in_buf;			///假定pp的值是正常的
 				if(  legal_phno)			//输入的号码合法，就进行匹配
@@ -707,7 +716,11 @@ int	read_seq_TextSMS( gprs_t *self, char *phnNmbr, int seq, char *buf, int *len)
 				break;
 			case 1:		
 				sprintf( buf, "AT+CMGR=%d\x00D\x00A", seq);
-				serial_cmmn( buf, *len, 1000);
+				if( SerilTxandRx( buf, *len, 50) == 0)
+				{
+					Gprs_state.sms_msgFromt = SMS_MSG_ERR;
+					return ERR_FAIL;
+				}
 			
 				pp = buf;			
 				if(  legal_phno)			//输入的号码合法，就进行匹配
@@ -845,7 +858,7 @@ int delete_sms( gprs_t *self, int seq)
 //	 short i = 0;
 	 if( g_CipMux)
 	 {
-		 if( Ip_cnnState.cnn_state[ cnntNum] != CNNT_DISCONNECT)
+		 if( Ip_cnnState.cnn_state[ cnntNum] != CNNT_ESTABLISHED)
 			 return ERR_OK;
 		 
 		sprintf( Gprs_cmd_buf, "AT+CIPCLOSE=%d,0\x00D\x00A", cnntNum);		//quick close
@@ -855,7 +868,7 @@ int delete_sms( gprs_t *self, int seq)
 	 }
 	 else
 	 {
-		 if( Ip_cnnState.cnn_state[ 0] != CNNT_DISCONNECT)
+		 if( Ip_cnnState.cnn_state[ 0] != CNNT_ESTABLISHED)
 			 return ERR_OK;
 		 //退出数据模式
 		 while(1)
@@ -1533,6 +1546,27 @@ void read_event(void *buf, void *arg, int len)
 	
 	cthis = ( gprs_t *)arg;
 	
+	
+	
+	
+	pp = strstr((const char*)buf,"SMS Ready");
+	if( pp)
+	{
+		FlagSmsReady = 1;
+		
+		
+	}
+	
+	pp = strstr((const char*)buf,"CALL Ready");
+	if( pp)
+	{
+		
+		
+
+	}	
+	
+	
+	
 	//由tcp close指令引起的关闭不作为事件处理
 	pp = strstr((const char*)buf,"STATE: TCP CLOSED");
 	if( pp)
@@ -1611,43 +1645,28 @@ void read_event(void *buf, void *arg, int len)
 		return;
 
 	}
-//	pp = strstr((const char*)buf,"CMTI");
-//	if( pp)
-//	{
-//		
-//		event = malloc_event();
-//		if( event)
-//		{
-//			event->type = sms_urc;
-//			event->arg = get_seq(&pp);
-//			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
-//			{
-//				
-//				goto CB_WRFAIL;
-//				
-//			}
-//		}
-//		
-//		return;
-
-//		
-//	}
-	pp = strstr((const char*)buf,"SMS Ready");
+	pp = strstr((const char*)buf,"CMTI");
 	if( pp)
 	{
-		FlagSmsReady = 1;
+		
+		event = malloc_event();
+		if( event)
+		{
+			event->type = sms_urc;
+			event->arg = get_seq(&pp);
+			if( CBWrite( cthis->event_cbuf, event) != ERR_OK)
+			{
+				
+				goto CB_WRFAIL;
+				
+			}
+		}
 		
 		return;
 
+		
 	}
 	
-	pp = strstr((const char*)buf,"CALL Ready");
-	if( pp)
-	{
-		
-		return;
-
-	}	
 		
 	
 	if( g_CipMode == CIPMODE_TRSP)
@@ -2423,7 +2442,7 @@ static int set_sms2TextMode(gprs_t *self)
 				step ++;
 			case 1:
 				strcpy( Gprs_cmd_buf, "AT+CMGF=1\x00D\x00A" );
-				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,100);
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
