@@ -7,7 +7,7 @@ static int VecBuf_RecycleAFrame( vectorBufManager_t* p_vbm);
 
 int VecBuf_Init( vectorBufManager_t* p_vbm, char* buf, uint16_t len, int drop)
 {
-	if( buf == NULL | len < VBM_FRAMEHEAD_LEN)
+	if( buf == NULL || len < VBM_FRAMEHEAD_LEN)
 		return -1;
 	if( ( drop != DROP_OLDDATA) && ( drop != DROP_NEWDATA))
 		return -1;

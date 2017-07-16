@@ -6,7 +6,7 @@
 #include "serial485_uart.h"
 #include "sw_filesys.h"
 
-#define SOFTER_VER	0
+#define SOFTER_VER	200
 #define HARD_VER	1
 
 #define MODE_PASSTHROUGH					0			//

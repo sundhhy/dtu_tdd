@@ -391,9 +391,12 @@ void DMA1_Channel2_IRQHandler(void)
 
     if(DMA_GetITStatus(DMA1_FLAG_TC2))
     {
-		osSemaphoreRelease( SemId_txFinish);
+		
         DMA_ClearFlag(DMA_gprs_usart.dma_tx_flag);         // 清除标志
 		DMA_Cmd( DMA_gprs_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
+		
+		USART_ClearFlag(USART3,USART_IT_TC );
+		USART_ITConfig( USART3, USART_IT_TC, ENABLE);
     }
 }
 
@@ -434,6 +437,21 @@ void USART3_IRQHandler(void)
 		
 		
 		
+		
+	}
+	
+	if(USART_GetITStatus( USART3, USART_IT_RXNE) == SET) 
+	{
+		//清除RXNE标志，防止在接收的数据长度超过dma的接收长度之后，没有任何应用去接收数据而造成串口永远处于中断状态
+		USART_ReceiveData( USART3);
+	}
+	//这个中断在DMA发送完成中断中开启
+	if(USART_GetITStatus( USART3, USART_IT_TC) == SET) 
+	{
+		USART_ClearFlag( USART3,USART_IT_TC );
+		USART_ITConfig( USART3, USART_IT_TC, DISABLE);
+		
+		osSemaphoreRelease( SemId_txFinish);
 		
 	}
 

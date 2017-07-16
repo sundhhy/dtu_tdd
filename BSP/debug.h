@@ -44,7 +44,7 @@
 /** TDD开发中的测试内容.
  *
  */
-// #define TDD_ON		1
+ #define TDD_ON		1
  
 //#define TDD_GPRS_ONOFF
 //#define TDD_GPRS_USART
@@ -57,7 +57,7 @@
 #define PORTNUM 19350
 
 
-//#define TDD_S485
+#define TDD_S485	1
 //#define TDD_FILESYS_TEST
 
 //#define TDD_ADC

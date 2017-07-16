@@ -74,7 +74,7 @@ int fgetc(FILE *f /*stream*/)
 }
 
 
-#ifdef TDD_ON
+#if TDD_ON == 1
 #define TEST_BUF_SIZE 1200
 char Test_buf[TEST_BUF_SIZE];
 #endif
@@ -101,7 +101,9 @@ int main (void) {
 	 
   // initialize peripherals here
 	RCC_Configuration();
+#if TDD_ON == 0
 	IWDG_Configuration();
+#endif
 	NVIC_Configuration();
 	
 	GPIO_Configuration();
@@ -113,7 +115,7 @@ int main (void) {
 	LED_run->init( LED_run, &PinLED_run);
 	LED_com->init( LED_com, &PinLED_com);
 
-#ifndef TDD_ON	
+#if TDD_ON == 0
 	printf(" DTU TDD start ...\n");
 	if( filesys_init() != ERR_OK)
 	{

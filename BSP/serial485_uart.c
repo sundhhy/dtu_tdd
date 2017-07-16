@@ -455,7 +455,10 @@ void DMA1_Channel7_IRQHandler(void)
 			
 			DMA_ClearFlag(DMA_s485_usart.dma_tx_flag);         // 清除标志
 			DMA_Cmd( DMA_s485_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
-			osSemaphoreRelease( SemId_s485txFinish);
+//			osSemaphoreRelease( SemId_s485txFinish);
+		
+		USART_ClearFlag(USART2,USART_IT_TC );
+		USART_ITConfig( USART2, USART_IT_TC, ENABLE);
 		
     }
 }
@@ -507,6 +510,21 @@ void USART2_IRQHandler(void)
 		LED_com->turnon(LED_com);
 		osSemaphoreRelease( SemId_s485rxFrame);
 	}
+	if(USART_GetITStatus( USART2, USART_IT_RXNE) == SET) 
+	{
+		//清除RXNE标志，防止在接收的数据长度超过dma的接收长度之后，没有任何应用去接收数据而造成串口永远处于中断状态
+		USART_ReceiveData( USART2);
+	}
+	//这个中断在DMA发送完成中断中开启
+	if(USART_GetITStatus( USART2, USART_IT_TC) == SET) 
+	{
+		USART_ClearFlag( USART2,USART_IT_TC );
+		USART_ITConfig( USART2, USART_IT_TC, DISABLE);
+		
+		osSemaphoreRelease( SemId_s485txFinish);
+		
+	}
+	
 #if SER485_SENDMODE == SENDMODE_INTR	
 	if(USART_GetITStatus(USART2, USART_IT_TXE) == SET)  // 发送中断
 	{
