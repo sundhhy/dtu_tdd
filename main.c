@@ -88,7 +88,8 @@ int main (void) {
 	gprs_t *sim800;
 	int u32_val = 0;
 	
-#if  defined(TDD_GPRS_USART) ||  defined(TDD_GPRS_SMS ) || defined(TDD_GPRS_TCP ) || defined(TDD_S485 ) || defined(TDD_ADC ) 
+#if TDD_ON == 1
+
 	int i = 0;
 	char c = 0;
 	
@@ -101,9 +102,8 @@ int main (void) {
 	 
   // initialize peripherals here
 	RCC_Configuration();
-#if TDD_ON == 0
 	IWDG_Configuration();
-#endif
+
 	NVIC_Configuration();
 	
 	GPIO_Configuration();
@@ -343,7 +343,7 @@ int main (void) {
 #endif	
 	
 	
-#ifdef TDD_S485
+#if TDD_S485 == 1
 	s485_uart_init( &Conf_S485Usart_default, NULL);
 	while(1)
 	{

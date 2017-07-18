@@ -935,7 +935,8 @@ int delete_sms( gprs_t *self, int seq)
 				{
 					if( g_CipMode == CIPMODE_TRSP)
 					{
-						self->tcpClose( self, 0);
+						SystemShutdown();
+//						self->tcpClose( self, 0);
 					}
 						
 					break;
@@ -1063,109 +1064,7 @@ int delete_sms( gprs_t *self, int seq)
 		
  }
 
-/**
- * @brief 像指定的连接发送tcp数据.
- *
- * @details 1. .
- *			2. 连接成功后向服务器发送数据.
- *			3. 重复1和2，直到建立4个连接。同一个服务器可以建立多个连接。
- *			4. 回显服务器发送的数据.
- *			5. 服务器段发送finish来结束测试
- * 
- * @param[in]	self.
- * @param[in]	cnnt_num. 连接号
- * @param[in]	data. 发送数据地址
- * @param[in]	len. 发送的数据长度
- * @retval	ERR_OK 成功
- * @retval	ERR_BAD_PARAMETER 连接号非法
- * @retval	ERR_UNINITIALIZED 连接未建立
- * @retval	ERR_FAIL 发送命令没有收到正确的回复
- */
- 
-// static char send_state = 0;
-// static char sending_cnnt_num = -1;
 
-// static void SendBufData( )
-// {
-//	char end = 0x1A;
-//	char *pp;
-//	 int retry = RETRY_TIMES;
-//	
-//	
-//	 if( send_state  == 0)
-//		 return;
-//	 UART_SEND( &end, 1);
-//	send_state = 0;
-//	 
-//	while(1)
-//	{
-
-//		UART_RECV( Gprs_cmd_buf, CMDBUF_LEN);
-
-//		pp = strstr((const char*)Gprs_cmd_buf,"OK");		
-//		if( pp)
-//			return ;
-//		pp = strstr((const char*)Gprs_cmd_buf,"FAIL");		
-//		if( pp)
-//			return ;
-//		pp = strstr((const char*)Gprs_cmd_buf,"ERROR");		
-//		if( pp)
-//		{
-//			Ip_cnnState.cnn_state[ sending_cnnt_num] = CNNT_SENDERROR;
-//			return ;
-//		}
-//		//花生壳调试时，本地未开启服务器时，会出现连接后马上断开的情况
-//		pp = strstr((const char*)Gprs_cmd_buf,"CLOS");		
-//		if( pp)
-//		{
-//			Ip_cnnState.cnn_state[ sending_cnnt_num] = CNNT_DISCONNECT;
-//			return ;
-//		}
-//		osDelay(10);
-//		retry--;
-//		if( retry == 0)
-//		{
-//			Ip_cnnState.cnn_state[ sending_cnnt_num] = CNNT_DISCONNECT;
-//			return ;
-//		}
-//	}
-//	 
-// }
-// 
-// 
-// static int SendStart( int cnnt_num)
-// {
-//	 if( sending_cnnt_num != cnnt_num)
-//	 {
-//		 SendBufData( );
-//		 
-//	 }
-//	 if( send_state)
-//		 return ERR_OK;
-//	 
-//	if( g_CipMux)
-//		sprintf( Gprs_cmd_buf, "AT+CIPSEND=%d\x00D\x00A", cnnt_num);
-//	else
-//		sprintf( Gprs_cmd_buf, "AT+CIPSEND\x00D\x00A");
-//	UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
-//	sending_cnnt_num = cnnt_num;
-//	send_state = 1;
-////	regist_timejob( 200, SendEnd);
-//	set_alarmclock_ms( ALARM_SENDTCPBUF, 500);
-//	return ERR_OK;
-// }
-// 
-// static void SendData( char *data, int len)
-// {
-//	 if( send_state == 0)
-//		 return;
-//	 
-//	if( UART_SEND( data, len) == ERR_DEV_TIMEOUT)
-//		osDelay(200);
-//	else
-//		osDelay(2);
-
-// }
 #define TCPSENDBUF_LEN     256
 #define SENDBUF_NUM		2
 static short sendDataIdx[SENDBUF_NUM];
@@ -1180,29 +1079,12 @@ static void SendBufData(void)
 	char i = 0, j = 0;
 	char timeout = 0;
 	char needclean = 0;		//缓存数据太多的时候就清除
-//	if( sending_cnnt_num < 0)
-//		return;
-//	if( sendDataIdx == 0)
-//		return;
-	
+
 	
 
 	this_gprs->lock( this_gprs);
-//	sendFlag = 1;
 	if( Ringing( ALARM_SENDTCPBUF) == ERR_OK)
 		timeout = 1;
-//	
-//		if( TCPSENDBUF_LEN - sendDataIdx < 100)
-//			needclean = 1;
-//		if( ( timeout + needclean) == 0)
-//			goto sendout;
-//		for( j = 0; j < IPMUX_NUM; j ++)
-//			this_gprs->sendto_tcp( this_gprs, j, sendTcpdata, sendDataIdx);
-//		memset( sendTcpdata, 0 , TCPSENDBUF_LEN);
-//		needclean = 0;
-//		sendDataIdx= 0;
-	
-	
 
 	for( i = 0; i < SENDBUF_NUM; i++)
 	{
@@ -1218,58 +1100,12 @@ static void SendBufData(void)
 		sendDataIdx[ i]= 0;
 	}
 	sendBuf = -1;
-//sendout:
 	this_gprs->unlock( this_gprs);
 
 	
-//	sendFlag = 0;
 }
  
-//static void SaveData( int cnnt_num, char *data, int len)
-//{
-//	gprs_t	*this_gprs = GprsGetInstance();
-//	
-//	
-////	if( sending_cnnt_num < 0)
-////		sending_cnnt_num = cnnt_num;
-//	
-////	//要切换发生的通道前刷新缓存
-////	if( ( cnnt_num != sending_cnnt_num) && sendDataIdx != 0)
-////	{
-////		sendFlag = 1;
-////		this_gprs->sendto_tcp( this_gprs, sending_cnnt_num, sendTcpdata, sendDataIdx);
-////		sendDataIdx = 0;
-////		sendFlag = 0;
-////		memset( sendTcpdata, 0 , TCPSENDBUF_LEN);
 
-////	}
-////	
-////	sending_cnnt_num = cnnt_num;
-//	
-//	//缓存不足的时候,更换缓存
-//	
-//		
-//	if( ( len + sendDataIdx[ 0] ) >=  TCPSENDBUF_LEN)
-//		numBuf = 1;
-//	
-////	if( ( len + sendDataIdx[ 0] ) >=  TCPSENDBUF_LEN)
-////	{
-////		sendFlag = 1;
-////		this_gprs->lock( this_gprs);
-////		this_gprs->sendto_tcp( this_gprs, cnnt_num, sendTcpdata[ cnnt_num], sendDataIdx[ cnnt_num]);
-////		this_gprs->unlock( this_gprs);
-
-////		sendDataIdx[ cnnt_num] = 0;
-////		sendFlag = 0;
-////		memset( sendTcpdata[ cnnt_num], 0 , TCPSENDBUF_LEN);
-////		
-////	}
-//	
-//	memcpy( sendTcpdata[ numBuf] + sendDataIdx[ numBuf], data, len);
-//	sendDataIdx[ numBuf] += len;
-//	set_alarmclock_ms( ALARM_SENDTCPBUF, 100);
-
-//}
 
 void GprsRun( gprs_t *self)
 {
@@ -1533,6 +1369,7 @@ static int get_seq( char **data)
 	return  atoi( buf + tmp);
 }
 
+static int errcount = 0;
 void read_event(void *buf, void *arg, int len)
 {
 	char *pp;
@@ -1584,8 +1421,29 @@ void read_event(void *buf, void *arg, int len)
 			SystemShutdown();
 			
 			
+			
 		}
 		pp = strstr((const char*)buf,"CLOSED");
+		
+		//170717 发现断网之后，会报ERROR，所以对ERROR也要检查
+	//不过要在已经建立了连接之后才能这么处理，否则会影响正常的连接过程
+	
+	if( ( pp == NULL) && ( Ip_cnnState.cnn_state[ 0] == CNNT_ESTABLISHED) )
+	{
+		pp = strstr((const char*)buf,"\r\nERROR\r\n");
+		if( pp)
+		{	//170718 如果出现了这种情况，重新连接已经不起作用了，得重启才能连上
+			
+			errcount ++;
+			if( errcount > 2)
+			{
+				errcount = 0;
+				SystemShutdown();
+			}
+//			return;
+		}
+		
+	}
 		
 	}
 	else
@@ -1593,6 +1451,8 @@ void read_event(void *buf, void *arg, int len)
 		pp = strstr((const char*)buf,",CLOSED");
 		
 	}
+	
+	
 	
 	if( pp)
 	{
@@ -1617,6 +1477,7 @@ void read_event(void *buf, void *arg, int len)
 //		memset( buf, 0, strlen( buf));
 		return;
 	}
+	
 	//+RECEIVE,0,6:\0D\0A
 	//123456
 	pp = strstr((const char*)buf,"RECEIVE");
@@ -1673,6 +1534,7 @@ void read_event(void *buf, void *arg, int len)
 	{
 		if( cthis->get_firstCnt_seq( cthis) < 0)
 			return;
+		errcount = 0;
 		event = malloc_event();
 		if( event)
 		{
@@ -1708,40 +1570,7 @@ int report_event( gprs_t *self, void **event, char *buf, int *lsize)
 	
 	return CBRead( self->event_cbuf, event);
 	
-//	char *pp;
-//	
-//	if( self->event == 0)
-//		return 0;
-//	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
-//	UART_RECV( buf, *lsize);
-//	gprs_Uart_ioctl( GPRS_UART_CMD_SET_RXBLOCK);
-//	return self->event;
-	
-//	if( ret < 1)
-//	 return ERR_UNKOWN;
-//	
-//	*lsize = ret;
-//	pp = strstr((const char*)buf,"CLOSED");
-//	if( pp)
-//	{
-//		
-//		return tcp_close;
-//	}
-//	pp = strstr((const char*)buf,"RECEIVE");
-//	if( pp)
-//	{
-//		return tcp_receive;
-//	}
-//	pp = strstr((const char*)buf,"CMTI");
-//	if( pp)
-//	{
-//		return sms_urc;
-//		
-//	}
-//	return ERR_UNKOWN;
-	
-	//每次都去读取下短信吧，防止被垃圾短信塞满短信存储区而导致无法接收短信了
-//	return sms_urc;
+
 }
 
 #define EVENT_NUM   8
