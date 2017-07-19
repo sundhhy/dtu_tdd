@@ -326,6 +326,7 @@ FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
 END_CTOR
 
 ///-----------------------------------------------------------------------------
+//static int cntTry = 5;
 int GprsConnectRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
@@ -373,6 +374,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 			}	//while(1)
 		}	//if( ret == ERR_OK)
 		cnnt_seq ++;
+		osDelay(2000);		//170719
 		if( cnnt_seq >= IPMUX_NUM)
 		{
 			
@@ -505,9 +507,11 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 				
 		ret = this_gprs->deal_tcpclose_event( this_gprs, gprs_event);
 		if( ret >= 0)
-		{
+		{	
+			
 			sprintf( this->dataBuf, "tcp close : %d ", ret);
 			this->print( this, this->dataBuf);
+			osDelay(1000);
 		}
 		this_gprs->free_event( this_gprs, gprs_event);
 					

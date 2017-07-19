@@ -930,17 +930,18 @@ int delete_sms( gprs_t *self, int seq)
 					sprintf( Gprs_cmd_buf, "AT+CIPSTATUS\x00D\x00A");
 				}
 				
+				//170719
 				//透明模式下要先退出数据模式
-				if( SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10) == 0)
-				{
-					if( g_CipMode == CIPMODE_TRSP)
-					{
-						SystemShutdown();
-//						self->tcpClose( self, 0);
-					}
-						
-					break;
-				}
+//				if( SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10) == 0)
+//				{
+//					if( g_CipMode == CIPMODE_TRSP)
+//					{
+////						SystemShutdown();
+////						self->tcpClose( self, 0);
+//					}
+//						
+//					break;
+//				}
 				//CONNECTING or CONNECTED
 				//在单路模式下，如果前面的配置的中心无法连接就会使CONNECTING状态
 				pp = strstr((const char*)Gprs_cmd_buf,"CONNECT");	
@@ -1175,8 +1176,8 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
 	{
 		if( UART_SEND( data, len) == ERR_DEV_TIMEOUT)
 			osDelay(1000);
-		else
-			osDelay(1);
+//		else
+//			osDelay(1);
 		return ERR_OK;
 		
 	}
@@ -1348,7 +1349,7 @@ int deal_tcpclose_event( gprs_t *self, void *event)
 	gprs_event_t *this_event = ( gprs_event_t *)event;
 	if( CKECK_EVENT( this_event, tcp_close) )
 	{
-		self->tcpClose( self, this_event->arg);
+//		self->tcpClose( self, this_event->arg);
 		Ip_cnnState.cnn_state[ this_event->arg] = CNNT_DISCONNECT;
 		
 		return this_event->arg;
@@ -1369,7 +1370,6 @@ static int get_seq( char **data)
 	return  atoi( buf + tmp);
 }
 
-static int errcount = 0;
 void read_event(void *buf, void *arg, int len)
 {
 	char *pp;
@@ -1428,22 +1428,22 @@ void read_event(void *buf, void *arg, int len)
 		//170717 发现断网之后，会报ERROR，所以对ERROR也要检查
 	//不过要在已经建立了连接之后才能这么处理，否则会影响正常的连接过程
 	
-	if( ( pp == NULL) && ( Ip_cnnState.cnn_state[ 0] == CNNT_ESTABLISHED) )
-	{
-		pp = strstr((const char*)buf,"\r\nERROR\r\n");
-		if( pp)
-		{	//170718 如果出现了这种情况，重新连接已经不起作用了，得重启才能连上
-			
-			errcount ++;
-			if( errcount > 2)
-			{
-				errcount = 0;
-				SystemShutdown();
-			}
-//			return;
-		}
-		
-	}
+//	if( ( pp == NULL) && ( Ip_cnnState.cnn_state[ 0] == CNNT_ESTABLISHED) )
+//	{
+//		pp = strstr((const char*)buf,"\r\nERROR\r\n");
+//		if( pp)
+//		{	//170718 如果出现了这种情况，重新连接已经不起作用了，得重启才能连上
+//			
+//			errcount ++;
+//			if( errcount > 2)
+//			{
+//				errcount = 0;
+//				SystemShutdown();
+//			}
+////			return;
+//		}
+//		
+//	}
 		
 	}
 	else
@@ -1534,7 +1534,6 @@ void read_event(void *buf, void *arg, int len)
 	{
 		if( cthis->get_firstCnt_seq( cthis) < 0)
 			return;
-		errcount = 0;
 		event = malloc_event();
 		if( event)
 		{
