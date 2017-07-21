@@ -373,6 +373,11 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 				}
 			}	//while(1)
 		}	//if( ret == ERR_OK)
+		else if( ret == ERR_DEV_SICK)
+		{
+			osDelay(2000);		//170719
+			context->setCurState( context, STATE_SelfTest);	
+		}
 		cnnt_seq ++;
 		osDelay(2000);		//170719
 		if( cnnt_seq >= IPMUX_NUM)
@@ -648,7 +653,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	int 			smsSource = 0;
 	
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
-	this->print( this, "gprs deal sms state \r\n");
+	
 
 	
 	context->nextState( context, STATE_SMSHandle);
@@ -658,7 +663,8 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 		skip --;
 		return 	ERR_OK;
 	}
-	skip = 200;
+	this->print( this, "gprs deal sms state \r\n");
+	skip = 255;
 	this_gprs->lock( this_gprs);
 	while( 1)
 	{

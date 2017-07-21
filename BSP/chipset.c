@@ -205,6 +205,12 @@ void GPIO_Configuration(void)
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(PinLED_com.Port, &GPIO_InitStructure);
 	
+	GPIO_InitStructure.GPIO_Pin = Gprs_powerkey.pin;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(Gprs_powerkey.Port, &GPIO_InitStructure);
+	GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
+	
 //    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5;
 //    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 //    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -228,6 +234,8 @@ void GPIO_Configuration(void)
     GPIO_Init(GPIOG, &GPIO_InitStructure);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOF | RCC_APB2Periph_GPIOG, DISABLE);
 #endif
+
+	
 }
 
 ///*! adc Configuration */
