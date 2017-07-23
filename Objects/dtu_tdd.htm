@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Fri Jul 21 23:09:20 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sun Jul 23 17:39:01 2017
 <BR><P>
 <H3>Maximum Stack Usage =        296 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1238,6 +1238,7 @@ Global Symbols
 <LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Turnon
 <LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;startup
 <LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Configuration
+<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
 <LI><a href="#[23a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Write
 <LI><a href="#[1f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
 <LI><a href="#[237]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_waitbusy
@@ -1246,7 +1247,6 @@ Global Symbols
 <LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_ReadSR
 <LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sw_select
 <LI><a href="#[221]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;series_se
-<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
 </UL>
 
 <P><STRONG><a name="[185]"></a>GPIO_SetBits</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_SetBits))
@@ -1255,6 +1255,9 @@ Global Symbols
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;blink
 <LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Turnoff
 <LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;startup
+<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
+<LI><a href="#[1aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
 <LI><a href="#[23a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Write
 <LI><a href="#[1f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
 <LI><a href="#[237]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_waitbusy
@@ -1263,9 +1266,6 @@ Global Symbols
 <LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_ReadSR
 <LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;sw_select
 <LI><a href="#[221]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;series_se
-<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
-<LI><a href="#[1aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
-<LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
 </UL>
 
 <P><STRONG><a name="[11c]"></a>GetConfigSystem</STRONG> (Thumb, 22 bytes, Stack size 8 bytes, dtu.o(i.GetConfigSystem))
@@ -2534,9 +2534,9 @@ Global Symbols
 <P><STRONG><a name="[1a9]"></a>filesys_init</STRONG> (Thumb, 240 bytes, Stack size 24 bytes, sw_filesys.o(i.filesys_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 92<LI>Call Chain = filesys_init &rArr; w25q_init &rArr; w25q_init_spi &rArr; spi_init &rArr; malloc
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_init
-<LI><a href="#[1aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR>[Calls]<UL><LI><a href="#[1aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 <LI><a href="#[1ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_info
+<LI><a href="#[1ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;list_init
 <LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 </UL>
 <BR>[Called By]<UL><LI><a href="#[0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -3867,10 +3867,10 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[227]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;spi_sendByteForRead
 </UL>
-<BR>[Called By]<UL><LI><a href="#[1f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
+<BR>[Called By]<UL><LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
+<LI><a href="#[1f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
 <LI><a href="#[23e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_id
 <LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_ReadSR
-<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
 </UL>
 
 <P><STRONG><a name="[227]"></a>spi_sendByteForRead</STRONG> (Thumb, 112 bytes, Stack size 16 bytes, spi.o(i.spi_sendByteForRead))
@@ -3890,13 +3890,13 @@ Global Symbols
 <LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_I2S_ReceiveData
 <LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_I2S_GetFlagStatus
 </UL>
-<BR>[Called By]<UL><LI><a href="#[23a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Write
+<BR>[Called By]<UL><LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
+<LI><a href="#[23a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Write
 <LI><a href="#[1f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Read_Sector_Data
 <LI><a href="#[237]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_waitbusy
 <LI><a href="#[23b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_wr_enable
 <LI><a href="#[23e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_id
 <LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_ReadSR
-<LI><a href="#[239]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
 </UL>
 
 <P><STRONG><a name="[74]"></a>startup</STRONG> (Thumb, 66 bytes, Stack size 16 bytes, gprs.o(i.startup))
@@ -4080,8 +4080,8 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = sysTimerTick &rArr; isrMessagePut &rArr; isr_mbx_send &rArr; rt_psq_enq
 </UL>
 <BR>[Calls]<UL><LI><a href="#[208]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;os_error
-<LI><a href="#[1dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isrMessagePut
 <LI><a href="#[235]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_timer_insert
+<LI><a href="#[1dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isrMessagePut
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_systick
 </UL>
@@ -4686,8 +4686,8 @@ Local Symbols
 <LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_ReadSR
 <LI><a href="#[229]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;spi_write
 </UL>
-<BR>[Called By]<UL><LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Erase_Sector
-<LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
+<BR>[Called By]<UL><LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_erase
+<LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_Erase_Sector
 </UL>
 
 <P><STRONG><a name="[1c6]"></a>check_bit</STRONG> (Thumb, 44 bytes, Stack size 12 bytes, sw_filesys.o(i.check_bit))

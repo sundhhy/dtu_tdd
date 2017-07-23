@@ -29,6 +29,7 @@
 #define SIGTYPE_0_5_V			10
 #define SIGTYPE_1_5_V			11
 #define SIGTYPE_4_20_MA			9
+#define SIGTYPE_0_10_MA			8
 
 #define PHONENO_LEN				16
 #define ADMIN_PHNOE_NUM			4

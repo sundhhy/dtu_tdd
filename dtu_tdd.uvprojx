@@ -444,16 +444,6 @@
               <FilePath>.\class\gprs.h</FilePath>
             </File>
             <File>
-              <FileName>stm32ADC.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\class\stm32ADC.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32ADC.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\class\stm32ADC.h</FilePath>
-            </File>
-            <File>
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\class\led.c</FilePath>
