@@ -367,7 +367,20 @@ int main (void) {
 
 static void Led_job()
 {
-	LED_run->blink(LED_run);
+	short i = 0;
+	short err_flag = 0;
+	for( i = 0; i < IPMUX_NUM; i++) {
+		if( Dtu_config.DateCenter_port[i] < 0) {
+			err_flag = 1;
+			break;
+		}
+		
+	}
+	if( err_flag)
+		LED_run->turnon(LED_run);
+	else
+		LED_run->blink(LED_run);
+	
 	LED_com->turnoff(LED_com);
 }
 
