@@ -226,19 +226,18 @@ void startup(gprs_t *self)
 void shutdown(gprs_t *self)
 {
 	
-//	char *pp;
+	char *pp;
 	int count = 0;
 //	while(1)
 	{
 		count ++;
 		strcpy( Gprs_cmd_buf, "AT+CPOWD=1\r\n" );		//正常关机
 		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,2000);
-		FlagSmsReady = 0;
-//		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
-//		if( pp)
-//			return;
-//		if( count > 2)
-//			return;
+//		FlagSmsReady = 0;
+		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
+		if( pp)
+			FlagSmsReady = 0;
+		
 	}
 }
 
@@ -902,10 +901,10 @@ int delete_sms( gprs_t *self, int seq)
 
 	//短信为准备好，说明还没有入网
 	if( FlagSmsReady < 2)	//等到SMS 和CALL都可以了才联网
-		return ERR_UNINITIALIZED; 
+		return ERR_DEV_SICK; 
 	if( cnnt_num > IPMUX_NUM)
 		return ERR_BAD_PARAMETER;
-	if( portnum == 0)
+	if( portnum <= 0)
 		return ERR_BAD_PARAMETER;
 	
 	while(1)
@@ -986,7 +985,7 @@ int delete_sms( gprs_t *self, int seq)
 				UART_SEND( Gprs_cmd_buf, strlen( Gprs_cmd_buf));
 				
 				//当中心地址不正确的时候，GPRS会花花很长时间才能返回错误
-				retry = 30;
+				retry = 90;
 				step++;
 				break;
 			case 4:
@@ -1005,8 +1004,8 @@ int delete_sms( gprs_t *self, int seq)
 					}
 					pp = strstr((const char*)Gprs_cmd_buf,"CONNECT FAIL");
 					if( pp)
-					{	
-						ret = ERR_BAD_PARAMETER;
+					{	//服务端地址不正确的时候会出现这个回复，而且等待时间会很长
+						ret = ERR_ADDR_ERROR;
 						goto cntFailed;
 //						return ERR_BAD_PARAMETER;
 					}

@@ -342,7 +342,8 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 			Dtu_config.DateCenter_port[cnnt_seq],Dtu_config.protocol[cnnt_seq] );
 		this->print( this, this->dataBuf);
 		
-		ret = this_gprs->tcpip_cnnt( this_gprs, cnnt_seq,Dtu_config.protocol[cnnt_seq], Dtu_config.DateCenter_ip[cnnt_seq], Dtu_config.DateCenter_port[cnnt_seq]);
+		ret = this_gprs->tcpip_cnnt( this_gprs, cnnt_seq,Dtu_config.protocol[cnnt_seq], \
+				Dtu_config.DateCenter_ip[cnnt_seq], Dtu_config.DateCenter_port[cnnt_seq]);
 		if( ret == ERR_OK)
 		{
 			while(1)
@@ -371,12 +372,27 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 					this->print( this,"can not send data !\n");
 					break;
 				}
+				
 			}	//while(1)
 		}	//if( ret == ERR_OK)
 		else if( ret == ERR_DEV_SICK)
 		{
+			this->print(this, "SIM card can not work!\n");
 			osDelay(2000);		//170719
+			
 			context->setCurState( context, STATE_SelfTest);	
+			goto exit;
+		}
+		else if( ret == ERR_ADDR_ERROR )
+		{
+			Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
+			this->print( this,"Addr error !\n");
+			break;
+		}
+		else
+		{
+			
+			this->print(this, "connect failed\n");
 		}
 		cnnt_seq ++;
 		osDelay(2000);		//170719
@@ -392,6 +408,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 	
 	context->nextState( context, STATE_Connect);
 //	context->setCurState( context, context->gprsEventHandleState);	
+	exit:
 	return 	ERR_OK;
 				
 }
@@ -609,19 +626,19 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 			cnntNum = this_gprs->get_firstDiscnt_seq(this_gprs);
 			if( cnntNum >= 0)
 			{
-				sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
-					Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
-				this->print( this, this->dataBuf);
+//				sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnntNum ,Dtu_config.DateCenter_ip[ cnntNum],\
+//					Dtu_config.DateCenter_port[ cnntNum],Dtu_config.protocol[ cnntNum] );
+//				this->print( this, this->dataBuf);
 				if( this_gprs->tcpip_cnnt( this_gprs, cnntNum, Dtu_config.protocol[ cnntNum], Dtu_config.DateCenter_ip[cnntNum], Dtu_config.DateCenter_port[cnntNum]) == ERR_OK)
 				{
 					this_gprs->sendto_tcp( this_gprs, cnntNum, Dtu_config.registry_package, strlen(Dtu_config.registry_package) );
-					this->print( this," succeed !\n");
+//					this->print( this," succeed !\n");
 				}
-				else
-				{
-					this->print( this, " failed !\n");
-					
-				}
+//				else
+//				{
+//					this->print( this, " failed !\n");
+//					
+//				}
 			}
 			safecount ++;
 			if( safecount > IPMUX_NUM)
