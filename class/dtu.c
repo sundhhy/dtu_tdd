@@ -1157,13 +1157,15 @@ END_CTOR
 int ForwardSMSProcess( char *data, int len, hookFunc cb, void *arg)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
+	int	ret;
 	short i = 0;
 	short count = 0;
 	
 	this_gprs->lock( this_gprs);
 	for( i = 0; i < ADMIN_PHNOE_NUM; )
 	{
-		if( this_gprs->send_text_sms( this_gprs, Dtu_config.admin_Phone[i], data) == ERR_FAIL)
+		ret = this_gprs->send_text_sms( this_gprs, Dtu_config.admin_Phone[i], data);
+		if( ret == ERR_FAIL)
 		{
 			count ++;
 			if( count > 3)	//÷ÿ ‘3¥Œ
@@ -1173,7 +1175,8 @@ int ForwardSMSProcess( char *data, int len, hookFunc cb, void *arg)
 			}
 			
 		}
-		else
+		
+		else 
 		{
 			i ++;
 			count = 0;

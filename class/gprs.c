@@ -362,7 +362,7 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 	if( sms_len == 0)
 		return ERR_OK;
 	if( FlagSmsReady < 2)
-		return ERR_UNINITIALIZED;
+		return ERR_DEV_SICK;
 	if( phnNmbr == NULL || sms == NULL)
 		return ERR_BAD_PARAMETER;
 	if( FlagSmsReady == 0)
