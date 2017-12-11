@@ -205,7 +205,7 @@ int adc_test(void *buf, int size);
 
 
 
-int create_adc(void);
+void create_adc(void);
 void Collect_job(void);
 typedef void (*get_realVAl)( char chn, float realval);
 typedef void (*get_rsv)( char chn, uint16_t sv);

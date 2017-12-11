@@ -24,7 +24,7 @@
 #include "rtu.h"
 #include "dtuConfig.h"
 #include "TTextConfProt.h"
-
+#include "system.h"
 
 #define APPTYPE_NORMAL			0x25		//正常工作
 #define APPTYPE_CONFIG			0x37		//配置任务	
@@ -114,7 +114,8 @@ int main (void) {
 	LED_com = stm32LED_new();
 	LED_run->init( LED_run, &PinLED_run);
 	LED_com->init( LED_com, &PinLED_com);
-
+	dsys.led.led_cycle_ms = 200;
+	dsys.led.led_count_ms = 0;
 #if TDD_ON == 0
 	printf(" DTU TDD start ...\n");
 	if( filesys_init() != ERR_OK)
@@ -367,19 +368,25 @@ int main (void) {
 
 static void Led_job()
 {
-	short i = 0;
-	short err_flag = 0;
-	for( i = 0; i < IPMUX_NUM; i++) {
-		if( Dtu_config.DateCenter_port[i] < 0) {
-			err_flag = 1;
-			break;
+//	short i = 0;
+//	short err_flag = 0;
+	dsys.led.led_count_ms += 200;
+//	for( i = 0; i < IPMUX_NUM; i++) {
+//		if( Dtu_config.DateCenter_port[i] < 0) {
+//			err_flag = 1;
+//			break;
+//		}
+//		
+//	}
+//	if( err_flag)
+//		LED_run->turnon(LED_run);
+//	else
+		if(dsys.led.led_count_ms >= dsys.led.led_cycle_ms)
+		{
+			LED_run->blink(LED_run);
+			dsys.led.led_count_ms = 0;
 		}
 		
-	}
-	if( err_flag)
-		LED_run->turnon(LED_run);
-	else
-		LED_run->blink(LED_run);
 	
 	LED_com->turnoff(LED_com);
 }

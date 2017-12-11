@@ -81,7 +81,6 @@ int Init_ThrdDtu (void) {
 	if( NEED_GPRS( Dtu_config.work_mode)) 
 	{
 		sim800 = GprsGetInstance();
-		sim800->init( sim800);
 		if( Dtu_config.multiCent_mode == 0)
 		{
 			

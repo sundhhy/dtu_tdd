@@ -28,10 +28,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include "stdbool.h"
 #include "sdhError.h"
 #include "debug.h"
-
+#include "system.h"
 
 static List L_File_opened;
 static uint8_t	*Flash_buf;
@@ -43,9 +42,7 @@ static char Flash_err_flag = 0;
 
 static	int FsErr = 0;
 
-static bool check_bit(uint8_t *data, int bit);
-static void clear_bit(uint8_t *data, int bit);
-static void set_bit(uint8_t *data, int bit);
+
 static void get_area( int pg_offset, int size, area_t *out_area);
 static int page_malloc( area_t *area, int len);
 static int page_free( area_t *area, int area_num);
@@ -1085,38 +1082,8 @@ static int page_free( area_t *area, int area_num)
 
 
 
-static bool check_bit(uint8_t *data, int bit)
-{
-	int i, j ;
-	i = bit/8;
-	j = bit % 8;
-	return ( data[i] & ( 1 << j));
-	
-	
-}
-static void clear_bit(uint8_t *data, int bit)
-{
-	int i, j ;
-	i = bit/8;
-	j = bit % 8;
-	data[i] &= ~( 1 << j);
-	
-	
-	
-	
-}
 
-static void set_bit(uint8_t *data, int bit)
-{
-	int i, j ;
-	i = bit/8;
-	j = bit % 8;
-	data[i] |=  1 << j;
-	
-	
-	
-	
-}
+
 
 ///尽可能的返回足够大的空间
 static void get_area( int pg_offset, int size, area_t *out_area)

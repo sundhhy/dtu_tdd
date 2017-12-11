@@ -9,7 +9,7 @@
 #include "times.h"
 #include "led.h"
 #include "dtu.h"
-
+#include "system.h"
 #include "modbusRTU_cli.h"
 
 
@@ -170,24 +170,24 @@ int Construct( StateContext *this, Builder *state_builder)
 //		StateLine[4]  = this->gprsHeatBeatState;
 //		StateLine[5]  = this->gprsCnntManagerState;
 		
-	StateLine[ STATE_SelfTest] = state_builder->buildGprsSelfTestState( this);
-	StateLine[ STATE_Connect] = state_builder->buildGprsConnectState( this);
-	StateLine[ STATE_EventHandle] = state_builder->buildGprsEventHandleState( this);
-	StateLine[ STATE_HeatBeatHandle] = state_builder->builderGprsHeatBeatState( this);
-	StateLine[ STATE_CnntManager] = state_builder->builderGprsCnntManagerState( this);
-	StateLine[ STATE_SMSHandle] = state_builder->buildGprsDealSMSState( this);
+	StateLine[STATE_SelfTest] = state_builder->buildGprsSelfTestState( this);
+	StateLine[STATE_Connect] = state_builder->buildGprsConnectState( this);
+	StateLine[STATE_EventHandle] = state_builder->buildGprsEventHandleState( this);
+	StateLine[STATE_HeatBeatHandle] = state_builder->builderGprsHeatBeatState( this);
+	StateLine[STATE_CnntManager] = state_builder->builderGprsCnntManagerState( this);
+	StateLine[STATE_SMSHandle] = state_builder->buildGprsDealSMSState( this);
 
-	this->curState = StateLine[ STATE_SelfTest];
+	this->curState = StateLine[STATE_SelfTest];
 	
 	return ERR_OK;
 }
 
 ABS_CTOR( StateContext)
-FUNCTION_SETTING( init, StateContextInit);
-FUNCTION_SETTING( nextState, nextState);
-FUNCTION_SETTING( setCurState, setCurState);
-FUNCTION_SETTING( construct, Construct);
-FUNCTION_SETTING( switchToSmsMode, switchToSmsMode);
+FUNCTION_SETTING(init, StateContextInit);
+FUNCTION_SETTING(nextState, nextState);
+FUNCTION_SETTING(setCurState, setCurState);
+FUNCTION_SETTING(construct, Construct);
+FUNCTION_SETTING(switchToSmsMode, switchToSmsMode);
 
 END_ABS_CTOR
 
@@ -294,6 +294,7 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 	
 	this->print( this, "gprs selftest state \r\n");
 
+	Led_level(LED_GPRS_CHECK);
 	this_gprs->lock( this_gprs);
 
 
@@ -334,6 +335,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 	short run = 1;
 	int ret = 0;
 	this->print( this, "gprs cnnect state \r\n");
+	Led_level(LED_GPRS_CNNTING);
 	this_gprs->lock( this_gprs);
 	GprsTcpCnnectBeagin();
 	while( run)
@@ -353,6 +355,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 				{
 						
 						this->print(this, "succeed !\n");
+						Led_level(LED_GPRS_RUN);
 						if( Dtu_config.multiCent_mode == 0)
 						{
 							//启动心跳包的闹钟
@@ -380,12 +383,13 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 			this->print(this, "SIM card can not work!\n");
 			osDelay(2000);		//170719
 			
-			context->setCurState( context, STATE_SelfTest);	
+			context->setCurState(context, STATE_SelfTest);	
 			goto exit;
 		}
 		else if( ret == ERR_ADDR_ERROR )
 		{
-			Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
+//			Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
+			Led_level(LED_GPRS_ERR);
 			this->print( this,"Addr error !\n");
 			break;
 		}
@@ -476,7 +480,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			break;
 		}
 		this_gprs->lock( this_gprs);		
-		ret = this_gprs->deal_tcprecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie);
+		ret = this_gprs->deal_tcprecv_event(this_gprs, gprs_event, this->dataBuf,  &lszie);
 		this_gprs->unlock( this_gprs);
 		if( ret >= 0)
 		{
@@ -498,7 +502,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			self->modbusProcess->process( this->dataBuf, lszie, TcpModbusAckCB	, &ret) ;
 			self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
 			DPRINTF("rx:[%d] %s \n", ret, this->dataBuf);
-			this_gprs->free_event( this_gprs, gprs_event);
+//			this_gprs->free_event( this_gprs, gprs_event);
 			continue;
 		}
 				
@@ -523,19 +527,19 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 					
 			}
 			this_gprs->delete_sms( this_gprs, smsSeq);
-			this_gprs->free_event( this_gprs, gprs_event);
+//			this_gprs->free_event( this_gprs, gprs_event);
 			continue;
 		}
 				
 		ret = this_gprs->deal_tcpclose_event( this_gprs, gprs_event);
 		if( ret >= 0)
 		{	
-			
+			Led_level(LED_GPRS_DISCNNT);
 			sprintf( this->dataBuf, "tcp close : %d ", ret);
 			this->print( this, this->dataBuf);
 			osDelay(1000);
 		}
-		this_gprs->free_event( this_gprs, gprs_event);
+//		this_gprs->free_event( this_gprs, gprs_event);
 					
 	}	//while(1)
 				

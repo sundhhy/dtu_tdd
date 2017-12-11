@@ -52,7 +52,7 @@ int RtuInit( RtuInstance *self, int workmode)
 	return ERR_OK;
 }
 
-void RtuRun( RtuInstance *self)
+void RtuRun(RtuInstance *self)
 {
 	int recvlen = 0;
 //	gprs_t	*this_gprs = GprsGetInstance();

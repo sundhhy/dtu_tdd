@@ -134,7 +134,7 @@ void Set_alarmL( char chn, uint16_t alarm)
 	
 }
 
-int create_adc(void)
+void create_adc(void)
 {
 	init_stm32adc(NULL);
 	system_para_init();
@@ -144,8 +144,8 @@ int create_adc(void)
 static void init_stm32adc(void *arg)
 {   
 	ADC_InitTypeDef ADC_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	DMA_InitTypeDef DMA_InitStructure;
+//	GPIO_InitTypeDef GPIO_InitStructure;
+//	DMA_InitTypeDef DMA_InitStructure;
 	
 
   	// ADC1 configuration -------------------------------
@@ -459,172 +459,172 @@ static void sw_select(unsigned char channel)
 ** intput value:         channel为RTU的通道取值范围为 0-2     
 *********************************************************************************************************/
 
-static void BD_sw_select(unsigned char channel,unsigned signaltype)
-{
-	
-	if(channel==0)
-	{
-		switch(signaltype)              //选择channel0下对应的输入信号类型
-		{
+//static void BD_sw_select(unsigned char channel,unsigned signaltype)
+//{
+//	
+//	if(channel==0)
+//	{
+//		switch(signaltype)              //选择channel0下对应的输入信号类型
+//		{
 
-		  case V_5:                     //电压信号输入
-			case V_1_5:
-			CLR_currentnum0;              //关断Q1 MOS管
-			
-		   if(BD_sampledote<=2)           
-			{
-				 if(BD_sampledote==0)	       //采样VX11
-				 {
-					 series_se(VX11);
-				 }
-				 if(BD_sampledote==1)        //采样GND
-				 {
-					 series_se(GND);
-				 }
-				 if(BD_sampledote==2)        //采样VR0_A
-				 {
-					 series_se(VR0_A);  
-				 }
-			}
-			else 
-			{
-			     BD_sampledote = 0;
-			}
-			
-		  break;
+//		  case V_5:                     //电压信号输入
+//			case V_1_5:
+//			CLR_currentnum0;              //关断Q1 MOS管
+//			
+//		   if(BD_sampledote<=2)           
+//			{
+//				 if(BD_sampledote==0)	       //采样VX11
+//				 {
+//					 series_se(VX11);
+//				 }
+//				 if(BD_sampledote==1)        //采样GND
+//				 {
+//					 series_se(GND);
+//				 }
+//				 if(BD_sampledote==2)        //采样VR0_A
+//				 {
+//					 series_se(VR0_A);  
+//				 }
+//			}
+//			else 
+//			{
+//			     BD_sampledote = 0;
+//			}
+//			
+//		  break;
 
-			case mA0_10:	          //0-10mA 电流信号  
-			case mA4_20:		        //4-20mA 电流信号
-			SET_currentnum0;        //打开 Q1 MOS
-				if(BD_sampledote<=3)
-				{	
-				   
-					if(BD_sampledote==0)	series_se(VX12);  //采样VX12
-					if(BD_sampledote==1)	series_se(VX11);  //采样VX11	
-					if(BD_sampledote==2)	series_se(GND);   //采样GND	
-					if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0
-				}
-				else
-					BD_sampledote=0;
-			break;
+//			case mA0_10:	          //0-10mA 电流信号  
+//			case mA4_20:		        //4-20mA 电流信号
+//			SET_currentnum0;        //打开 Q1 MOS
+//				if(BD_sampledote<=3)
+//				{	
+//				   
+//					if(BD_sampledote==0)	series_se(VX12);  //采样VX12
+//					if(BD_sampledote==1)	series_se(VX11);  //采样VX11	
+//					if(BD_sampledote==2)	series_se(GND);   //采样GND	
+//					if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0
+//				}
+//				else
+//					BD_sampledote=0;
+//			break;
 
-			default :
-				break;
-		}	
-	}	
-	
-	else if(channel==1)                //选择channel1下输入的信号类型
-	{	
-		switch(signaltype)            
-		{
+//			default :
+//				break;
+//		}	
+//	}	
+//	
+//	else if(channel==1)                //选择channel1下输入的信号类型
+//	{	
+//		switch(signaltype)            
+//		{
 
-		  case V_5:                     //电压信号输入
-			case V_1_5:
-			CLR_currentnum1;              //关断Q3 MOS管
-			
-		   if(BD_sampledote<=2)           
-			{
-				 if(BD_sampledote==0)	          //采样VX21
-				 {
-					 series_se(VX21);
-				 
+//		  case V_5:                     //电压信号输入
+//			case V_1_5:
+//			CLR_currentnum1;              //关断Q3 MOS管
+//			
+//		   if(BD_sampledote<=2)           
+//			{
+//				 if(BD_sampledote==0)	          //采样VX21
+//				 {
+//					 series_se(VX21);
+//				 
 
-				 }
-				 if(BD_sampledote==1)           //采样GND
-				 {
-					 series_se(GND);
-				 }
-				 if(BD_sampledote==2)           //采样VR0_A
-				 {
-					 series_se(VR0_A);  
-				 }
-			}
-			else 
-			{
-			     BD_sampledote = 0;
-			}
-			
-		  break;
+//				 }
+//				 if(BD_sampledote==1)           //采样GND
+//				 {
+//					 series_se(GND);
+//				 }
+//				 if(BD_sampledote==2)           //采样VR0_A
+//				 {
+//					 series_se(VR0_A);  
+//				 }
+//			}
+//			else 
+//			{
+//			     BD_sampledote = 0;
+//			}
+//			
+//		  break;
 
-			case mA0_10:	           //0-10mA 电流信号  
-			case mA4_20:		         //4-20mA 电流信号
-				
-			SET_currentnum1;         //打开 Q3 MOS管
-			if(BD_sampledote<=3)
-			{	
-				 
-				if(BD_sampledote==0)	series_se(VX22);  //采样VX22
-				if(BD_sampledote==1)	series_se(VX21);  //采样VX21	
-				if(BD_sampledote==2)	series_se(GND);   //采样GND	
-				if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0_A
-			}
-			else
-				BD_sampledote=0;
-			break;
+//			case mA0_10:	           //0-10mA 电流信号  
+//			case mA4_20:		         //4-20mA 电流信号
+//				
+//			SET_currentnum1;         //打开 Q3 MOS管
+//			if(BD_sampledote<=3)
+//			{	
+//				 
+//				if(BD_sampledote==0)	series_se(VX22);  //采样VX22
+//				if(BD_sampledote==1)	series_se(VX21);  //采样VX21	
+//				if(BD_sampledote==2)	series_se(GND);   //采样GND	
+//				if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0_A
+//			}
+//			else
+//				BD_sampledote=0;
+//			break;
 
-			default :
-				break;
-		}
-		
-	}
-	
-	else if(channel==2)
-	{
-		
-		switch(signaltype)              //选择channel2
-		{
+//			default :
+//				break;
+//		}
+//		
+//	}
+//	
+//	else if(channel==2)
+//	{
+//		
+//		switch(signaltype)              //选择channel2
+//		{
 
-		  case V_5:                     //电压信号输入
-			case V_1_5:
-			CLR_currentnum2;              //关断Q4 MOS管
-			
-		   if(BD_sampledote<=2)           
-			{
-				 if(BD_sampledote==0)	          //采样VX31
-				 {
-					 series_se(VX31);
-				 
+//		  case V_5:                     //电压信号输入
+//			case V_1_5:
+//			CLR_currentnum2;              //关断Q4 MOS管
+//			
+//		   if(BD_sampledote<=2)           
+//			{
+//				 if(BD_sampledote==0)	          //采样VX31
+//				 {
+//					 series_se(VX31);
+//				 
 
-				 }
-				 if(BD_sampledote==1)           //采样GND
-				 {
-					 series_se(GND);
-				 }
-				 if(BD_sampledote==2)           //采样VR0_A
-				 {
-					 series_se(VR0_A);  
-				 }
-			}
-			else 
-			{
-			     BD_sampledote = 0;
-			}
-			
-		    break;
+//				 }
+//				 if(BD_sampledote==1)           //采样GND
+//				 {
+//					 series_se(GND);
+//				 }
+//				 if(BD_sampledote==2)           //采样VR0_A
+//				 {
+//					 series_se(VR0_A);  
+//				 }
+//			}
+//			else 
+//			{
+//			     BD_sampledote = 0;
+//			}
+//			
+//		    break;
 
-			case mA0_10:	          //0-10mA 电流信号  
-			case mA4_20:		        //4-20mA 电流信号
-				
-			SET_currentnum2;        //打开 Q4 MOS管
-				if(BD_sampledote<=3)
-				{	
-				   
-					if(BD_sampledote==0)	series_se(VX32);  //采样VX32
-					if(BD_sampledote==1)	series_se(VX31);  //采样VX31	
-					if(BD_sampledote==2)	series_se(GND);   //采样GND	
-					if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0_A
-				}
-				else
-					BD_sampledote=0;
-			break;
+//			case mA0_10:	          //0-10mA 电流信号  
+//			case mA4_20:		        //4-20mA 电流信号
+//				
+//			SET_currentnum2;        //打开 Q4 MOS管
+//				if(BD_sampledote<=3)
+//				{	
+//				   
+//					if(BD_sampledote==0)	series_se(VX32);  //采样VX32
+//					if(BD_sampledote==1)	series_se(VX31);  //采样VX31	
+//					if(BD_sampledote==2)	series_se(GND);   //采样GND	
+//					if(BD_sampledote==3)	series_se(VR0_A); //采样基准VR0_A
+//				}
+//				else
+//					BD_sampledote=0;
+//			break;
 
-			default :
-		  break;
-		}
-		
-	}
-	
-}
+//			default :
+//		  break;
+//		}
+//		
+//	}
+//	
+//}
 
 /*********************************************************************************************************
 ** Function name:        void Data_Deal(unsigned char ch_temp,unsigned char pred)        
@@ -943,7 +943,7 @@ void Calculate(unsigned char channel)
 	
 	
 	float	projectval,bdhigh,bdlow,atemp1,atemp2,tdata1,tdata2,ax1,ax2;
-	float	temp_data1,temp_data2,temp_data3,temp_data4,temp_data5,temp_data6;
+//	float	temp_data1,temp_data2,temp_data3,temp_data4,temp_data5,temp_data6;
 
 	switch(channel)
 	{
@@ -2201,57 +2201,57 @@ static void FinishCollect(void)
 				
 }
 
-int adc_start( void *base, int chn)
-{
-	
-	return ERR_OK;
-}
+//int adc_start( void *base, int chn)
+//{
+//	
+//	return ERR_OK;
+//}
 
 //读取原始采样数据，返回值是数据的长度
 //当返回值<0的时候表示失败
-int adc_getRawData( void *base, int chn, void *out_data)
-{
-	
-	return 0;
-}
+//int adc_getRawData( void *base, int chn, void *out_data)
+//{
+//	
+//	return 0;
+//}
 
-void digit_filtering( void *in_data, int in_len, void *out_data, int *out_len)
-{
-	
-	
-}
+//void digit_filtering( void *in_data, int in_len, void *out_data, int *out_len)
+//{
+//	
+//	
+//}
 
-//计算实时值,将采样码值转换成电压值
-int calc_voltage(void *in_data, int in_len, void *out_val)
-{
-	
-	
-}
+////计算实时值,将采样码值转换成电压值
+//int calc_voltage(void *in_data, int in_len, void *out_val)
+//{
+//	
+//	
+//}
 
-//将电压值转换成工程值
-int calc_engiVal( void *voltage, void *engival)
-{
-	
-}
+////将电压值转换成工程值
+//int calc_engiVal( void *voltage, void *engival)
+//{
+//	
+//}
 int adc_test(void *buf, int size)
 {
-	int len = 0;
-	int vlt = 0;
-	float engi = 00;
-	while(1)
-	{
-		//一次数据采集的完整的处理过程
-		adc_start( ADC_BASE, ADC_chn);
-		len = adc_getRawData( ADC_BASE, ADC_chn, buf);
-		digit_filtering( buf, len, buf, &len);
-		calc_voltage( buf, len, &vlt);
-		calc_engiVal( &vlt, &engi);
-		
-	
-		
-		
-		
-	}
+//	int len = 0;
+//	int vlt = 0;
+//	float engi = 00;
+//	while(1)
+//	{
+//		//一次数据采集的完整的处理过程
+//		adc_start( ADC_BASE, ADC_chn);
+//		len = adc_getRawData( ADC_BASE, ADC_chn, buf);
+//		digit_filtering( buf, len, buf, &len);
+//		calc_voltage( buf, len, &vlt);
+//		calc_engiVal( &vlt, &engi);
+//		
+//	
+//		
+//		
+//		
+//	}
 	return ERR_OK;
 }
 

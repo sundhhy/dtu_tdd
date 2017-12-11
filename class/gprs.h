@@ -6,7 +6,7 @@
 
 #define RETRY_TIMES	5
 
-#define IPMUX_NUM	4		//支持4路连接
+#define IPMUX_NUM	4		//支持4路连接,不得超过7，因为用的u8的集合来记录tcp close事件
 #define EVENT_MAX	16		//最大缓存事件数
 
 #define COPS_CHINA_MOBILE		0x33
@@ -20,12 +20,12 @@
 //SIM900 ATCMD
 #define AT_SET_DNSIP  "AT+CDNSCFG=" 
 
-typedef struct {
-	char 		used;
-	char		type;
-	short		arg;
-//	uint8_t 	*data;
-}gprs_event_t;
+//typedef struct {
+//	char 		used;
+//	char		type;
+//	short		arg;
+////	uint8_t 	*data;
+//}gprs_event_t;
 
 CLASS(gprs_t)
 {
@@ -66,7 +66,7 @@ CLASS(gprs_t)
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
 	int (*report_event)( gprs_t *self, void **event, char *buf, int *lsize);
-	void (*free_event)( gprs_t *self, void *event);
+//	void (*free_event)( gprs_t *self, void *event);
 	int (*deal_tcpclose_event)( gprs_t *self, void *event);
 	int (*deal_tcprecv_event)( gprs_t *self, void *event, char *buf, int *len);
 	int (*deal_smsrecv_event)( gprs_t *self,  void *event, char *buf, int *lsize, char *phno);
@@ -111,12 +111,12 @@ typedef struct {
 	char*		buf;
 }RecvdataBuf;
 
-typedef enum {
-	sms_urc = 1,
-	tcp_receive,
-	tcp_close,
-	
-}SIM_Event;
+//typedef enum {
+//	sms_urc = 1,
+//	tcp_receive,
+//	tcp_close,
+//	
+//}SIM_Event;
 
 #define SET_EVENT( event, flag)  ( event | ( 1 << flag) )
 #define CKECK_EVENT( target, flag)  ( ( ( gprs_event_t*)target)->type ==  flag)

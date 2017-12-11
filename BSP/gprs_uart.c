@@ -392,11 +392,11 @@ void DMA1_Channel2_IRQHandler(void)
     if(DMA_GetITStatus(DMA1_FLAG_TC2))
     {
 		
-        DMA_ClearFlag(DMA_gprs_usart.dma_tx_flag);         // 清除标志
-		DMA_Cmd( DMA_gprs_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
-		
-		USART_ClearFlag(USART3,USART_IT_TC );
-		USART_ITConfig( USART3, USART_IT_TC, ENABLE);
+			DMA_ClearFlag(DMA_gprs_usart.dma_tx_flag);         // 清除标志
+			DMA_Cmd( DMA_gprs_usart.dma_tx_base, DISABLE);   // 关闭DMA通道
+			
+			USART_ClearFlag(USART3,USART_IT_TC );
+			USART_ITConfig( USART3, USART_IT_TC, ENABLE);
     }
 }
 

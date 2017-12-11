@@ -1,10 +1,6 @@
-
 //============================================================================//
 //            G L O B A L   D E F I N I T I O N S                             //
 //============================================================================//
-#include "osObjects.h"                      // RTOS object definitions
-
-#include "led.h"
 #include "system.h"
 //------------------------------------------------------------------------------
 // const defines
@@ -13,8 +9,7 @@
 //------------------------------------------------------------------------------
 // module global vars
 //------------------------------------------------------------------------------
-stm32LED	*LED_run;
-stm32LED	*LED_com;
+dtu_system 	dsys;
 
 //------------------------------------------------------------------------------
 // global function prototypes
@@ -40,30 +35,54 @@ stm32LED	*LED_com;
 //------------------------------------------------------------------------------
 // local function prototypes
 //------------------------------------------------------------------------------
-static int init_led(  stm32LED *self, gpio_pins *pin);
-static void blink( stm32LED *self);
-static void led_destory( stm32LED *self);
-static void Turnon( stm32LED *self);
-static void Turnoff( stm32LED *self);
-static void test( stm32LED *self);
 
 
 
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
 //============================================================================//
+void Led_level(int lv)
+{
+	uint16_t	c_ms[] = {200, 600, 1200, 2000, 0xffff};
+	if(lv > 4 || lv < 0)
+			lv = 0;
+	dsys.led.led_cycle_ms = c_ms[lv];
+	
+}
 
+bool check_bit(uint8_t *data, int bit)
+{
+	int i, j ;
+	i = bit/8;
+	j = bit % 8;
+	return ( data[i] & ( 1 << j));
+	
+	
+}
 
-CTOR(stm32LED)
-FUNCTION_SETTING(init, init_led);
-FUNCTION_SETTING(blink, blink);
-FUNCTION_SETTING(destory, led_destory);
+void clear_bit(uint8_t *data, int bit)
+{
+	int i, j ;
+	i = bit/8;
+	j = bit % 8;
+	data[i] &= ~( 1 << j);
+	
+	
+	
+	
+}
 
-FUNCTION_SETTING(turnon, Turnon);
-FUNCTION_SETTING(turnoff, Turnoff);
-
-FUNCTION_SETTING(test, test);
-END_CTOR
+void set_bit(uint8_t *data, int bit)
+{
+	int i, j ;
+	i = bit/8;
+	j = bit % 8;
+	data[i] |=  1 << j;
+	
+	
+	
+	
+}
 //=========================================================================//
 //                                                                         //
 //          P R I V A T E   D E F I N I T I O N S                          //
@@ -71,84 +90,3 @@ END_CTOR
 //=========================================================================//
 /// \name Private Functions
 /// \{
-
-
-
-
-static int init_led(  stm32LED *self, gpio_pins *pin)
-{
-	
-	self->pin = pin;
-	//ÃðµÆ
-	GPIO_SetBits( self->pin->Port, self->pin->pin);
-	self->led_status = LED_OFF;
-	return 0;
-
-}
-
-
-static void blink( stm32LED *self)
-{
-	if( self->led_status == LED_OFF)
-	{
-		self->led_status = LED_ON;
-		GPIO_ResetBits( self->pin->Port, self->pin->pin);
-	}
-	else if( self->led_status == LED_ON)
-	{
-		
-		self->led_status = LED_OFF;
-		GPIO_SetBits( self->pin->Port, self->pin->pin);
-	}
-	
-}
-
-static void led_destory( stm32LED *self)
-{
-	
-		
-	self->led_status = LED_DIE;
-	GPIO_SetBits( self->pin->Port, self->pin->pin);
-	
-	
-}
-static void Turnon( stm32LED *self)
-{
-	
-		
-	self->led_status = LED_ON;
-	GPIO_ResetBits( self->pin->Port, self->pin->pin);
-	
-	
-}
-
-static void Turnoff( stm32LED *self)
-{
-	
-		
-	self->led_status = LED_OFF;
-	GPIO_SetBits( self->pin->Port, self->pin->pin);
-	
-	
-}
-
-static void test( stm32LED *self)
-{
-	int i = 0;
-	while(1)
-	{
-		
-		i ++;
-		osDelay(1000);
-		self->blink( self);
-		if( i > 15)
-			break;
-		
-	}
-	
-}
-
-
-
-
-
