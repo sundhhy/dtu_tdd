@@ -51,6 +51,7 @@ ShutDownJob g_shutdow = NULL;
   */
 PUTCHAR_PROTOTYPE
 {
+	int safe_count = 10000;
     /* Place your implementation of fputc here */
     /* e.g. write a character to the USART */
     USART_SendData( DEBUG_USART, (uint8_t) ch);
@@ -58,6 +59,10 @@ PUTCHAR_PROTOTYPE
     /* Loop until the end of transmission */
     while (USART_GetFlagStatus( DEBUG_USART, USART_FLAG_TC) == RESET)
     {
+		if(safe_count)
+			safe_count --;
+		else
+			break;
     }
 
     return ch;
@@ -65,9 +70,14 @@ PUTCHAR_PROTOTYPE
 
 int fgetc(FILE *f /*stream*/)
 {
+	int safe_count = 10000;
 	 /* Loop until rx not empty */
     while (USART_GetFlagStatus( DEBUG_USART, USART_FLAG_RXNE) == RESET)
     {
+		if(safe_count)
+			safe_count --;
+		else
+			break;
     }
 	
 	return USART_ReceiveData( DEBUG_USART);
@@ -101,8 +111,8 @@ int main (void) {
 	
 	 
   // initialize peripherals here
-	RCC_Configuration();
-	IWDG_Configuration();
+//	RCC_Configuration();
+//	IWDG_Configuration();
 
 	NVIC_Configuration();
 	

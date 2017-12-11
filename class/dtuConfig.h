@@ -5,9 +5,9 @@
 #include "gprs.h"
 #include "serial485_uart.h"
 #include "sw_filesys.h"
+#include "system.h"
 
-#define SOFTER_VER	200
-#define HARD_VER	1
+
 
 #define MODE_PASSTHROUGH					0			//
 #define MODE_SMS					1			//
