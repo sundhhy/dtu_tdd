@@ -96,7 +96,7 @@ char ShutdownFlag = 0 ;
 ShutDownJob g_shutdow;
 int main (void) {
 	gprs_t *sim800;
-	int u32_val = 0;
+	int 	u32_val = 0;
 	
 #if TDD_ON == 1
 
@@ -111,8 +111,8 @@ int main (void) {
 	
 	 
   // initialize peripherals here
-//	RCC_Configuration();
-//	IWDG_Configuration();
+	RCC_Configuration();
+	IWDG_Configuration();
 
 	NVIC_Configuration();
 	
@@ -126,29 +126,55 @@ int main (void) {
 	LED_com->init( LED_com, &PinLED_com);
 	dsys.led.led_cycle_ms = 200;
 	dsys.led.led_count_ms = 0;
+	
+	clean_time2_flags();
+	regist_timejob( 200, Led_job);
+	
 #if TDD_ON == 0
 	printf(" DTU TDD start ...\n");
-	if( filesys_init() != ERR_OK)
+	u32_val = 5;
+	while(u32_val)
 	{
-		printf(" init filesystem fail \n");
-		return ERR_FAIL;
+		if( filesys_init() != ERR_OK)
+		{
+			Led_level(LED_FILESYS_ERR);
+			printf(" init filesystem fail \n");
+			
+		}
+		else 
+		{
+			
+			if( filesys_mount() != ERR_OK)
+			{
+				
+				
+				Led_level(LED_FILESYS_ERR);
+				
+				printf(" mount filesystem fail \n");
+				
+				
+			}
+			else
+			{
+				printf(" mount filesystem succeed! \n");
+				break;
+			}
+			
+		}
 		
-	}
-	if( filesys_mount() != ERR_OK)
-	{
-		printf(" mount filesystem fail \n");
-		return ERR_FAIL;
+	
+			
+		osDelay(5);
 		
+		u32_val --;
+	
 	}
-	printf(" mount filesystem succeed! \n");
 	
 	
-	
-	regist_timejob( 200, Led_job);
 	
 	
 	Init_system_config();
-	clean_time2_flags();
+	
 	s485_uart_init( &Conf_S485Usart_default, NULL);
 	u32_val = Select_apptype();
 	if( u32_val == APPTYPE_CONFIG)

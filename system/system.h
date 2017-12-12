@@ -27,6 +27,7 @@ dtu: 在gprs的各种操作阶段，使用不同的Led闪烁周期
 
 #define LED_CYCLE_MS		200
 #define LED_LV_NORMAL			0
+#define LED_FILESYS_ERR			5
 //gprs在不同的状态下可以控制LED闪烁频率
 #define LED_GPRS_RUN			0	
 #define LED_GPRS_CHECK		3			

@@ -1337,7 +1337,7 @@ int	delete_contact( gprs_t *self, char *name)
 }
 	
 //返回值是读取的短信的编号
-int deal_smsrecv_event( gprs_t *self, void *event, char *buf, int *lsize, char *phno)
+int Gprs_Event_smsRecv( gprs_t *self, void *event, char *buf, int *lsize, char *phno)
 {
 	
 	int i;
@@ -1365,7 +1365,7 @@ int deal_smsrecv_event( gprs_t *self, void *event, char *buf, int *lsize, char *
 
 	//+RECEIVE,0,6:\0D\0A
 	//123456
-int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
+int Gprs_Event_tcpRecv( gprs_t *self, void *event, char *buf, int *len)
 {
 	int i;
 	for(i = 0; i < IPMUX_NUM; i++)
@@ -1387,7 +1387,7 @@ int deal_tcprecv_event( gprs_t *self, void *event, char *buf, int *len)
 	
 	return ERR_FAIL;
 }
-int deal_tcpclose_event( gprs_t *self, void *event)
+int Gprs_Event_tcpclose( gprs_t *self, void *event)
 {
 	int i;
 	for(i = 0; i < IPMUX_NUM; i++)
@@ -1395,6 +1395,7 @@ int deal_tcpclose_event( gprs_t *self, void *event)
 		if(CHK_U8_BIT(dsys.gprs.set_tcp_close, i))
 		{
 			dsys.gprs.set_tcp_close = CLR_U8_BIT(dsys.gprs.set_tcp_close, i);
+			Ip_cnnState.cnn_state[i] = CNNT_DISCONNECT;
 			return i;
 		}
 		
@@ -2764,9 +2765,9 @@ FUNCTION_SETTING(sms_test, sms_test);
 FUNCTION_SETTING(get_apn, get_apn);
 
 FUNCTION_SETTING(report_event, report_event);
-FUNCTION_SETTING(deal_tcpclose_event, deal_tcpclose_event);
-FUNCTION_SETTING(deal_tcprecv_event, deal_tcprecv_event);
-FUNCTION_SETTING(deal_smsrecv_event, deal_smsrecv_event);
+FUNCTION_SETTING(deal_tcpclose_event, Gprs_Event_tcpclose);
+FUNCTION_SETTING(deal_tcprecv_event, Gprs_Event_tcpRecv);
+FUNCTION_SETTING(deal_smsrecv_event, Gprs_Event_smsRecv);
 //FUNCTION_SETTING(free_event, free_event);
 
 

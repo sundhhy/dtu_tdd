@@ -43,8 +43,8 @@ dtu_system 	dsys;
 //============================================================================//
 void Led_level(int lv)
 {
-	uint16_t	c_ms[] = {200, 600, 1200, 2000, 0xffff};
-	if(lv > 4 || lv < 0)
+	uint16_t	c_ms[] = {200, 1200, 2500, 5000, 10000, 0xffff};
+	if(lv > 5 || lv < 0)
 			lv = 0;
 	dsys.led.led_cycle_ms = c_ms[lv];
 	

@@ -388,10 +388,10 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 		}
 		else if( ret == ERR_ADDR_ERROR )
 		{
-//			Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
+			Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
 			Led_level(LED_GPRS_ERR);
 			this->print( this,"Addr error !\n");
-			break;
+//			break;
 		}
 		else
 		{
