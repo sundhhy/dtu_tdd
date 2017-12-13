@@ -388,7 +388,10 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 		}
 		else if( ret == ERR_ADDR_ERROR )
 		{
-			Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
+			//只有多中心模式下才去标记非法地址
+			//主备模式下，合法的地址如果多次连接成功-断开 的循环也会返回这个错误，如果标记成错误地址，就再也不能连接了
+			if(dsys.gprs.cip_mux)
+				Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
 			Led_level(LED_GPRS_ERR);
 			this->print( this,"Addr error !\n");
 //			break;
@@ -537,7 +540,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			Led_level(LED_GPRS_DISCNNT);
 			sprintf( this->dataBuf, "tcp close : %d ", ret);
 			this->print( this, this->dataBuf);
-			osDelay(1000);
+			osDelay(5000);
 		}
 //		this_gprs->free_event( this_gprs, gprs_event);
 					
@@ -676,7 +679,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 	
 
-	
+	Led_level(LED_GPRS_SMS);
 	context->nextState( context, STATE_SMSHandle);
 	
 	if( skip)

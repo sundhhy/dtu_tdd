@@ -34,6 +34,7 @@ dtu: 在gprs的各种操作阶段，使用不同的Led闪烁周期
 #define LED_GPRS_CNNTING	1		//联网中
 #define LED_GPRS_DISCNNT	2
 #define LED_GPRS_ERR			4
+#define LED_GPRS_SMS	2
 
 
 #define	SET_U8_BIT(set, bit) (set | (1 << bit))

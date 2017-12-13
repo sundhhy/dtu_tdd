@@ -1341,12 +1341,16 @@ int Gprs_Event_smsRecv( gprs_t *self, void *event, char *buf, int *lsize, char *
 {
 	
 	int i;
+	int ret = 0;
 	for(i = 0; i < MAX_NUM_SMS; i++)
 	{
 		if(check_bit((uint8_t *)dsys.gprs.set_sms_recv, i))
 		{
+			ret = self->read_seq_TextSMS( self, phno, i, buf, lsize);
+			if( ret == ERR_OK)
+				return i;
 			clear_bit((uint8_t *)dsys.gprs.set_sms_recv, i);
-			return i;
+			
 		}
 		
 	}
@@ -1372,6 +1376,7 @@ int Gprs_Event_tcpRecv( gprs_t *self, void *event, char *buf, int *len)
 	{
 		if(CHK_U8_BIT(dsys.gprs.set_tcp_recv, i))
 		{
+			*len = VecBuf_read( &g_TcpVbm, buf, *len);
 			dsys.gprs.set_tcp_recv = CLR_U8_BIT(dsys.gprs.set_tcp_recv, i);
 			return i;
 		}
