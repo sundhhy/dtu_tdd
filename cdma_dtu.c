@@ -81,10 +81,10 @@ int Init_ThrdDtu (void) {
 	if( NEED_GPRS( Dtu_config.work_mode)) 
 	{
 		sim800 = GprsGetInstance();
-		if( Dtu_config.multiCent_mode == 0)
+		if(Dtu_config.multiCent_mode == 0)
 		{
 			
-			Grps_SetCipmode( CIPMODE_TRSP);
+			Grps_SetCipmode(CIPMODE_TRSP);
 			Grps_SetCipmux(0);
 		}
 		sim800->startup(sim800);

@@ -390,7 +390,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 		{
 			//只有多中心模式下才去标记非法地址
 			//主备模式下，合法的地址如果多次连接成功-断开 的循环也会返回这个错误，如果标记成错误地址，就再也不能连接了
-			if(dsys.gprs.cip_mux)
+			if(Dtu_config.multiCent_mode)
 				Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
 			Led_level(LED_GPRS_ERR);
 			this->print( this,"Addr error !\n");
@@ -461,7 +461,6 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	int				lszie = 0;
 	short 			i = 0;
 	short			safeCount = 0;
-	void 			*gprs_event;
 	char 			*pp;
 	int 			ret = 0;
 	int				smsSeq = 0;
@@ -476,14 +475,14 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 		safeCount ++;
 
 		lszie = this->bufLen;
-		ret = this_gprs->report_event( this_gprs, &gprs_event, this->dataBuf, &lszie);
+		ret = this_gprs->report_event( this_gprs,  this->dataBuf, &lszie);
 		if( ret != ERR_OK)
 		{	
 			
 			break;
 		}
 		this_gprs->lock( this_gprs);		
-		ret = this_gprs->deal_tcprecv_event(this_gprs, gprs_event, this->dataBuf,  &lszie);
+		ret = this_gprs->deal_tcprecv_event(this_gprs, this->dataBuf,  &lszie);
 		this_gprs->unlock( this_gprs);
 		if( ret >= 0)
 		{
@@ -513,7 +512,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 		memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 		
 		this_gprs->lock( this_gprs);	
-		smsSeq = this_gprs->deal_smsrecv_event( this_gprs, gprs_event, this->dataBuf,  &lszie, DtuTempBuf);			
+		smsSeq = this_gprs->deal_smsrecv_event( this_gprs, this->dataBuf,  &lszie, DtuTempBuf);			
 		this_gprs->unlock( this_gprs);
 		if( smsSeq > 0)
 		{
@@ -534,7 +533,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			continue;
 		}
 				
-		ret = this_gprs->deal_tcpclose_event( this_gprs, gprs_event);
+		ret = this_gprs->deal_tcpclose_event( this_gprs);
 		if( ret >= 0)
 		{	
 			Led_level(LED_GPRS_DISCNNT);
@@ -609,6 +608,7 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	gprs_t	*this_gprs = GprsGetInstance();
 	int cnntNum = 0;	
 	int	safecount = 0;
+	int	i;
 //	this->print( this, "gprs cnnt manager state \r\n");
 
 	//连接无法建立时，处理下短信
@@ -618,6 +618,14 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	{
 		strcpy( this->dataBuf, "None connnect, reconnect...");
 		this->print( this, this->dataBuf);
+		
+		//一个连接也没有的话，就把错误地址标识给去除掉
+		for(i = 0; i < IPMUX_NUM; i++)
+		{
+			if(Dtu_config.DateCenter_port[i] < 0)
+				Dtu_config.DateCenter_port[i] = -Dtu_config.DateCenter_port[i];
+		}
+		
 		context->setCurState( context, STATE_SMSHandle );	
 		return ERR_OK;
 	}

@@ -65,11 +65,11 @@ CLASS(gprs_t)
 	int (*buf_test)( gprs_t *self, char *buf, int len);
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
 	
-	int (*report_event)( gprs_t *self, void **event, char *buf, int *lsize);
+	int (*report_event)( gprs_t *self, char *buf, int *lsize);
 //	void (*free_event)( gprs_t *self, void *event);
-	int (*deal_tcpclose_event)( gprs_t *self, void *event);
-	int (*deal_tcprecv_event)( gprs_t *self, void *event, char *buf, int *len);
-	int (*deal_smsrecv_event)( gprs_t *self,  void *event, char *buf, int *lsize, char *phno);
+	int (*deal_tcpclose_event)( gprs_t *self);
+	int (*deal_tcprecv_event)( gprs_t *self,  char *buf, int *len);
+	int (*deal_smsrecv_event)( gprs_t *self, char *buf, int *lsize, char *phno);
 	
 	int	(*get_firstDiscnt_seq)( gprs_t *self);
 	int	(*get_firstCnt_seq)( gprs_t *self);

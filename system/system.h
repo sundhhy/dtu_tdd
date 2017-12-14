@@ -34,13 +34,13 @@ dtu: 在gprs的各种操作阶段，使用不同的Led闪烁周期
 #define LED_GPRS_CNNTING	1		//联网中
 #define LED_GPRS_DISCNNT	2
 #define LED_GPRS_ERR			4
-#define LED_GPRS_SMS	2
+#define LED_GPRS_SMS	1
 
 
 #define	SET_U8_BIT(set, bit) (set | (1 << bit))
 #define	CLR_U8_BIT(set, bit) (set & ~(1 << bit))
 #define	CHK_U8_BIT(set, bit) (set & (1 << bit))
-#define	MAX_NUM_SMS		256
+#define	MAX_NUM_SMS		64
 //------------------------------------------------------------------------------
 // typedef
 //------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ typedef struct  {
 		uint8_t	rx_sms_seq;
 		uint8_t	set_tcp_close;
 		uint8_t	set_tcp_recv;
-		uint32_t	set_sms_recv[8];		//最大记录256条
+		uint32_t	set_sms_recv[2];		//最大记录64条		实测最大是50
 	}gprs;
 }dtu_system;
 //------------------------------------------------------------------------------

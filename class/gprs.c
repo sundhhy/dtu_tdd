@@ -1337,7 +1337,7 @@ int	delete_contact( gprs_t *self, char *name)
 }
 	
 //返回值是读取的短信的编号
-int Gprs_Event_smsRecv( gprs_t *self, void *event, char *buf, int *lsize, char *phno)
+int Gprs_Event_smsRecv( gprs_t *self, char *buf, int *lsize, char *phno)
 {
 	
 	int i;
@@ -1369,7 +1369,7 @@ int Gprs_Event_smsRecv( gprs_t *self, void *event, char *buf, int *lsize, char *
 
 	//+RECEIVE,0,6:\0D\0A
 	//123456
-int Gprs_Event_tcpRecv( gprs_t *self, void *event, char *buf, int *len)
+int Gprs_Event_tcpRecv( gprs_t *self, char *buf, int *len)
 {
 	int i;
 	for(i = 0; i < IPMUX_NUM; i++)
@@ -1392,7 +1392,7 @@ int Gprs_Event_tcpRecv( gprs_t *self, void *event, char *buf, int *len)
 	
 	return ERR_FAIL;
 }
-int Gprs_Event_tcpclose( gprs_t *self, void *event)
+int Gprs_Event_tcpclose( gprs_t *self)
 {
 	int i;
 	for(i = 0; i < IPMUX_NUM; i++)
@@ -1651,7 +1651,7 @@ void read_event(void *buf, void *arg, int len)
 	
 }
 
-int report_event( gprs_t *self, void **event, char *buf, int *lsize)
+int report_event( gprs_t *self, char *buf, int *lsize)
 {
 	short	i,j;
 	gprs_Uart_ioctl( GPRS_UART_CMD_CLR_RXBLOCK);
@@ -2277,7 +2277,7 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 //				ret = self->guard_serial( self, buf, &len);
 //				if( ret == tcp_receive)
 				{
-					ret = self->deal_tcprecv_event( self, buf,  buf, &len);
+//					ret = self->deal_tcprecv_event( self, buf,  buf, &len);
 					if( len >= 0)
 					{
 						pp = strstr((const char*)buf,"finished");

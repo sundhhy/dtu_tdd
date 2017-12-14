@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Thu Dec 14 00:14:51 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Thu Dec 14 22:50:51 2017
 <BR><P>
 <H3>Maximum Stack Usage =        312 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1308,8 +1308,8 @@ Global Symbols
 <LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RtuInit
 </UL>
 
-<P><STRONG><a name="[40]"></a>GprsCnntManagerRun</STRONG> (Thumb, 184 bytes, Stack size 32 bytes, dtu.o(i.GprsCnntManagerRun))
-<BR><BR>[Stack]<UL><LI>Max Depth = 68<LI>Call Chain = GprsCnntManagerRun &rArr; GprsGetInstance &rArr; gprs_t_new &rArr; malloc
+<P><STRONG><a name="[40]"></a>GprsCnntManagerRun</STRONG> (Thumb, 222 bytes, Stack size 40 bytes, dtu.o(i.GprsCnntManagerRun))
+<BR><BR>[Stack]<UL><LI>Max Depth = 76<LI>Call Chain = GprsCnntManagerRun &rArr; GprsGetInstance &rArr; gprs_t_new &rArr; malloc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GprsGetInstance
 <LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
@@ -1335,7 +1335,7 @@ Global Symbols
 <LI><a href="#[54]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PassThroughModeBuilderGprsCnntManagerState
 </UL>
 
-<P><STRONG><a name="[41]"></a>GprsConnectRun</STRONG> (Thumb, 380 bytes, Stack size 40 bytes, dtu.o(i.GprsConnectRun))
+<P><STRONG><a name="[41]"></a>GprsConnectRun</STRONG> (Thumb, 382 bytes, Stack size 40 bytes, dtu.o(i.GprsConnectRun))
 <BR><BR>[Stack]<UL><LI>Max Depth = 76<LI>Call Chain = GprsConnectRun &rArr; GprsGetInstance &rArr; gprs_t_new &rArr; malloc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GprsTcpCnnectFinish
@@ -1396,8 +1396,8 @@ Global Symbols
 <LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PassThroughModeBuildGprsDealSMSState
 </UL>
 
-<P><STRONG><a name="[45]"></a>GprsEventHandleRun</STRONG> (Thumb, 410 bytes, Stack size 56 bytes, dtu.o(i.GprsEventHandleRun))
-<BR><BR>[Stack]<UL><LI>Max Depth = 92<LI>Call Chain = GprsEventHandleRun &rArr; GprsGetInstance &rArr; gprs_t_new &rArr; malloc
+<P><STRONG><a name="[45]"></a>GprsEventHandleRun</STRONG> (Thumb, 392 bytes, Stack size 48 bytes, dtu.o(i.GprsEventHandleRun))
+<BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = GprsEventHandleRun &rArr; GprsGetInstance &rArr; gprs_t_new &rArr; malloc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;compare_phoneNO
 <LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -1521,24 +1521,22 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GprsConnectRun
 </UL>
 
-<P><STRONG><a name="[82]"></a>Gprs_Event_smsRecv</STRONG> (Thumb, 84 bytes, Stack size 40 bytes, gprs.o(i.Gprs_Event_smsRecv))
-<BR><BR>[Stack]<UL><LI>Max Depth = 52<LI>Call Chain = Gprs_Event_smsRecv &rArr; clear_bit
+<P><STRONG><a name="[82]"></a>Gprs_Event_smsRecv</STRONG> (Thumb, 80 bytes, Stack size 32 bytes, gprs.o(i.Gprs_Event_smsRecv))
+<BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = Gprs_Event_smsRecv &rArr; clear_bit
 </UL>
 <BR>[Calls]<UL><LI><a href="#[138]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clear_bit
 <LI><a href="#[137]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;check_bit
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[81]"></a>Gprs_Event_tcpRecv</STRONG> (Thumb, 74 bytes, Stack size 24 bytes, gprs.o(i.Gprs_Event_tcpRecv))
+<P><STRONG><a name="[81]"></a>Gprs_Event_tcpRecv</STRONG> (Thumb, 72 bytes, Stack size 24 bytes, gprs.o(i.Gprs_Event_tcpRecv))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = Gprs_Event_tcpRecv &rArr; VecBuf_read
 </UL>
 <BR>[Calls]<UL><LI><a href="#[139]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VecBuf_read
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[80]"></a>Gprs_Event_tcpclose</STRONG> (Thumb, 60 bytes, Stack size 8 bytes, gprs.o(i.Gprs_Event_tcpclose))
-<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = Gprs_Event_tcpclose
-</UL>
+<P><STRONG><a name="[80]"></a>Gprs_Event_tcpclose</STRONG> (Thumb, 56 bytes, Stack size 0 bytes, gprs.o(i.Gprs_Event_tcpclose))
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
 <P><STRONG><a name="[72]"></a>Gprs_init</STRONG> (Thumb, 146 bytes, Stack size 8 bytes, gprs.o(i.Gprs_init))
@@ -3136,7 +3134,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_Tick_Handler
 </UL>
 
-<P><STRONG><a name="[48]"></a>read_event</STRONG> (Thumb, 400 bytes, Stack size 32 bytes, gprs.o(i.read_event))
+<P><STRONG><a name="[48]"></a>read_event</STRONG> (Thumb, 398 bytes, Stack size 32 bytes, gprs.o(i.read_event))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = read_event &rArr; get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VecBuf_write
@@ -3235,8 +3233,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[7f]"></a>report_event</STRONG> (Thumb, 90 bytes, Stack size 32 bytes, gprs.o(i.report_event))
-<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = report_event &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<P><STRONG><a name="[7f]"></a>report_event</STRONG> (Thumb, 88 bytes, Stack size 24 bytes, gprs.o(i.report_event))
+<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = report_event &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_read
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_ioctl
@@ -4092,7 +4090,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[8d]"></a>tcp_test</STRONG> (Thumb, 270 bytes, Stack size 56 bytes, gprs.o(i.tcp_test))
+<P><STRONG><a name="[8d]"></a>tcp_test</STRONG> (Thumb, 254 bytes, Stack size 56 bytes, gprs.o(i.tcp_test))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = tcp_test &rArr; __2sprintf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
