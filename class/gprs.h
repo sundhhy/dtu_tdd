@@ -42,6 +42,7 @@ CLASS(gprs_t)
 	void (*shutdown)( gprs_t *self);
 	
 	int	(*check_simCard)( gprs_t *self);
+	int	(*get_sim_info)(gprs_t *self);
 	
 	int	(*send_text_sms)(  gprs_t *self, char *phnNmbr, char *sms);
 	int	(*read_phnNmbr_TextSMS)(  gprs_t *self, char *phnNmbr, char *in_buf, char *out_buf, int *len);
@@ -67,14 +68,14 @@ CLASS(gprs_t)
 	
 	int (*report_event)( gprs_t *self, char *buf, int *lsize);
 //	void (*free_event)( gprs_t *self, void *event);
-	int (*deal_tcpclose_event)( gprs_t *self);
-	int (*deal_tcprecv_event)( gprs_t *self,  char *buf, int *len);
-	int (*deal_smsrecv_event)( gprs_t *self, char *buf, int *lsize, char *phno);
+	int (*deal_tcpclose_event)(gprs_t *self);
+	int (*deal_tcprecv_event)(gprs_t *self,  char *buf, int *len);
+	int (*deal_smsrecv_event)(gprs_t *self, char *buf, int *lsize, char *phno);
 	
-	int	(*get_firstDiscnt_seq)( gprs_t *self);
-	int	(*get_firstCnt_seq)( gprs_t *self);
+	int	(*get_firstDiscnt_seq)(gprs_t *self);
+	int	(*get_firstCnt_seq)(gprs_t *self);
 	
-	void ( *run)( gprs_t *self);
+	void ( *run)(gprs_t *self);
 	
 
 };

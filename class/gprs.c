@@ -239,7 +239,7 @@ void shutdown(gprs_t *self)
 	}
 }
 
-int	check_simCard( gprs_t *self)
+int	Gprs_check_simCard( gprs_t *self)
 {
 	short step = 0;
 //	static char successCount = 0;
@@ -346,6 +346,98 @@ int	check_simCard( gprs_t *self)
 	
 	errOut:
 //	successCount = 0;
+	return ERR_FAIL; 
+}
+
+//获取SIM卡的电压，信号强度的信息
+static int	Gprs_get_info( gprs_t *self)
+{
+	char 		*pp = NULL;
+	char 		step = 0;
+	uint8_t		err = 0;
+	short		retry = RETRY_TIMES;
+	int			ret;
+	while(1)
+	{
+		if( dsys.gprs.cur_state == SHUTDOWN)
+			goto errOut;
+		
+		
+		
+		switch(step)
+		{
+			
+			case 0:
+				strcpy( Gprs_cmd_buf, "AT+CBC\x00D\x00A" );
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,5);
+			
+				//+CBC:0,95,4140
+				pp = strstr((const char*)Gprs_cmd_buf,"+CBC");
+				if(pp)
+				{
+					ret = Get_str_data(pp, ",", 0, &err);
+					if(err == 0)
+						dsys.gprs.bcs = ret;
+					
+					ret = Get_str_data(pp, ",", 1, &err);
+					if(err == 0)
+						dsys.gprs.bcl = ret;
+					
+					ret = Get_str_data(pp, ",", 2, &err);
+					if(err == 0)
+						dsys.gprs.voltage_mv = ret;
+					
+					
+					step ++;
+					retry = RETRY_TIMES ;
+					break;
+				}
+				
+				osDelay(1000);
+				retry --;
+				if( retry == 0) {
+					DPRINTF("AT+CBC fail \t\n");
+					goto errOut;
+					
+				}
+				break;
+				
+			case 1:
+				strcpy( Gprs_cmd_buf, "AT+CSQ\x00D\x00A" );
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+				pp = strstr((const char*)Gprs_cmd_buf,"+CSQ");
+				if(pp)
+				{
+					ret = Get_str_data(pp, ",", 0, &err);
+					if(err == 0)
+						dsys.gprs.signal_strength = ret;
+					
+					ret = Get_str_data(pp, ",", 2, &err);
+					if(err == 0)
+						dsys.gprs.ber = ret;
+					step ++;
+					retry = RETRY_TIMES * 2;
+					break;
+				}
+				retry --;
+				osDelay(1000);
+				if( retry == 0) {
+					dsys.gprs.cur_state = GPRSERROR;
+					DPRINTF(" AT+CSQ fail \t\n");
+					goto errOut;
+				}
+				break;
+			case 2:
+				return ERR_OK;
+				
+			default:
+				step = 0;
+				break;
+				
+		}		//switch
+	}	//while(1)
+	
+	errOut:
 	return ERR_FAIL; 
 }
 
@@ -2756,7 +2848,9 @@ FUNCTION_SETTING(lock, lock);
 FUNCTION_SETTING(unlock, unlock);
 FUNCTION_SETTING(startup, startup);
 FUNCTION_SETTING(shutdown, shutdown);
-FUNCTION_SETTING(check_simCard, check_simCard);
+
+FUNCTION_SETTING(get_sim_info, Gprs_get_info);
+FUNCTION_SETTING(check_simCard, Gprs_check_simCard);
 FUNCTION_SETTING(send_text_sms, send_text_sms);
 FUNCTION_SETTING(read_phnNmbr_TextSMS, read_phnNmbr_TextSMS);
 FUNCTION_SETTING(read_seq_TextSMS, read_seq_TextSMS);

@@ -13,9 +13,11 @@
 // const defines
 //------------------------------------------------------------------------------
 
-#define SOFTER_VER	300
+#define SOFTER_VER	302
 #define HARD_VER	1
 /*
+V302 171215:
+增加信号强度和电量检测；无连接时，去除错误地址标记
 V300 171211: 
 system:增加系统模块，在系统模块中加入：LED闪烁周期控制功能;gprs 的一些状态和事件集合;
 gprs: 把事件的存储从队列形式改成集合存储。
@@ -57,10 +59,20 @@ typedef struct  {
 		uint8_t	flag_sms_ready;
 		uint8_t	cip_mode;
 		uint8_t	cip_mux;
+		
 		uint8_t	cur_state;
 		uint8_t	rx_sms_seq;
 		uint8_t	set_tcp_close;
 		uint8_t	set_tcp_recv;
+		
+		uint8_t		signal_strength;			//0 - 31
+		uint8_t		ber;						// 0 - 7
+		uint8_t		none[2];
+		
+		uint8_t		bcs;			//0 ME 未充电 1 ME在充电 2 充电完成
+		uint8_t		bcl;			//0 - 100 电量 			
+		uint16_t	voltage_mv;
+		
 		uint32_t	set_sms_recv[2];		//最大记录64条		实测最大是50
 	}gprs;
 }dtu_system;
@@ -75,4 +87,5 @@ extern void Led_level(int lv);
 bool check_bit(uint8_t *data, int bit);
 void clear_bit(uint8_t *data, int bit);
 void set_bit(uint8_t *data, int bit);
+int Get_str_data(char *s_data, char* separator, int num, uint8_t	*err);
 #endif

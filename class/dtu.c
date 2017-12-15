@@ -300,8 +300,21 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 
 	if( this_gprs->check_simCard(this_gprs) == ERR_OK)
 	{
-		sprintf( this->dataBuf, "detected sim succeed! ...");
-//		this->print( this, this->dataBuf);
+		if(this_gprs->get_sim_info(this_gprs) == ERR_OK)
+		{
+			sprintf( this->dataBuf, "signal=%d, power=%d mv", dsys.gprs.signal_strength,  dsys.gprs.voltage_mv);
+		}
+		else
+		{
+			
+			
+			sprintf( this->dataBuf, "get_sim_info sim failed! ...");
+			
+			
+		}
+		
+//		sprintf( this->dataBuf, "detected sim succeed! ...");
+		this->print( this, this->dataBuf);
 		context->nextState( context, STATE_SelfTest);
 		
 	}
@@ -618,7 +631,25 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	{
 		strcpy( this->dataBuf, "None connnect, reconnect...");
 		this->print( this, this->dataBuf);
-		
+		if(this_gprs->get_sim_info(this_gprs) != ERR_OK)
+		{
+			sprintf( this->dataBuf, "get_sim_info sim failed! ...");
+			this->print( this, this->dataBuf);
+		}
+		else
+		{
+			if(dsys.gprs.signal_strength < 10)
+			{
+				sprintf( this->dataBuf, "bad signal %d !!!", dsys.gprs.signal_strength );
+				this->print( this, this->dataBuf);
+			}
+			
+			if(dsys.gprs.voltage_mv < 3000)
+			{
+				sprintf( this->dataBuf, "low power  %d mv !!!", dsys.gprs.voltage_mv );
+				this->print( this, this->dataBuf);
+			}
+		}
 		//一个连接也没有的话，就把错误地址标识给去除掉
 		for(i = 0; i < IPMUX_NUM; i++)
 		{

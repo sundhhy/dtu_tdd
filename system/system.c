@@ -2,6 +2,9 @@
 //            G L O B A L   D E F I N I T I O N S                             //
 //============================================================================//
 #include "system.h"
+#include <string.h>
+
+#include <stdlib.h> 
 //------------------------------------------------------------------------------
 // const defines
 //------------------------------------------------------------------------------
@@ -82,6 +85,52 @@ void set_bit(uint8_t *data, int bit)
 	
 	
 	
+}
+//从字符串中返回指定顺序的数字
+//如果有错误，设置err为1
+int Get_str_data(char *s_data, char* separator, int num, uint8_t	*err)
+{
+	int 		tmp;
+	int			rst = 0;
+	char		*p;
+	uint16_t	num_spt = 0;
+
+	
+	*err = 1;
+	
+	tmp = strcspn(s_data, "0123456789");
+	if((tmp == 0) && (s_data[0] > '9' || s_data[0] <'0'))
+		goto exit;
+	p = tmp + s_data;
+	if(num == 0)
+	{
+		*err = 0;
+		rst = atoi(p);
+		goto exit;
+	}
+	
+	while(1)
+	{
+		tmp = strcspn(p, separator);
+		if(tmp)
+		{
+			p += tmp + 1;
+			num_spt ++;
+		}
+		
+		if(num_spt == num)		//分隔符与序号相等说明当前的数字符合要求
+		{
+			*err = 0;
+			rst = atoi(p);
+			goto exit;
+		}
+		
+		if(tmp == 0 || p[0] == '\0')
+			goto exit;
+	}
+	
+	exit:
+	return rst;
 }
 //=========================================================================//
 //                                                                         //
