@@ -206,7 +206,9 @@ void startup(gprs_t *self)
 		GPIO_ResetBits(Gprs_powerkey.Port, Gprs_powerkey.pin);
 	//	osDelay( 2000);
 
-		dsys.gprs.flag_sms_ready = 0;
+		dsys.gprs.flag_ready = 0;
+		dsys.gprs.status_gsm = 0xff;
+		dsys.gprs.status_gprs = 0xff;
 		dsys.gprs.cur_state = STARTUP;
 //		while(waitms)
 //		{
@@ -231,21 +233,22 @@ void shutdown(gprs_t *self)
 		count ++;
 		strcpy( Gprs_cmd_buf, "AT+CPOWD=1\r\n" );		//正常关机
 		serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,2000);
-//		dsys.gprs.flag_sms_ready = 0;
+//		dsys.gprs.flag_ready = 0;
 		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
 		if( pp)
-			dsys.gprs.flag_sms_ready = 0;
+			dsys.gprs.flag_ready = 0;
 		
 	}
 }
 
 int	Gprs_check_simCard( gprs_t *self)
 {
-	short step = 0;
+	char step = 0;
+	uint8_t	err;
 //	static char successCount = 0;
 	short	retry = RETRY_TIMES;
-	char *pp = NULL;
-
+	char 	*pp = NULL;
+	int ret;
 	while(1)
 	{
 		if( dsys.gprs.cur_state == SHUTDOWN)
@@ -295,37 +298,129 @@ int	Gprs_check_simCard( gprs_t *self)
 				retry --;
 				osDelay(1000);
 				if( retry == 0) {
+					
 					dsys.gprs.cur_state = GPRSERROR;
 					DPRINTF(" AT+CPIN? fail \t\n");
 					goto errOut;
 				}
 				break;
-			case 2:
+			case 2:		//检测GSM注册状态
 				strcpy( Gprs_cmd_buf, "AT+CREG?\x00D\x00A" );
 				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
-				if(((Gprs_cmd_buf[9]=='0')&&
-					(Gprs_cmd_buf[11]=='1'))||
-				 ((Gprs_cmd_buf[9]=='0')&&
-					(Gprs_cmd_buf[11]=='5')))
+			
+				pp = strstr((const char*)Gprs_cmd_buf,"+CREG");
+				if(pp)
 				{
-						DPRINTF(" check_simCard succeed !\r\n");
-						if( dsys.gprs.cur_state < INIT_FINISH_OK)
-							dsys.gprs.cur_state = INIT_FINISH_OK;
-						
-						//170720 
-						retry = 6000;
-						while( dsys.gprs.flag_sms_ready < 2)
+					ret = Get_str_data(pp, ",", 1, &err);
+					if(err == 0)
+					{
+						dsys.gprs.status_gsm = ret;	
+							
+						switch(dsys.gprs.status_gsm)
 						{
-							osDelay(3);
-							if( retry)
-								retry --;
-							else
+							case 0:		//正在寻找新的运营商
+							case 2:		//正在注册
+							case 4:		//未知
 								break;
+							case 1:		//Registered, home network
+							case 5:		//Registered, roaming
+							case 3:		//Registration denied
+								step ++;
+								retry = RETRY_TIMES;
+								break;
+							
+								
+							
+							
+							
 						}
-						if( dsys.gprs.flag_sms_ready < 2)
-							goto errOut; 
-						osDelay(1000);
-						return ERR_OK;
+					}
+					
+					
+			
+			
+//				if(((Gprs_cmd_buf[9]=='0')&&
+//					(Gprs_cmd_buf[11]=='1'))||
+//				 ((Gprs_cmd_buf[9]=='0')&&
+//					(Gprs_cmd_buf[11]=='5')))
+//				{
+//						DPRINTF(" check_simCard succeed !\r\n");
+//						if( dsys.gprs.cur_state < INIT_FINISH_OK)
+//							dsys.gprs.cur_state = INIT_FINISH_OK;
+//						
+//						//170720 
+//						retry = 6000;
+//						step ++;
+//						dsys.gprs.flag_network |= 1;
+//						break;
+////						while( dsys.gprs.flag_ready < 2)
+////						{
+////							osDelay(3);
+////							if( retry)
+////								retry --;
+////							else
+////								break;
+////						}
+////						if( dsys.gprs.flag_ready < 2)
+////							goto errOut; 
+////						osDelay(1000);
+////						return ERR_OK;
+				}
+				osDelay(1000);
+				retry --;
+				if( retry == 0) {
+					retry = RETRY_TIMES ;
+					step ++;
+					
+					DPRINTF(" AT+CREG? fail %s \r\n", Gprs_cmd_buf );
+//					goto errOut;
+				}
+				break;
+			case 3:		//检测GPRS注册状态
+				strcpy( Gprs_cmd_buf, "AT+CGREG?\x00D\x00A" );
+				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+			
+				pp = strstr((const char*)Gprs_cmd_buf,"+CGREG");
+				if(pp)
+				{
+					ret = Get_str_data(pp, ",", 1, &err);
+					if(err == 0)
+					{
+						dsys.gprs.status_gprs = ret;	
+							
+						switch(dsys.gprs.status_gprs)
+						{
+							
+							case 2:		//Not registered, but MT is currently trying to attach or searching an operator to register to.
+							case 4:		//未知
+								break;
+							case 0:	//Not registered, GPRS service is disabled,the UE is allowed to attach for GPRS if requested by the user.
+							case 3:	//Registration denied,The GPRS service is disabled, the UE is not allowed to attach for GPRS if it is requested by the user.
+
+							case 1:		//Registered, home network
+							case 5:		//Registered, roaming
+								if(dsys.gprs.status_gsm == 1 || dsys.gprs.status_gsm == 5 || \
+									dsys.gprs.status_gprs == 1 || dsys.gprs.status_gprs == 5)
+								{
+									//网络注册成功
+									step ++;
+									retry = 6000;
+								}
+								else
+								{
+									
+									goto errOut;
+								}
+								
+								break;
+							
+								
+							
+							
+							
+						}
+					}
+				
 				}
 				osDelay(1000);
 				retry --;
@@ -335,13 +430,45 @@ int	Gprs_check_simCard( gprs_t *self)
 					goto errOut;
 				}
 				break;
+			case 4:		//wait sms read and call read
+
 				
+				
+				if( dsys.gprs.flag_ready >= 2)
+					return ERR_OK;
+				
+				osDelay(3);
+				if( retry)
+				{
+					strcpy( Gprs_cmd_buf, "AT+CCALR?\x00D\x00A" );
+					SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+					//+CCALR:1
+					pp = strstr((const char*)Gprs_cmd_buf,"+CCALR");
+					if(pp)
+					{
+						ret = Get_str_data(pp, NULL, 0, &err);
+						if(err == 0)
+						{
+						
+							if(ret == 1)
+								dsys.gprs.flag_ready |= 1;
+						}
+						
+						
+						
+					}
+					retry --;
+					
+				}
+				else
+					goto errOut;
+				
+				break;
 			default:
 				step = 0;
 				break;
 				
 		}		//switch
-//		osDelay(1000);
 	}	//while(1)
 	
 	errOut:
@@ -451,12 +578,10 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 	char *pp = NULL;
 	if( sms_len == 0)
 		return ERR_OK;
-	if( dsys.gprs.flag_sms_ready < 2)
+	if( dsys.gprs.flag_ready < 2)
 		return ERR_DEV_SICK;
 	if( phnNmbr == NULL || sms == NULL)
 		return ERR_BAD_PARAMETER;
-	if( dsys.gprs.flag_sms_ready == 0)
-		return ERR_UNINITIALIZED;
 	if( dsys.gprs.cur_state < INIT_FINISH_OK)
 		return ERR_UNINITIALIZED;
 	
@@ -596,7 +721,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 	if( check_phoneNO( phnNmbr) == ERR_OK)
 		legal_phno = 1;
 	//短信为准备好，说明还没有入网
-	if( dsys.gprs.flag_sms_ready < 2)
+	if( dsys.gprs.flag_ready < 2)
 		return ERR_UNINITIALIZED;  
 	
 	while(1)
@@ -990,7 +1115,7 @@ int delete_sms( gprs_t *self, int seq)
 	char *pp = NULL;
 
 	//短信为准备好，说明还没有入网
-	if( dsys.gprs.flag_sms_ready < 2)	//等到SMS 和CALL都可以了才联网
+	if( dsys.gprs.flag_ready < 2)	//等到SMS 和CALL都可以了才联网
 		return ERR_DEV_SICK; 
 	if( cnnt_num > IPMUX_NUM)
 		return ERR_BAD_PARAMETER;
@@ -1541,7 +1666,7 @@ void read_event(void *buf, void *arg, int len)
 	pp = strstr((const char*)buf,"SMS Ready");
 	if( pp)
 	{
-		dsys.gprs.flag_sms_ready ++;
+		dsys.gprs.flag_ready |= 2;
 		return;
 		
 	}
@@ -1550,7 +1675,7 @@ void read_event(void *buf, void *arg, int len)
 	if( pp)
 	{
 		
-		dsys.gprs.flag_sms_ready ++;
+		dsys.gprs.flag_ready |= 1;
 		return;
 	}	
 	

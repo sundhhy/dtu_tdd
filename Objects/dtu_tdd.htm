@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\dtu_tdd.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\dtu_tdd.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Fri Dec 15 23:27:41 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sat Dec 16 21:42:19 2017
 <BR><P>
 <H3>Maximum Stack Usage =        312 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1319,7 +1319,8 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcspn
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi
 </UL>
-<BR>[Called By]<UL><LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Gprs_get_info
+<BR>[Called By]<UL><LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Gprs_check_simCard
+<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Gprs_get_info
 </UL>
 
 <P><STRONG><a name="[40]"></a>GprsCnntManagerRun</STRONG> (Thumb, 308 bytes, Stack size 40 bytes, dtu.o(i.GprsCnntManagerRun))
@@ -1500,7 +1501,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[47]"></a>GprsSelfTestRun</STRONG> (Thumb, 124 bytes, Stack size 16 bytes, dtu.o(i.GprsSelfTestRun))
+<P><STRONG><a name="[47]"></a>GprsSelfTestRun</STRONG> (Thumb, 146 bytes, Stack size 16 bytes, dtu.o(i.GprsSelfTestRun))
 <BR><BR>[Stack]<UL><LI>Max Depth = 52<LI>Call Chain = GprsSelfTestRun &rArr; GprsGetInstance &rArr; gprs_t_new &rArr; malloc
 </UL>
 <BR>[Calls]<UL><LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Led_level
@@ -1554,10 +1555,11 @@ Global Symbols
 <P><STRONG><a name="[81]"></a>Gprs_Event_tcpclose</STRONG> (Thumb, 56 bytes, Stack size 0 bytes, gprs.o(i.Gprs_Event_tcpclose))
 <BR>[Address Reference Count : 1]<UL><LI> gprs.o(i.gprs_t_ctor)
 </UL>
-<P><STRONG><a name="[78]"></a>Gprs_check_simCard</STRONG> (Thumb, 334 bytes, Stack size 24 bytes, gprs.o(i.Gprs_check_simCard))
-<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = Gprs_check_simCard &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
+<P><STRONG><a name="[78]"></a>Gprs_check_simCard</STRONG> (Thumb, 556 bytes, Stack size 32 bytes, gprs.o(i.Gprs_check_simCard))
+<BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = Gprs_check_simCard &rArr; Get_str_data &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SerilTxandRx
+<LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Get_str_data
 <LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[130]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strstr
@@ -3151,7 +3153,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_Tick_Handler
 </UL>
 
-<P><STRONG><a name="[48]"></a>read_event</STRONG> (Thumb, 398 bytes, Stack size 32 bytes, gprs.o(i.read_event))
+<P><STRONG><a name="[48]"></a>read_event</STRONG> (Thumb, 400 bytes, Stack size 32 bytes, gprs.o(i.read_event))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = read_event &rArr; get_seq &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[195]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VecBuf_write
@@ -3752,7 +3754,7 @@ Global Symbols
 <LI><a href="#[0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[79]"></a>send_text_sms</STRONG> (Thumb, 418 bytes, Stack size 40 bytes, gprs.o(i.send_text_sms))
+<P><STRONG><a name="[79]"></a>send_text_sms</STRONG> (Thumb, 406 bytes, Stack size 40 bytes, gprs.o(i.send_text_sms))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = send_text_sms &rArr; set_sms2TextMode &rArr; SerilTxandRx &rArr; gprs_Uart_read &rArr; free_playloadbuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gprs_Uart_write
@@ -3909,7 +3911,7 @@ Global Symbols
 <LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_rd_data
 </UL>
 
-<P><STRONG><a name="[75]"></a>startup</STRONG> (Thumb, 60 bytes, Stack size 8 bytes, gprs.o(i.startup))
+<P><STRONG><a name="[75]"></a>startup</STRONG> (Thumb, 66 bytes, Stack size 8 bytes, gprs.o(i.startup))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = startup
 </UL>
 <BR>[Calls]<UL><LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits

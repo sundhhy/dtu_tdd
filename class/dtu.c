@@ -292,7 +292,7 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	
-	this->print( this, "gprs selftest state \r\n");
+	this->print( this, "[STS] gprs selftest state \r\n");
 
 	Led_level(LED_GPRS_CHECK);
 	this_gprs->lock( this_gprs);
@@ -302,14 +302,15 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 	{
 		if(this_gprs->get_sim_info(this_gprs) == ERR_OK)
 		{
-			sprintf( this->dataBuf, "signal=%d, power=%d mv", dsys.gprs.signal_strength,  dsys.gprs.voltage_mv);
+			sprintf( this->dataBuf, "[STS] SGL=%d, PWR=%d mv\r\n", dsys.gprs.signal_strength,  dsys.gprs.voltage_mv);
+//			this->print( this, this->dataBuf);
 		}
 		else
 		{
 			
 			
-			sprintf( this->dataBuf, "get_sim_info sim failed! ...");
-			
+			sprintf( this->dataBuf, "[STS] get_sim_info sim failed! ...\r\n");
+//			this->print( this, this->dataBuf);
 			
 		}
 		
@@ -320,10 +321,14 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 	}
 	else 
 	{
-		this->print( this, "detected sim failed,restart gprs\r\n");
+		this->print( this, "[STS] detected sim failed,restart gprs\r\n");
 		this_gprs->startup(this_gprs);
 		context->setCurState( context, STATE_SelfTest);	
 	}
+	
+	sprintf(this->dataBuf, "[STS] GSM=%d, GPRS=%d \r\n", dsys.gprs.status_gsm,  dsys.gprs.status_gprs);
+	this->print(this, this->dataBuf);
+	
 	this_gprs->unlock( this_gprs);
 //	this->print( this, "gprs selftest state finish\r\n");
 
@@ -347,13 +352,13 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 	short cnnt_seq = 0;
 	short run = 1;
 	int ret = 0;
-	this->print( this, "gprs cnnect state \r\n");
+	this->print( this, "[CNN]gprs cnnect state \r\n");
 	Led_level(LED_GPRS_CNNTING);
 	this_gprs->lock( this_gprs);
 	GprsTcpCnnectBeagin();
 	while( run)
 	{
-		sprintf( this->dataBuf, "cnnnect DC :%d,%s,%d,%s ...", cnnt_seq,Dtu_config.DateCenter_ip[ cnnt_seq],\
+		sprintf( this->dataBuf, "[CNN] cnnnect DC :%d,%s,%d,%s ...", cnnt_seq,Dtu_config.DateCenter_ip[ cnnt_seq],\
 			Dtu_config.DateCenter_port[cnnt_seq],Dtu_config.protocol[cnnt_seq] );
 		this->print( this, this->dataBuf);
 		
@@ -367,7 +372,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 				if( ret == ERR_OK)
 				{
 						
-						this->print(this, "succeed !\n");
+						this->print(this, "[CNN] succeed !\n");
 						Led_level(LED_GPRS_RUN);
 						if( Dtu_config.multiCent_mode == 0)
 						{
@@ -385,7 +390,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 				}
 				else if( ret == ERR_UNINITIALIZED )
 				{
-					this->print( this,"can not send data !\n");
+					this->print( this,"[CNN] can not send data !\n");
 					break;
 				}
 				
@@ -393,7 +398,7 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 		}	//if( ret == ERR_OK)
 		else if( ret == ERR_DEV_SICK)
 		{
-			this->print(this, "SIM card can not work!\n");
+			this->print(this, "[CNN] SIM card can not work!\n");
 			osDelay(2000);		//170719
 			
 			context->setCurState(context, STATE_SelfTest);	
@@ -406,13 +411,12 @@ int GprsConnectRun( WorkState *this, StateContext *context)
 			if(Dtu_config.multiCent_mode)
 				Dtu_config.DateCenter_port[cnnt_seq] = -Dtu_config.DateCenter_port[cnnt_seq];
 			Led_level(LED_GPRS_ERR);
-			this->print( this,"Addr error !\n");
-//			break;
+			this->print( this,"[CNN] Addr error !\n");
 		}
 		else
 		{
 			
-			this->print(this, "connect failed\n");
+			this->print(this, "[CNN] connect failed\n");
 		}
 		cnnt_seq ++;
 		osDelay(2000);		//170719
@@ -506,7 +510,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			pp = strstr((const char*)this->dataBuf,"SMSMODE");
 			if( pp)
 			{
-				this->print( this, "switch to SMSMODE\r\n");
+				this->print( this, "[EHA] switch to SMSMODE\r\n");
 				this_gprs->tcpClose( this_gprs, ret);
 				context->switchToSmsMode( context);
 //				Dtu_config.work_mode = MODE_SMS;
@@ -516,7 +520,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			
 			self->modbusProcess->process( this->dataBuf, lszie, TcpModbusAckCB	, &ret) ;
 			self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
-			DPRINTF("rx:[%d] %s \n", ret, this->dataBuf);
+			DPRINTF("[EHA] rx:[%d] %s \n", ret, this->dataBuf);
 //			this_gprs->free_event( this_gprs, gprs_event);
 			continue;
 		}
@@ -550,7 +554,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 		if( ret >= 0)
 		{	
 			Led_level(LED_GPRS_DISCNNT);
-			sprintf( this->dataBuf, "tcp close : %d ", ret);
+			sprintf( this->dataBuf, "[EHA] tcp close : %d ", ret);
 			this->print( this, this->dataBuf);
 			osDelay(5000);
 		}
@@ -629,24 +633,24 @@ int  GprsCnntManagerRun( WorkState *this, StateContext *context)
 	cnntNum = this_gprs->get_firstCnt_seq(this_gprs);
 	if( cnntNum < 0)
 	{
-		strcpy( this->dataBuf, "None connnect, reconnect...");
+		strcpy( this->dataBuf, "[CMN] None connnect, reconnect...");
 		this->print( this, this->dataBuf);
 		if(this_gprs->get_sim_info(this_gprs) != ERR_OK)
 		{
-			sprintf( this->dataBuf, "get_sim_info sim failed! ...");
+			sprintf( this->dataBuf, "[CMN] get_sim_info sim failed! ...");
 			this->print( this, this->dataBuf);
 		}
 		else
 		{
 			if(dsys.gprs.signal_strength < 10)
 			{
-				sprintf( this->dataBuf, "bad signal %d !!!", dsys.gprs.signal_strength );
+				sprintf( this->dataBuf, "[CMN] bad signal %d !!!", dsys.gprs.signal_strength );
 				this->print( this, this->dataBuf);
 			}
 			
 			if(dsys.gprs.voltage_mv < 3000)
 			{
-				sprintf( this->dataBuf, "low power  %d mv !!!", dsys.gprs.voltage_mv );
+				sprintf( this->dataBuf, "[CMN] low power  %d mv !!!", dsys.gprs.voltage_mv );
 				this->print( this, this->dataBuf);
 			}
 		}
@@ -726,7 +730,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 		skip --;
 		return 	ERR_OK;
 	}
-	this->print( this, "gprs deal sms state \r\n");
+	this->print( this, "[SMS] gprs deal sms state \r\n");
 	skip = 255;
 	this_gprs->lock( this_gprs);
 	while( 1)

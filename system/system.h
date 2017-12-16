@@ -56,18 +56,20 @@ typedef struct  {
 	}led;
 	struct {
 		uint8_t	flag_cnt;		//正在连接过程中，可能会去主动关闭前面的连接，所以这时关闭事件要过滤掉
-		uint8_t	flag_sms_ready;
-		uint8_t	cip_mode;
+		uint8_t	flag_ready;		
+		uint8_t	cip_mode;		
 		uint8_t	cip_mux;
 		
 		uint8_t	cur_state;
 		uint8_t	rx_sms_seq;
-		uint8_t	set_tcp_close;
+		uint8_t	set_tcp_close;		
 		uint8_t	set_tcp_recv;
 		
 		uint8_t		signal_strength;			//0 - 31
 		uint8_t		ber;						// 0 - 7
-		uint8_t		none[2];
+		
+		uint8_t		status_gsm;	
+		uint8_t		status_gprs;			
 		
 		uint8_t		bcs;			//0 ME 未充电 1 ME在充电 2 充电完成
 		uint8_t		bcl;			//0 - 100 电量 			
