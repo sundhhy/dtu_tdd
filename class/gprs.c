@@ -37,6 +37,7 @@ static int prepare_ip(gprs_t *self);
 static int get_sms_phNO(char *databuf, char *phbuf);
 static int get_seq( char **data);
 static int check_apn(char *apn);
+static void Get_ip_status(void);
 //void free_event( gprs_t *self, void *event);
 
 //static gprs_event_t *malloc_event();
@@ -94,12 +95,12 @@ vectorBufManager_t	g_TcpVbm;
 
 void GprsTcpCnnectBeagin()
 {
-	dsys.gprs.flag_cnt = 0;
+//	dsys.gprs.flag_cnt = 0;
 }
 
 void GprsTcpCnnectFinish()
 {
-	dsys.gprs.flag_cnt = 0;
+//	dsys.gprs.flag_cnt = 0;
 }
 
 gprs_t *GprsGetInstance(void)
@@ -209,6 +210,7 @@ void startup(gprs_t *self)
 		dsys.gprs.flag_ready = 0;
 		dsys.gprs.status_gsm = 0xff;
 		dsys.gprs.status_gprs = 0xff;
+		dsys.gprs.ip_status = 0xff;
 		dsys.gprs.cur_state = STARTUP;
 //		while(waitms)
 //		{
@@ -236,7 +238,10 @@ void shutdown(gprs_t *self)
 //		dsys.gprs.flag_ready = 0;
 		pp = strstr((const char*)Gprs_cmd_buf,"NORMAL POWER DOWN");
 		if( pp)
+		{
 			dsys.gprs.flag_ready = 0;
+			osDelay(5000);
+		}
 		
 	}
 }
@@ -336,35 +341,6 @@ int	Gprs_check_simCard( gprs_t *self)
 						}
 					}
 					
-					
-			
-			
-//				if(((Gprs_cmd_buf[9]=='0')&&
-//					(Gprs_cmd_buf[11]=='1'))||
-//				 ((Gprs_cmd_buf[9]=='0')&&
-//					(Gprs_cmd_buf[11]=='5')))
-//				{
-//						DPRINTF(" check_simCard succeed !\r\n");
-//						if( dsys.gprs.cur_state < INIT_FINISH_OK)
-//							dsys.gprs.cur_state = INIT_FINISH_OK;
-//						
-//						//170720 
-//						retry = 6000;
-//						step ++;
-//						dsys.gprs.flag_network |= 1;
-//						break;
-////						while( dsys.gprs.flag_ready < 2)
-////						{
-////							osDelay(3);
-////							if( retry)
-////								retry --;
-////							else
-////								break;
-////						}
-////						if( dsys.gprs.flag_ready < 2)
-////							goto errOut; 
-////						osDelay(1000);
-////						return ERR_OK;
 				}
 				osDelay(1000);
 				retry --;
@@ -394,8 +370,21 @@ int	Gprs_check_simCard( gprs_t *self)
 							case 2:		//Not registered, but MT is currently trying to attach or searching an operator to register to.
 							case 4:		//未知
 								break;
-							case 0:	//Not registered, GPRS service is disabled,the UE is allowed to attach for GPRS if requested by the user.
 							case 3:	//Registration denied,The GPRS service is disabled, the UE is not allowed to attach for GPRS if it is requested by the user.
+								//使用流量卡的时候出了这个情况，但是以下的处理并不起作用
+//								strcpy( Gprs_cmd_buf, "AT+CIPCLOSE=1\x00D\x00A" );		
+//								SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+//								pp = strstr((const char*)Gprs_cmd_buf,"OK");
+//								osDelay(1000);
+////								Get_ip_status();
+//								strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		
+//								SerilTxandRx(Gprs_cmd_buf, CMDBUF_LEN,10);
+//								pp = strstr((const char*)Gprs_cmd_buf,"OK");
+//								osDelay(1000);
+//								self->shutdown(self);
+//								
+//								goto errOut;
+							case 0:	//Not registered, GPRS service is disabled,the UE is allowed to attach for GPRS if requested by the user.
 
 							case 1:		//Registered, home network
 							case 5:		//Registered, roaming
@@ -592,6 +581,11 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 	
 	while(1)
 	{
+		if(dsys.gprs.cur_state == SHUTDOWN)
+		{
+			//17-12-17 使用流量卡测试的时候出现联网过程中关机了
+			return ERR_DEV_SICK;  
+		}
 		switch(step)
 		{
 			case 0:		//set msg mode
@@ -726,6 +720,12 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 	
 	while(1)
 	{
+		if(dsys.gprs.cur_state == SHUTDOWN)
+		{
+			//17-12-17 使用流量卡测试的时候出现联网过程中关机了
+			return ERR_DEV_SICK;  
+		}
+		
 		switch(step)
 		{
 			case 0:		//set msg mode
@@ -911,6 +911,11 @@ int	read_seq_TextSMS( gprs_t *self, char *phnNmbr, int seq, char *buf, int *len)
 	
 	while(1)
 	{
+		if(dsys.gprs.cur_state == SHUTDOWN)
+		{
+			//17-12-17 使用流量卡测试的时候出现联网过程中关机了
+			return ERR_DEV_SICK;  
+		}
 		switch(step)
 		{
 			case 0:		//set msg mode
@@ -1124,16 +1129,29 @@ int delete_sms( gprs_t *self, int seq)
 	
 	while(1)
 	{
+		if(dsys.gprs.cur_state == SHUTDOWN)
+		{
+			//17-12-17 使用流量卡测试的时候出现联网过程中关机了
+			return ERR_DEV_SICK;  
+		}
 		switch( step)
 		{
 			case 0:
 				ret = prepare_ip( self);
 				if( ret != ERR_OK)
 				{
-					dsys.gprs.cur_state = TCP_IP_ERROR;
-					return ERR_DEV_SICK;
+					if(retry)
+					{
+						retry --;
+					}
+					else
+					{
+						dsys.gprs.cur_state = TCP_IP_ERROR;
+						return ERR_DEV_SICK;
+					}
 				}
-				step += 3;			//170720 直接连接，
+				else
+					step += 3;			//170720 直接连接，
 				break;
 			case 1:		//先关闭这个连接
 				if( dsys.gprs.cip_mux)
@@ -1655,8 +1673,8 @@ void read_event(void *buf, void *arg, int len)
 //	gprs_event_t	*event;
 	if( arg == NULL)
 		return ;
-	if(dsys.gprs.flag_cnt)
-		return;
+//	if(dsys.gprs.flag_cnt)
+//		return;
 	
 	cthis = ( gprs_t *)arg;
 	
@@ -1684,6 +1702,7 @@ void read_event(void *buf, void *arg, int len)
 	if( pp)
 	{
 		dsys.gprs.cur_state = SHUTDOWN;
+		dsys.gprs.flag_ready = 0;
 		return;
 		
 	}
@@ -2631,6 +2650,111 @@ static int check_apn(char *apn)
 	
 }
 
+static void Get_ip_status(void)
+{
+	
+	
+	char *pp = NULL;
+//	int		ret;
+	short retry = RETRY_TIMES;
+//	uint8_t	err = 0;
+	while(1)
+	{
+		strcpy( Gprs_cmd_buf, "AT+CIPSTATUS\x00D\x00A" );		
+		SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"IP INITIAL");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 0;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"IP START");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 1;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"IP CONFIG");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 2;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"IP GPRSACT");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 3;
+			break;
+		}
+		
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"IP STATUS");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 4;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"CONNECTING");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 5;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"CONNECT OK");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 6;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"CLOSING");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 7;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"CLOSED");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 8;
+			break;
+		}
+		
+		pp = strstr((const char*)Gprs_cmd_buf,"PDP DEACT");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 9;
+			break;
+		}
+		
+		
+		//多路连接的时候才有的状态
+		pp = strstr((const char*)Gprs_cmd_buf,"IP PROCESSING");
+		if(pp)
+		{
+			dsys.gprs.ip_status = 10;
+			break;
+		}
+		
+		if(retry)
+		{
+			retry --;
+			osDelay(1000);
+		}
+		else
+			break;
+		
+	}
+}
+
+
 static int prepare_ip(gprs_t *self)
 {
 	short retry = RETRY_TIMES;
@@ -2640,8 +2764,35 @@ static int prepare_ip(gprs_t *self)
 	if( dsys.gprs.cur_state == TCP_IP_OK)
 		return ERR_OK;
 	
+	
+//	strcpy( Gprs_cmd_buf, "AT+CIPCLOSE=1\x00D\x00A" );		
+//	SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+//	pp = strstr((const char*)Gprs_cmd_buf,"OK");
+//	osDelay(1000);
+//	strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		
+//	SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+//	pp = strstr((const char*)Gprs_cmd_buf,"OK");
+//	step = 0;
+//	osDelay(1000);
 	while(1)
 	{
+		
+		
+		if((dsys.gprs.ip_status == 9) || (dsys.gprs.cur_state == SHUTDOWN))
+		{
+			//17-12-17 使用流量卡测试的时候出现联网过程中关机了
+			strcpy( Gprs_cmd_buf, "AT+CIPCLOSE=1\x00D\x00A" );		
+			SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+			pp = strstr((const char*)Gprs_cmd_buf,"OK");
+			osDelay(1000);
+			strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		
+			SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
+			pp = strstr((const char*)Gprs_cmd_buf,"OK");
+			step = 0;
+			osDelay(1000);
+			goto ipExitFail;
+		}
+		
 		switch( step )
 		{
 			case 0:		//确定运营商
@@ -2830,10 +2981,19 @@ static int prepare_ip(gprs_t *self)
 					
 				}
 					
+//				strcpy( Gprs_cmd_buf, "AT+CGATT=1\x00D\x00A" );	
 				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
 				{
+//					
+//					if(dsys.gprs.ip_status != 1)
+//					{
+//						Get_ip_status();
+//						osDelay(1000);
+//					}
+					
+					
 					retry = RETRY_TIMES;
 					step ++;
 					break;
@@ -2859,8 +3019,9 @@ static int prepare_ip(gprs_t *self)
 				}
 						
 				break;
+				
 			case 5:
-				strcpy( Gprs_cmd_buf, "AT+CIICR\x00D\x00A" );		//激活移动场景
+				strcpy( Gprs_cmd_buf, "AT+CIICR\r\n" );		//激活移动场景
 				SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,10);
 				pp = strstr((const char*)Gprs_cmd_buf,"OK");
 				if(pp)
@@ -2872,7 +3033,22 @@ static int prepare_ip(gprs_t *self)
 				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");
 				if(pp)
 				{
-					goto ipExitFail;
+					
+//					if(dsys.gprs.ip_status != 1)
+					{
+						Get_ip_status();
+						osDelay(5000);
+						retry = RETRY_TIMES;
+						step ++;
+						break;
+					}
+					
+					//17-12-17 杭州卡在德清的时候，会出现这个问题
+//					goto ipExitFail;
+//					strcpy( Gprs_cmd_buf, "AT+CIPSHUT\x00D\x00A" );		//Deactivate GPRS PDP context
+//					SerilTxandRx( Gprs_cmd_buf, CMDBUF_LEN,1);
+//					return ERR_FAIL;
+					
 				}
 				
 				if( retry)

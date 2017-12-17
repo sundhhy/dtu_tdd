@@ -484,6 +484,15 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 	int 			smsSource = 0;
 //	this->print( this, "gprs event handle state \r\n");
 
+	
+	if(dsys.gprs.cur_state == SHUTDOWN)
+	{
+		this->print(this, "[EHA] found SIM card shutdown!\n");
+		osDelay(2000);		//170719
+		
+		context->setCurState(context, STATE_SelfTest);	
+		goto evenExit;
+	}
 		
 	while( 1)
 	{

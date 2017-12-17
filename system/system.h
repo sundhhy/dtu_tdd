@@ -13,9 +13,11 @@
 // const defines
 //------------------------------------------------------------------------------
 
-#define SOFTER_VER	302
+#define SOFTER_VER	304
 #define HARD_VER	1
 /*
+V34 171217:
+	这个版本在激活移动场景失败时，并不作为错误处理，而是延时5秒以后开始进行连接。在武康的红旗机械工程表现良好
 V302 171215:
 增加信号强度和电量检测；无连接时，去除错误地址标记
 V300 171211: 
@@ -55,10 +57,11 @@ typedef struct  {
 		uint16_t	led_count_ms;
 	}led;
 	struct {
-		uint8_t	flag_cnt;		//正在连接过程中，可能会去主动关闭前面的连接，所以这时关闭事件要过滤掉
+//		uint8_t	flag_cnt;		//正在连接过程中，可能会去主动关闭前面的连接，所以这时关闭事件要过滤掉
 		uint8_t	flag_ready;		
 		uint8_t	cip_mode;		
 		uint8_t	cip_mux;
+		uint8_t	ip_status;	
 		
 		uint8_t	cur_state;
 		uint8_t	rx_sms_seq;
