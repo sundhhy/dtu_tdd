@@ -565,7 +565,7 @@ int GprsEventHandleRun( WorkState *this, StateContext *context)
 			Led_level(LED_GPRS_DISCNNT);
 			sprintf( this->dataBuf, "[EHA] tcp close : %d ", ret);
 			this->print( this, this->dataBuf);
-			osDelay(5000);
+			osDelay(10000);
 		}
 //		this_gprs->free_event( this_gprs, gprs_event);
 					
