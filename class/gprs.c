@@ -300,12 +300,16 @@ int	Gprs_check_simCard( gprs_t *self)
 					DPRINTF(" AT+CPIN? succeed! \t\n");
 					break;
 				}
+				
+				
+				
 				retry --;
 				osDelay(1000);
 				if( retry == 0) {
 					
 					dsys.gprs.cur_state = GPRSERROR;
 					DPRINTF(" AT+CPIN? fail \t\n");
+					
 					goto errOut;
 				}
 				break;
