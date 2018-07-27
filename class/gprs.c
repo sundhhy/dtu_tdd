@@ -115,6 +115,37 @@ gprs_t *GprsGetInstance(void)
 	
 }
 
+int GPRS_send_sms(int fd, char *data)
+{
+	int ret;
+	int retry =3;
+	gprs_t	*this_gprs = GprsGetInstance();
+	if(fd >= ADMIN_PHNOE_NUM)
+			return -1;
+	
+	while(retry)
+	{
+		
+		ret = this_gprs->send_text_sms( this_gprs, Dtu_config.admin_Phone[fd], data);
+		if( ret == ERR_FAIL)
+		{
+			retry --;
+			
+		}
+		
+		else 
+		{
+			break;
+		}
+		
+		
+	}
+	
+	
+	return ret;
+	
+}
+
 int Grps_SetCipmode( short mode)
 {
 	if( ( mode != CIPMODE_TRSP) && ( mode != CIPMODE_OPAQUE))

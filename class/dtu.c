@@ -13,6 +13,9 @@
 #include "modbusRTU_cli.h"
 
 
+#include "device_server/device_server.h"
+
+
 
 
 char	DtuTempBuf[DTUTMP_BUF_LEN];
@@ -53,6 +56,7 @@ StateContext *DtucreateContext( int mode)
 			context =  ( StateContext *)PassThroughModeContext_new();
 			break;
 		case MODE_SMS:
+		case MODE_KTZ3:
 			context =  ( StateContext *)SMSModeContext_new();
 			break;
 		case MODE_REMOTERTU:
@@ -720,6 +724,7 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 {
 	gprs_t	*this_gprs = GprsGetInstance();
 	GprsDealSMSState	*self = SUB_PTR( this, WorkState, GprsDealSMSState);
+	Device_server			*p_dvs;
 	static	uint8_t skip = 0;		//为了避免每次都无意义的查询
 	
 	int			lszie = 0;
@@ -729,6 +734,9 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	int 			smsSource = 0;
 	
 	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+	
+	
+	p_dvs = DVS_get_dev_service(self->dvs_type);
 	
 
 	Led_level(LED_GPRS_SMS);
@@ -761,6 +769,8 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 					if( ret != ERR_OK)
 						self->forwardSer485->process( this->dataBuf, lszie, NULL, NULL);
 					
+					p_dvs->data_down(p_dvs, i, this->dataBuf, lszie);
+					
 					break;
 				}
 				
@@ -782,9 +792,35 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 				
 }
 
+int sms_state_init( WorkState *this, char *buf, int bufLen)
+{
+	GprsDealSMSState	*self = SUB_PTR( this, WorkState, GprsDealSMSState);
+	Device_server			*p_dvs;
+	if(  buf == NULL)
+		return ERR_BAD_PARAMETER;
+	this->dataBuf = buf;
+	this->bufLen = bufLen;
+	
+	if(Dtu_config.work_mode == MODE_DVS_TEST)
+		self->dvs_type = DVS_TEST;
+	else if(Dtu_config.work_mode == MODE_KTZ3)
+		self->dvs_type = DVS_KTZ3;
+	else
+		self->dvs_type = DVS_NONE;
+	
+	p_dvs = DVS_get_dev_service(self->dvs_type);
+	p_dvs->init(p_dvs);
+	
+	
+	return ERR_OK;
+	
+}
+
 CTOR( GprsDealSMSState)
 SUPER_CTOR( WorkState);
 FUNCTION_SETTING(WorkState.run, GprsDealSMSRun);
+FUNCTION_SETTING(WorkState.init, sms_state_init);
+
 END_CTOR
 
 WorkState* SMSModeBuildGprsSelfTestState(StateContext *this )

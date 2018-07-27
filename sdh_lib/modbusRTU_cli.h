@@ -55,7 +55,6 @@ uint16_t regType4_read(uint16_t input_address, uint16_t reg_type);
 int regType4_write(uint16_t input_address, uint16_t reg_type, uint16_t val);
 int Regist_reg3_wrcb( Reg3_write_cb cb);
 
-uint16_t CRC16(uint8_t *puchMsg, uint16_t usDataLen);			         //16Œªcrc–£—È
 
 uint8_t 	modbusRTU_getID(uint8_t *command_buf);
 uint16_t modbusRTU_data(uint8_t *command_buf, int cmd_len, uint8_t *ack_buf, int ackbuf_len);

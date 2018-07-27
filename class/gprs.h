@@ -136,4 +136,6 @@ int Grps_SetCipmux( short mux);
 void GprsTcpCnnectBeagin();
 void GprsTcpCnnectFinish();
 
+int GPRS_send_sms(int fd, char *data);
+
 #endif

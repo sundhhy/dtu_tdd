@@ -10,12 +10,14 @@
 
 
 #define MODE_PASSTHROUGH					0			//
-#define MODE_SMS					1			//
-#define MODE_REMOTERTU		2
-#define MODE_LOCALRTU			3
-#define MODE_BEGIN					0
-#define MODE_END					4
-#define NEED_ADC( mode)				( ( mode) > MODE_SMS)
+#define MODE_SMS									1			//
+#define MODE_REMOTERTU						2
+#define MODE_LOCALRTU							3
+#define MODE_DVS_TEST							4			//设备KTZ3的服务模式
+#define MODE_KTZ3									5			//设备KTZ3的服务模式
+#define MODE_BEGIN								0
+#define MODE_END									6
+#define NEED_ADC( mode)				((mode > MODE_SMS) && (mode < MODE_DVS_TEST))
 #define NEED_GPRS( mode)				( ( mode) != MODE_LOCALRTU)
 
 #define DTU_CONFGILE_MAIN_VER		2
@@ -37,6 +39,8 @@
 #define HEATBEATPACKAGE_LEN			32
 #define IP_LEN		16
 #define IP_ADDR_LEN		64
+
+#define NUM_DVS_SLAVE_DEV			8		//设备服务器可支持的从设备数量
 
 
 
@@ -79,6 +83,9 @@ typedef struct {
 	ser_485Cfg	the_485cfg;
 	
 	signRange_t		sign_range[3];
+	
+	
+	uint8_t			dvs_slave_id[NUM_DVS_SLAVE_DEV];
 }DtuCfg_t;
 
 typedef void (* other_ack)( char *data, void *arg);

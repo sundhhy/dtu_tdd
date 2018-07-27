@@ -17,6 +17,7 @@
 #include "string.h"
 #include "sdhError.h"
 #include "string.h"
+#include "crc.h"
 //uint16_t coil_buf[COIL_SIZE/16];
 //static uint16_t state_buf[STATE_SIZE/16];			//2区数据内存
 uint16_t input_buf[INPUT_SIZE];

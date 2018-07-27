@@ -71,7 +71,7 @@ ABS_CLASS( WorkState)
 	char 	*dataBuf;
 	short 	bufLen;
 //	short		stateNum;		//¹¤×÷×´Ì¬µÄÐòºÅ
-
+	
 
 	//abs
 	int (*run)( WorkState *this, StateContext *context);
@@ -121,7 +121,11 @@ CLASS( GprsEventHandleState)
 
 CLASS( GprsDealSMSState)
 {
+	uint8_t			dvs_type;
+	uint8_t			res[3];
+	
 	IMPLEMENTS( WorkState);
+	
 	BusinessProcess *configSystem;
 	BusinessProcess *forwardSer485;
 	
