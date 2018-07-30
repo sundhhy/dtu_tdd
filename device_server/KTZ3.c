@@ -1,12 +1,16 @@
 //============================================================================//
 //            G L O B A L   D E F I N I T I O N S                             //
 //============================================================================//
+
+#include <string.h>
+
 #include "cmsis_os.h"                                           // CMSIS RTOS header file
+#include "osObjects.h"                      // RTOS object definitions
 
 #include "gprs.h"
 #include "serial485_uart.h"
 #include "modbus_master.h"
-
+#include "dtuConfig.h"
 
 #include "KTZ3.h"
 
@@ -114,7 +118,7 @@ static 	int ktz3_init(Device_server *self)
 	
 	memset(p_wr_msgs, 0, NUM_WR_MSGS * sizeof(wr_modbus_msg_t));
 	
-	tid_ktz3 = osThreadCreate(osThread(ktz3_run), NULL);
+	tid_ktz3 = osThreadCreate(osThread(ktz3_run), self);
 	if (!tid_ktz3) return(-1);
 
 	return(0);
@@ -128,8 +132,8 @@ static void ktz3_run(Device_server *self)
 	{
 		threadActive();
 		
-		ktz3_deal_write_msg(self, buf, 64);
-		ktz3_poll_modbus_dev(self, buf, 64);
+		ktz3_deal_write_msg(self, modbus_buf, 64);
+		ktz3_poll_modbus_dev(self, modbus_buf, 64);
 		osDelay(500);
 //		osThreadYield();         
 		

@@ -96,7 +96,7 @@ INTERFACE( Builder)
 CLASS( GprsSelfTestState)
 {
 	
-	IMPLEMENTS( WorkState);
+	EXTENDS( WorkState);
 	
 	
 	
@@ -104,13 +104,13 @@ CLASS( GprsSelfTestState)
 
 CLASS( GprsConnectState)
 {
-	IMPLEMENTS( WorkState);
+	EXTENDS( WorkState);
 	
 };
 
 CLASS( GprsEventHandleState)
 {
-	IMPLEMENTS( WorkState);
+	EXTENDS( WorkState);
 	BusinessProcess *modbusProcess;
 	BusinessProcess *configSystem;
 	BusinessProcess *forwardSer485;
@@ -124,7 +124,7 @@ CLASS( GprsDealSMSState)
 	uint8_t			dvs_type;
 	uint8_t			res[3];
 	
-	IMPLEMENTS( WorkState);
+	EXTENDS(WorkState);
 	
 	BusinessProcess *configSystem;
 	BusinessProcess *forwardSer485;
@@ -141,13 +141,13 @@ CLASS( GprsDealSMSState)
 
 CLASS( GprsHeatBeatState)
 {
-	IMPLEMENTS( WorkState);
+	EXTENDS( WorkState);
 	
 };
 
 CLASS( GprsCnntManagerState)
 {
-	IMPLEMENTS( WorkState);
+	EXTENDS( WorkState);
 	
 };
 

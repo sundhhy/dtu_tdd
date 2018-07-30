@@ -154,6 +154,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 		fs_flush();
 	}
 	
+	
 	return ERR_OK;
 	
 }

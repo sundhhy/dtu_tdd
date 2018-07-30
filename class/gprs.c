@@ -606,7 +606,8 @@ int	send_text_sms(  gprs_t *self, char *phnNmbr, char *sms){
 		return ERR_DEV_SICK;
 	if( phnNmbr == NULL || sms == NULL)
 		return ERR_BAD_PARAMETER;
-	if( dsys.gprs.cur_state < INIT_FINISH_OK)
+//	if( dsys.gprs.cur_state < INIT_FINISH_OK)		//sundh 180730 之前的这个条件不知道为什么？难道是在TCP连接的时候，避免发送短信？
+	if( dsys.gprs.cur_state < GPRS_OPEN_FINISH)
 		return ERR_UNINITIALIZED;
 	
 	if( check_phoneNO( phnNmbr) != ERR_OK)
@@ -747,7 +748,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 	short legal_phno = 0;
 	int	phnoend_offset = 0;
 	
-	if( check_phoneNO( phnNmbr) == ERR_OK)
+	if( check_phoneNO(phnNmbr) == ERR_OK)
 		legal_phno = 1;
 	//短信为准备好，说明还没有入网
 	if( dsys.gprs.flag_ready < 2)

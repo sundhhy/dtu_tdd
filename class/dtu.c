@@ -53,14 +53,15 @@ StateContext *DtucreateContext( int mode)
 	switch( mode)
 	{
 		case MODE_PASSTHROUGH:
-			context =  ( StateContext *)PassThroughModeContext_new();
+			context =  (StateContext *)PassThroughModeContext_new();
 			break;
 		case MODE_SMS:
 		case MODE_KTZ3:
-			context =  ( StateContext *)SMSModeContext_new();
+		case MODE_DVS_TEST:
+			context =  (StateContext *)SMSModeContext_new();
 			break;
 		case MODE_REMOTERTU:
-			context =  ( StateContext *)RemoteRTUModeContext_new();
+			context =  (StateContext *)RemoteRTUModeContext_new();
 			break;
 //		case MODE_LOCALRTU:
 //			context =  ( StateContext *)LocalRTUModeContext_new();
@@ -82,7 +83,7 @@ END_CTOR
 
 //ÈÝÄÉ×´Ì¬µÄ»·¾³
 
-int StateContextInit( StateContext *this, char *buf, int bufLen)
+int StateContextInit(StateContext *this, char *buf, int bufLen)
 {
 	
 	this->dataBuf = buf;
@@ -251,6 +252,8 @@ SUPER_CTOR(StateContext);
 FUNCTION_SETTING(StateContext.initState, RRTUInitState);
 END_CTOR
 
+
+
 int PThrInitState( StateContext *this)
 {
 	Builder *state_builder = ( Builder *)PassThroughModeBuilder_new();
@@ -345,6 +348,7 @@ int GprsSelfTestRun( WorkState *this, StateContext *context)
 
 CTOR( GprsSelfTestState)
 SUPER_CTOR( WorkState);
+
 FUNCTION_SETTING(WorkState.run, GprsSelfTestRun);
 END_CTOR
 
@@ -733,7 +737,6 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	int				ret = 0;
 	int 			smsSource = 0;
 	
-	memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
 	
 	
 	p_dvs = DVS_get_dev_service(self->dvs_type);
@@ -753,6 +756,8 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 	while( 1)
 	{
 		lszie = this->bufLen;
+		memset( DtuTempBuf, 0, sizeof( DtuTempBuf));
+
 		smsSeq = this_gprs->read_phnNmbr_TextSMS( this_gprs, DtuTempBuf, this->dataBuf,   this->dataBuf, &lszie);				
 		if( smsSeq >= 0)
 		{
@@ -816,8 +821,8 @@ int sms_state_init( WorkState *this, char *buf, int bufLen)
 	
 }
 
-CTOR( GprsDealSMSState)
-SUPER_CTOR( WorkState);
+CTOR(GprsDealSMSState)
+SUPER_CTOR(WorkState);
 FUNCTION_SETTING(WorkState.run, GprsDealSMSRun);
 FUNCTION_SETTING(WorkState.init, sms_state_init);
 
@@ -845,8 +850,10 @@ WorkState*  SMSModeBuildGprsConnectState(StateContext *this )
 WorkState* SMSModeBuildGprsEventHandleState(StateContext *this )
 {
 	GprsEventHandleState *concretestate = GprsEventHandleState_new();
-	WorkState *state = ( WorkState *)concretestate;
 	
+	WorkState *state = SUPER_PTR(concretestate, WorkState);
+	
+//	state->init(state, NULL);
 	concretestate->forwardNet = GetEmptyProcess();
 	concretestate->forwardSMS = GetEmptyProcess();
 	concretestate->forwardSer485 = GetForwardSer485();
@@ -863,7 +870,7 @@ WorkState* SMSModeBuildGprsDealSMSState(StateContext *this )
 {
 	
 	GprsDealSMSState *concretestate = GprsDealSMSState_new();
-	WorkState *state = ( WorkState *)concretestate;
+	WorkState *state = SUPER_PTR(concretestate, WorkState);
 	
 	concretestate->forwardSer485 = GetForwardSer485();
 	concretestate->configSystem = GetConfigSystem();
