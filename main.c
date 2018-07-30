@@ -112,7 +112,7 @@ int main (void) {
 	 
   // initialize peripherals here
 	RCC_Configuration();
-	IWDG_Configuration();
+//	IWDG_Configuration();
 
 	NVIC_Configuration();
 	
@@ -174,6 +174,9 @@ int main (void) {
 	
 	
 	Init_system_config();
+	Dtu_config.work_mode  = MODE_DVS_TEST;
+	sprintf(Dtu_config.admin_Phone[0],"15858172663");
+
 	
 	s485_uart_init( &Conf_S485Usart_default, NULL);
 	u32_val = Select_apptype();
