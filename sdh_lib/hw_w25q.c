@@ -122,6 +122,7 @@ int W25Q_write_flash(uint32_t addr, uint8_t *buf, uint32_t bytes)
 		
 		wr_bytes += ret;
 		bytes -= ret;
+		pg ++;
 	}
 	
 	
@@ -145,6 +146,7 @@ int W25Q_read_flash(uint32_t addr, uint8_t *buf, uint32_t bytes)
 		
 		rd_bytes += ret;
 		bytes -= ret;
+		pg++;
 	}
 	
 	

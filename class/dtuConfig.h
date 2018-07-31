@@ -19,6 +19,7 @@
 #define MODE_END									6
 #define NEED_ADC( mode)				((mode > MODE_SMS) && (mode < MODE_DVS_TEST))
 #define NEED_GPRS( mode)				( ( mode) != MODE_LOCALRTU)
+#define NEED_SMS_DEAL_FAST(mode)			((mode >= MODE_DVS_TEST) && (mode <= MODE_KTZ3))		//需要快速处理短信时，会加快短信处理
 
 #define DTU_CONFGILE_MAIN_VER		2
 #define DTU_CONFGILE_SUB_VER		1

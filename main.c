@@ -182,6 +182,11 @@ int main (void) {
 			printf(" init w25q fail \n");
 			
 		}
+		else
+		{
+			
+			break;
+		}
 		osDelay(5);
 		u32_val --;
 	
@@ -191,11 +196,11 @@ int main (void) {
 	
 	
 	
-	
+	dsys.cfg_change = 0;
+
 	Init_system_config();
 	Dtu_config.work_mode  = MODE_DVS_TEST;
 	sprintf(Dtu_config.admin_Phone[0],"15858172663");
-	dsys.cfg_change = 0;
 
 	
 	s485_uart_init( &Conf_S485Usart_default, NULL);
@@ -247,16 +252,8 @@ int main (void) {
 			}
 			threadActive();
 			u32_val ++;
-			if( NEED_GPRS( Dtu_config.work_mode)) 
-				sim800->run( sim800);
-			if( !NEED_ADC( Dtu_config.work_mode)) 
-				continue;
-			if(( u32_val % 10) == 0)
-			{
 			
-				Collect_job();
-			}
-			else if((u32_val % 1000) == 0)
+			if((u32_val % 500) == 0)
 			{
 				if(dsys.cfg_change)
 				{
@@ -268,6 +265,19 @@ int main (void) {
 				}
 				
 			}
+			
+			
+			
+			if( NEED_GPRS( Dtu_config.work_mode)) 
+				sim800->run( sim800);
+			if( !NEED_ADC( Dtu_config.work_mode)) 
+				continue;
+			if(( u32_val % 10) == 0)
+			{
+			
+				Collect_job();
+			}
+			 
 //			osThreadYield (); 
 		}
 	}

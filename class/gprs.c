@@ -825,9 +825,10 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				number = atoi( pp);			
 				if( number < 1)
 					return 0;	
-				if( dsys.gprs.rx_sms_seq > number)
-					dsys.gprs.rx_sms_seq = 0;
-				i = dsys.gprs.rx_sms_seq;		///短信从短信CMIT通知开始读取
+//				if( dsys.gprs.rx_sms_seq > number)
+//					dsys.gprs.rx_sms_seq = 0;
+//				i = dsys.gprs.rx_sms_seq;		///短信从短信CMIT通知开始读取
+				i = 0;
 				step ++;
 				retry = RETRY_TIMES;
 				break;
@@ -882,7 +883,7 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 							
 							*ptarget  = '\0';
 							*len = number;
-							dsys.gprs.rx_sms_seq = i + 1;
+//							dsys.gprs.rx_sms_seq = i + 1;
 							return i;
 						}
 						

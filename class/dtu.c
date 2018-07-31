@@ -751,7 +751,8 @@ int GprsDealSMSRun( WorkState *this, StateContext *context)
 		return 	ERR_OK;
 	}
 	this->print( this, "[SMS] gprs deal sms state \r\n");
-	skip = 255;
+	if(!NEED_SMS_DEAL_FAST(Dtu_config.work_mode))
+		skip = 255;
 	this_gprs->lock( this_gprs);
 	while( 1)
 	{

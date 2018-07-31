@@ -168,6 +168,7 @@ static int get_dtuCfg(DtuCfg_t *conf)
 		{
 			DPRINTF(" read config err \n");
 			set_default(conf);
+			dsys.cfg_change = 1;
 		}
 		
 		
