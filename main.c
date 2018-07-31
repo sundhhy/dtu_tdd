@@ -25,6 +25,7 @@
 #include "dtuConfig.h"
 #include "TTextConfProt.h"
 #include "system.h"
+#include "hw_w25q.h"
 
 #define APPTYPE_NORMAL			0x25		//正常工作
 #define APPTYPE_CONFIG			0x37		//配置任务	
@@ -133,6 +134,8 @@ int main (void) {
 #if TDD_ON == 0
 	printf(" DTU TDD start ...\n");
 	u32_val = 5;
+	
+#if NO_FILESYS == 0
 	while(u32_val)
 	{
 		if( filesys_init() != ERR_OK)
@@ -169,6 +172,22 @@ int main (void) {
 		u32_val --;
 	
 	}
+#else
+	
+	while(u32_val)
+	{
+		if( w25q_init() != ERR_OK)
+		{
+			Led_level(LED_FILESYS_ERR);
+			printf(" init w25q fail \n");
+			
+		}
+		osDelay(5);
+		u32_val --;
+	
+	}
+
+#endif
 	
 	
 	
@@ -176,6 +195,7 @@ int main (void) {
 	Init_system_config();
 	Dtu_config.work_mode  = MODE_DVS_TEST;
 	sprintf(Dtu_config.admin_Phone[0],"15858172663");
+	dsys.cfg_change = 0;
 
 	
 	s485_uart_init( &Conf_S485Usart_default, NULL);
@@ -209,7 +229,17 @@ int main (void) {
 			if( ShutdownFlag)
 			{
 				LED_run->destory(LED_run);
+		#if NO_FILESYS == 0
 				fs_flush();
+		#else
+				if(dsys.cfg_change)
+				{
+					w25q_Erase_Sector(0);
+					if(W25Q_write_flash(0, (uint8_t *)&Dtu_config, sizeof(Dtu_config)) == sizeof(Dtu_config))
+						dsys.cfg_change = 0;
+					
+				}
+		#endif
 				if( g_shutdow)
 					g_shutdow();
 				
@@ -221,10 +251,23 @@ int main (void) {
 				sim800->run( sim800);
 			if( !NEED_ADC( Dtu_config.work_mode)) 
 				continue;
-			if( u32_val < 10)
-				continue;
-			u32_val = 0;
-			Collect_job();
+			if(( u32_val % 10) == 0)
+			{
+			
+				Collect_job();
+			}
+			else if((u32_val % 1000) == 0)
+			{
+				if(dsys.cfg_change)
+				{
+					dsys.cfg_change = 0;
+					w25q_Erase_Sector(0);
+					if(W25Q_write_flash(0, (uint8_t *)&Dtu_config, sizeof(Dtu_config)) != sizeof(Dtu_config))
+						dsys.cfg_change = 1;
+					
+				}
+				
+			}
 //			osThreadYield (); 
 		}
 	}
