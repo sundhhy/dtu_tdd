@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 #include <stdint.h>
 #include "stdbool.h"
+#include "system_cfg.h"
 
 //------------------------------------------------------------------------------
 // const defines
@@ -80,6 +81,9 @@ typedef struct  {
 		
 		uint32_t	set_sms_recv[2];		//最大记录64条		实测最大是50
 	}gprs;
+	
+	char			cfg_change;			//配置信息被修改的标志
+	char			res[3];
 }dtu_system;
 //------------------------------------------------------------------------------
 // global variable declarations

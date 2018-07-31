@@ -42,7 +42,7 @@ int s485_Uart_write(char *data, uint16_t size);
  * 
  * @param data 
  * @param size 
- * @return ERR_OK 成功
+ * @return >= 0 字节数; < 0 :错误
  * @return 
  */
 int s485_Uart_read(char *data, uint16_t size);

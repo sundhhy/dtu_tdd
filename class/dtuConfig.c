@@ -9,6 +9,9 @@
 #include "times.h"
 #include "led.h"
 #include "modbusRTU_cli.h"
+
+#include "hw_w25q.h"
+
 #define CONFIG_BUF_LEN  512
 sdhFile *DtuCfg_file;
 DtuCfg_t	Dtu_config;
@@ -122,7 +125,7 @@ void set_default( DtuCfg_t *conf)
 static int get_dtuCfg(DtuCfg_t *conf)
 {
 	
-	
+#if NO_FILESYS == 0
 	DtuCfg_file	= fs_open( DTUCONF_filename);
 	DPRINTF(" fs_open  %p \n", DtuCfg_file);
 	if( DtuCfg_file)
@@ -153,7 +156,24 @@ static int get_dtuCfg(DtuCfg_t *conf)
 		fs_write( DtuCfg_file, (uint8_t *)conf, sizeof( DtuCfg_t));
 		fs_flush();
 	}
+#else
+	if(W25Q_read_flash(0, (uint8_t *)conf, sizeof(DtuCfg_t)) != sizeof( DtuCfg_t))
+	{
+		DPRINTF(" read config from w25q failed\n");
+		set_default(conf);
+	}
+	else
+	{
+		if(conf->ver[0] != DTU_CONFGILE_MAIN_VER || conf->ver[1] != DTU_CONFGILE_SUB_VER)
+		{
+			DPRINTF(" read config err \n");
+			set_default(conf);
+		}
+		
+		
+	}
 	
+#endif
 	
 	return ERR_OK;
 	
@@ -864,7 +884,11 @@ static void dtu_conf(char *data)
 			ack_str( data);
 			
 			LED_run->destory(LED_run);
+	#if NO_FILESYS == 0
 			fs_flush();
+	#else
+			
+	#endif
 			if( g_shutdow)
 				g_shutdow();
 			os_reboot();			
@@ -882,8 +906,14 @@ static void dtu_conf(char *data)
 	}
 
 	exit:	
+	
+#if NO_FILESYS == 0
 	fs_lseek( DtuCfg_file, WR_SEEK_SET, 0);
 	fs_write( DtuCfg_file, (uint8_t *)&Dtu_config, sizeof( DtuCfg_t));
 	fs_flush();
+#else
+	dsys.cfg_change = 1;
+	
+#endif
 }
 

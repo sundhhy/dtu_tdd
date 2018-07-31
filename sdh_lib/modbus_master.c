@@ -85,6 +85,8 @@ uint16_t* rxBuffer; // from Wire.h -- need to clean this up Rx
 uint8_t _u8ResponseBufferIndex;
 uint8_t _u8ResponseBufferLength;
 
+
+static mdm_update_slave_data	func_slave_update;
 //------------------------------------------------------------------------------
 // local function prototypes
 //------------------------------------------------------------------------------
@@ -112,6 +114,13 @@ static uint8_t highByte(uint16_t val);
 //  _u8TransmitBufferIndex = 0;
 //  u16TransmitBufferLength = 0;
 //}
+
+
+int MDM_register_update(mdm_update_slave_data func_update)
+{
+	
+	func_slave_update = func_update;
+}
 
 //// eliminate this function in favor of using existing MB request functions
 //uint8_t ModbusMaster_requestFrom(uint16_t address, uint16_t quantity)

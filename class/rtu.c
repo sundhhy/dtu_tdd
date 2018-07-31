@@ -134,10 +134,13 @@ static void ModbusRTURegTpye3_wrCB(void)
 		Dtu_config.sign_range[i].alarmH = regType3_read( 18 + i * 2, REG_LINE);
 		
 	}
-	
+#if NO_FILESYS == 0
 	fs_lseek( DtuCfg_file, WR_SEEK_SET, 0);
 	fs_write( DtuCfg_file, (uint8_t *)&Dtu_config, sizeof( DtuCfg_t));
 	fs_flush();
+#else
+	dsys.cfg_change = 1;
+#endif
 	osDelay(10);
 	
 	

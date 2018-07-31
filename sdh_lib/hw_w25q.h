@@ -91,20 +91,32 @@ void w25q_init_cs(void);
 void w25q_init_spi(void);
 
 int w25q_init(void);
+
+int w25q_Erase_Sector(uint16_t Sector_Number);
+
+//该接口不会擦除扇区，调用方要事先进行擦除
+//地址必须按照w25q的页大小对齐
+//返回成功写入的字节数
+int W25Q_write_flash(uint32_t addr, uint8_t *buf, uint32_t bytes);
+//地址必须按照w25q的页大小对齐
+//返回读取的字节数
+int W25Q_read_flash(uint32_t addr, uint8_t *buf, uint32_t bytes);
+
+#if NO_FILESYS == 0
 void w25q_info(void *info);
+
 int w25q_erase(uint32_t offset, uint32_t len);
 int w25q_Write_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
 int w25q_Read_Sector_Data(uint8_t *pBuffer, uint16_t Sector_Num);
 int w25q_Read_page_Data(uint8_t *pBuffer, uint16_t num_page);
 
 
-int w25q_Erase_Sector(uint16_t Sector_Number);
 int w25q_Write(uint8_t *pBuffer, uint32_t WriteAddr, uint32_t WriteBytesNum);
 int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len);
 int w25q_close(void);
 int w25q_Erase_chip_c7(void);
 int w25q_Erase_chip_60(void);
-
+#endif
 
 #endif
 

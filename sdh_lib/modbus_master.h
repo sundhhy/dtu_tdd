@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 // typedef
 //------------------------------------------------------------------------------
-
+typedef int (*mdm_update_slave_data)(uint8_t SlaveID, uint16_t reg_addr, void *data);		//modbus从站返回的数据的处理
 //------------------------------------------------------------------------------
 // global variable declarations
 //------------------------------------------------------------------------------
@@ -24,19 +24,7 @@
 //------------------------------------------------------------------------------
 // function prototypes
 //------------------------------------------------------------------------------
-//void ModbusMaster_begin(void);
-//void ModbusMaster_beginTransmission(uint16_t u16Address);
-//uint8_t ModbusMaster_requestFrom(uint16_t address, uint16_t quantity);
-//void  ModbusMaster_sendBit(uint8_t data);
-//void ModbusMaster_send16(uint16_t data);
-//void ModbusMaster_send32(uint32_t data);
-//void ModbusMaster_send8(uint8_t data);
-//uint8_t ModbusMaster_available(void);
-//uint16_t ModbusMaster_receive(void);
-//uint16_t ModbusMaster_getResponseBuffer(uint8_t u8Index);
-//void ModbusMaster_clearResponseBuffer();
-//uint8_t ModbusMaster_setTransmitBuffer(uint8_t u8Index, uint16_t u16Value);
-//void ModbusMaster_clearTransmitBuffer();
+
 uint8_t ModbusMaster_readCoils(uint8_t SlaveID,uint16_t u16ReadAddress, uint16_t u16BitQty, uint8_t *buf, int buf_size);
 uint8_t ModbusMaster_readDiscreteInputs(uint8_t SlaveID,uint16_t u16ReadAddress,uint16_t u16BitQty, uint8_t *buf, int buf_size);
 uint8_t ModbusMaster_readHoldingRegisters(uint8_t SlaveID,uint16_t u16ReadAddress,uint16_t u16ReadQty, uint8_t *buf, int buf_size);
@@ -51,4 +39,6 @@ uint8_t ModbusMaster_maskWriteRegister(uint8_t SlaveID,uint16_t u16WriteAddress,
 uint8_t ModbusMaster_readWriteMultipleRegisters(uint8_t SlaveID,uint16_t u16ReadAddress,uint16_t u16ReadQty, uint16_t u16WriteAddress, uint16_t u16WriteQty, uint8_t *buf, int buf_size);
 
 int ModbusMaster_decode_pkt(uint8_t *buf, int buf_size);
+
+int MDM_register_update(mdm_update_slave_data func_update);
 #endif

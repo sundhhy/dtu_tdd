@@ -32,6 +32,7 @@
 #include "debug.h"
 #include "system.h"
 
+#if NO_FILESYS == 0
 static List L_File_opened;
 static uint8_t	*Flash_buf;
 static storageInfo_t	StrgInfo;
@@ -1212,7 +1213,7 @@ int fs_test(void)
 	
 }
 
-
+#endif
 
 
 

@@ -62,8 +62,9 @@ static uint8_t w25q_ReadSR(void);
 //static uint8_t w25q_ReadSR2(void);
 static int w25q_write_waitbusy(uint8_t *data, int len);
 static int w25q_read_id(void);
-//static void w25q_Write_Data(uint8_t *pBuffer,uint16_t Block_Num,uint16_t Page_Num,uint32_t WriteBytesNum);
 
+static int w25q_rd_page(uint8_t *pBuffer, uint16_t pg_num, uint16_t len);
+static int w25q_wr_page(uint8_t *pBuffer, uint16_t pg_num, uint16_t len);
 //--------------------------------------------------------------
 
 int w25q_init(void)
@@ -86,6 +87,73 @@ int w25q_init(void)
 
 }
 
+
+//将提供的扇区进行擦除操作。扇区号的范围是0 - 4096 （w25q128）
+
+int w25q_Erase_Sector(uint16_t Sector_Number)
+{
+
+	uint8_t Block_Num = Sector_Number / BLOCK_HAS_SECTORS;
+	if( Sector_Number > W25Q_flash.sector_num)
+			return ERR_BAD_PARAMETER;
+	
+	Sector_Number %= BLOCK_HAS_SECTORS;
+	W25Q_tx_buf[0] = W25Q_INSTR_Sector_Erase_4K;
+	W25Q_tx_buf[1] = Block_Num;
+	W25Q_tx_buf[2] = Sector_Number<<4;
+	W25Q_tx_buf[3] = 0;
+	return w25q_write_waitbusy( W25Q_tx_buf, 4);
+	
+}
+
+int W25Q_write_flash(uint32_t addr, uint8_t *buf, uint32_t bytes)
+{
+	int 			pg;
+	int 			ret;
+	uint32_t	wr_bytes = 0;
+	pg = addr / PAGE_SIZE;
+	
+	while(bytes)
+	{
+		
+		ret = w25q_wr_page(buf, pg, bytes);
+		if( ret < 0)
+			break;
+		
+		wr_bytes += ret;
+		bytes -= ret;
+	}
+	
+	
+	return wr_bytes;
+	
+}
+//返回读取的字节数，或者错误-1
+int W25Q_read_flash(uint32_t addr, uint8_t *buf, uint32_t bytes)
+{
+	int 			pg;
+	int 			ret;
+	uint32_t	rd_bytes = 0;
+	pg = addr / PAGE_SIZE;
+	
+	while(bytes)
+	{
+		
+		ret = w25q_rd_page(buf, pg, bytes);
+		if( ret < 0)
+			break;
+		
+		rd_bytes += ret;
+		bytes -= ret;
+	}
+	
+	
+	return rd_bytes;
+	
+}
+
+
+#if NO_FILESYS == 0
 ///这个函数要在w25q_init成功之后调用才有用
 void w25q_info(void *info)
 {
@@ -141,23 +209,7 @@ int w25q_erase(uint32_t offset, uint32_t len)
 	
 }
 
-//将提供的扇区进行擦除操作。扇区号的范围是0 - 4096 （w25q128）
 
-int w25q_Erase_Sector(uint16_t Sector_Number)
-{
-
-	uint8_t Block_Num = Sector_Number / BLOCK_HAS_SECTORS;
-	if( Sector_Number > W25Q_flash.sector_num)
-			return ERR_BAD_PARAMETER;
-	
-	Sector_Number %= BLOCK_HAS_SECTORS;
-	W25Q_tx_buf[0] = W25Q_INSTR_Sector_Erase_4K;
-	W25Q_tx_buf[1] = Block_Num;
-	W25Q_tx_buf[2] = Sector_Number<<4;
-	W25Q_tx_buf[3] = 0;
-	return w25q_write_waitbusy( W25Q_tx_buf, 4);
-	
-}
 
 
 int w25q_Erase_block(uint16_t block_Number)
@@ -348,6 +400,11 @@ int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len)
 
 
 
+
+
+#endif
+
+
 //-------------------------------------------------------------------
 //本地函数
 //--------------------------------------------------------------------
@@ -362,6 +419,103 @@ int w25q_rd_data(uint8_t *pBuffer, uint32_t rd_add, int len)
 //	SPI_WRITE( d, 2) ;
 //	
 //}
+
+
+static int w25q_rd_page(uint8_t *pBuffer, uint16_t pg_num, uint16_t len)
+{
+	uint32_t  rd_add = pg_num * PAGE_SIZE;
+	if( len > PAGE_SIZE)
+			len = PAGE_SIZE;
+	W25Q_tx_buf[0] = W25Q_INSTR_READ_DATA;
+	W25Q_tx_buf[1] = (uint8_t)((rd_add&0x00ff0000)>>16);
+	W25Q_tx_buf[2] = (uint8_t)((rd_add&0x0000ff00)>>8);
+	W25Q_tx_buf[3] = (uint8_t)rd_add;
+	W25Q_Enable_CS;
+	
+	if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
+		return ERR_DRI_OPTFAIL;
+	if( SPI_READ( pBuffer, len) != ERR_OK)
+		return ERR_DRI_OPTFAIL;
+	W25Q_Disable_CS;
+	return len;
+
+}
+
+
+
+static int w25q_wr_page(uint8_t *pBuffer, uint16_t pg_num, uint16_t len)
+{
+
+	short step = 0;
+	short count = 100;
+	int ret = -1;
+	uint32_t WriteAddr = pg_num * PAGE_SIZE;
+
+
+	if( len > PAGE_SIZE)
+		len = PAGE_SIZE;
+	
+		while(1)
+		{
+			switch( step)
+			{
+				case 0:
+					if( w25q_wr_enable() != ERR_OK)
+					{
+						ret =  ERR_DRI_OPTFAIL;
+						goto exit;
+					}
+					
+					W25Q_Enable_CS;
+					W25Q_tx_buf[0] = W25Q_INSTR_Page_Program;
+					W25Q_tx_buf[1] = (uint8_t)((WriteAddr&0x00ff0000)>>16);
+					W25Q_tx_buf[2] = (uint8_t)((WriteAddr&0x0000ff00)>>8);
+					W25Q_tx_buf[3] = (uint8_t)WriteAddr;
+					if( SPI_WRITE( W25Q_tx_buf, 4) != ERR_OK)
+					{
+						ret =  ERR_DRI_OPTFAIL;
+						goto exit;
+					}
+					if( SPI_WRITE( pBuffer, len) != ERR_OK)
+					{
+						ret =  ERR_DRI_OPTFAIL;
+						goto exit;
+					}
+					W25Q_Disable_CS;
+					
+					step++;
+					break;
+				case 1:
+					if( w25q_ReadSR() & W25Q_STATUS1_BUSYBIT)
+					{
+						W25Q_DELAY_MS(1);
+						if( count)
+							count --;
+						else
+						{
+							ret =  ERR_DEV_TIMEOUT;
+							goto exit;
+						}
+						break;
+					}
+					
+					ret =  len;
+					goto exit;
+			
+				default:
+					step = 0;
+					break;
+				
+			}		//switch
+			
+			
+		}		//while(1)
+		
+		exit:
+		
+		
+		return ret;
+}
 
 static int w25q_wr_enable(void)
 {
@@ -525,8 +679,6 @@ static int w25q_read_id(void)
 	
 	
 }
-
-
 
 
 

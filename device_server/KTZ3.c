@@ -7,6 +7,9 @@
 #include "cmsis_os.h"                                           // CMSIS RTOS header file
 #include "osObjects.h"                      // RTOS object definitions
 
+#include "sdhError.h"
+
+
 #include "gprs.h"
 #include "serial485_uart.h"
 #include "modbus_master.h"
@@ -61,6 +64,24 @@ typedef struct {
 	
 	int					msg_src;		//消息源，用于写值处理后返回结果给消息源
 }wr_modbus_msg_t;
+
+
+typedef struct {
+	uint8_t			reg_0x;		//状态位 可读写
+	uint8_t			reg_1x;		//状态位,只读
+	uint16_t		reg_3x[5];		//只读
+	uint16_t		reg_4x[8];		//可读写
+}ktz3_reg_t;
+
+
+typedef struct {
+	
+	wr_modbus_msg_t		arr_wr_msg[NUM_WR_MSGS];
+	ktz3_reg_t				arr_dev_reg[NUM_DVS_SLAVE_DEV];
+	char							arr_dev_flag[NUM_DVS_SLAVE_DEV];		//0 设备未连接 1 设备已连接
+	
+	
+}ktz3_data_t;
 //------------------------------------------------------------------------------
 // local vars
 //------------------------------------------------------------------------------
@@ -72,7 +93,12 @@ static void ktz3_run(Device_server *self);
 osThreadId tid_ktz3;                                          // thread id
 osThreadDef (ktz3_run, osPriorityNormal, 1, 0);                   // thread object
 
-static wr_modbus_msg_t *p_wr_msgs;
+static ktz3_data_t *ktz3_data;
+
+
+const uint16_t num_addr_x[4] = {5,7,5,8};//对应0X,1X,3X,4X		每组寄存器的数量
+
+	
 //------------------------------------------------------------------------------
 // local function prototypes
 //------------------------------------------------------------------------------
@@ -87,6 +113,9 @@ static int ktz3_get_datavalue(char *s);
 static int ktz3_datatype_2_modbus_addr();
 static int ktz3_put_modbus_val();
 static int ktz3_datatype_2_string(char *buf, int buf_size);
+
+
+static int ktz3_deal_modbus_data(uint8_t SlaveID, uint16_t reg_addr, void *data);
 
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
@@ -111,16 +140,21 @@ END_CTOR
 static 	int ktz3_init(Device_server *self)
 {
 	
-	p_wr_msgs = malloc(NUM_WR_MSGS * sizeof(wr_modbus_msg_t));
-	
-	if(p_wr_msgs == NULL)
+	ktz3_data = malloc(sizeof(ktz3_data_t));
+	if(ktz3_data == NULL)
 		return -1;
+	memset(ktz3_data, 0,  sizeof(ktz3_data_t));
 	
-	memset(p_wr_msgs, 0, NUM_WR_MSGS * sizeof(wr_modbus_msg_t));
+	
+	s485_Uart_ioctl(S485_UART_CMD_SET_RXBLOCK);
+	s485_Uart_ioctl(S485UART_SET_RXWAITTIME_MS, 200);
+	s485_Uart_ioctl(S485_UART_CMD_SET_TXBLOCK);
+	s485_Uart_ioctl(S485UART_SET_TXWAITTIME_MS, 200);
 	
 	tid_ktz3 = osThreadCreate(osThread(ktz3_run), self);
 	if (!tid_ktz3) return(-1);
 
+	MDM_register_update(ktz3_deal_modbus_data);
 	return(0);
 }
 
@@ -171,10 +205,74 @@ static int ktz3_data_down(Device_server *self, int data_src, void *data_buf, int
 	
 }
 
+static int ktz3_deal_modbus_data(uint8_t SlaveID, uint16_t reg_addr, void *data)
+{
+	
+	return 0;
+	
+}
 static int ktz3_deal_write_msg(Device_server *self, uint8_t *buf, int buf_size)
 {
 	
 		//对缓存的写消息进行处理
+	
+}
+
+static void ktz3_read_dev(uint8_t mdb_id)
+{
+	
+	uint8_t		mdb_buf[64];
+	int			pdu_len;	
+
+	
+	
+	//读取0X寄存器
+	pdu_len = ModbusMaster_readCoils(mdb_id, 1, num_addr_x[0], mdb_buf, sizeof(mdb_buf));
+	if(pdu_len < 0)
+		return;
+	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
+		goto cmm_err;
+	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
+	if(pdu_len <= 0)
+		goto cmm_err;
+	ModbusMaster_decode_pkt(mdb_buf, pdu_len);
+	
+	//读取1X寄存器
+	pdu_len = ModbusMaster_readCoils(mdb_id, 1, num_addr_x[1], mdb_buf, sizeof(mdb_buf));
+	if(pdu_len < 0)
+		return;
+	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
+		goto cmm_err;
+	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
+	if(pdu_len <= 0)
+		goto cmm_err;
+	ModbusMaster_decode_pkt(mdb_buf, pdu_len);
+	
+	//读取3X寄存器
+	pdu_len = ModbusMaster_readHoldingRegisters(mdb_id, 1, num_addr_x[2], mdb_buf, sizeof(mdb_buf));
+	if(pdu_len < 0)
+		return;
+	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
+		goto cmm_err;
+	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
+	if(pdu_len <= 0)
+		goto cmm_err;
+	ModbusMaster_decode_pkt(mdb_buf, pdu_len);
+	
+	//读取4X寄存器
+	pdu_len = ModbusMaster_readInputRegisters(mdb_id, 1, num_addr_x[3], mdb_buf, sizeof(mdb_buf));
+	if(pdu_len < 0)
+		return;
+	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
+		goto cmm_err;
+	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
+	if(pdu_len <= 0)
+		goto cmm_err;
+	ModbusMaster_decode_pkt(mdb_buf, pdu_len);
+	
+	cmm_err:
+	
+		return;
 	
 }
 
@@ -187,7 +285,7 @@ static void ktz3_poll_modbus_dev(Device_server *self, uint8_t *buf, int buf_size
 	//读取设备的寄存器
 	for(i = 0; i < NUM_DVS_SLAVE_DEV; i++)
 	{
-		
+		ktz3_read_dev(i);
 		
 		
 	}
