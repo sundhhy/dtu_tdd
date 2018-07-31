@@ -34,6 +34,7 @@
 .\objects\cdma_dtu.o: .\sdh_lib\hw_w25q.h
 .\objects\cdma_dtu.o: .\BSP\hardwareConfig.h
 .\objects\cdma_dtu.o: .\BSP\spi.h
+.\objects\cdma_dtu.o: .\config\system_cfg.h
 .\objects\cdma_dtu.o: .\sdh_lib\list.h
 .\objects\cdma_dtu.o: .\system\system.h
 .\objects\cdma_dtu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

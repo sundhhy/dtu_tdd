@@ -26,6 +26,7 @@
 .\objects\sw_filesys.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\sw_filesys.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\sw_filesys.o: .\BSP\spi.h
+.\objects\sw_filesys.o: .\config\system_cfg.h
 .\objects\sw_filesys.o: ..\dtu_tdd\osObjects.h
 .\objects\sw_filesys.o: D:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\RTOS\RTX\INC\cmsis_os.h
 .\objects\sw_filesys.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h

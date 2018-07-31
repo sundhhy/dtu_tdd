@@ -373,7 +373,7 @@
               <MiscControls>--diag_suppress=1295</MiscControls>
               <Define>USE_STDPERIPH_DRIVER, STM32F10X_MD, USE_STM3210B_EVAL,HSE_VALUE=8000000</Define>
               <Undefine></Undefine>
-              <IncludePath>.\lw_oopc_v1.2;.\class;.\BSP;..\dtu_tdd;.\sdh_lib;.\system</IncludePath>
+              <IncludePath>.\lw_oopc_v1.2;.\class;.\BSP;..\dtu_tdd;.\sdh_lib;.\system;.\config</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -690,6 +690,21 @@
               <FileName>dvs_test.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\device_server\dvs_test.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>config</GroupName>
+          <Files>
+            <File>
+              <FileName>system_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\config\system_cfg.h</FilePath>
+            </File>
+            <File>
+              <FileName>tdd_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\config\tdd_cfg.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -27,6 +27,7 @@
 .\objects\gprs.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\gprs.o: .\BSP\hardwareConfig.h
 .\objects\gprs.o: .\BSP\spi.h
+.\objects\gprs.o: .\config\system_cfg.h
 .\objects\gprs.o: D:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\RTOS\RTX\INC\cmsis_os.h
 .\objects\gprs.o: .\BSP\debug.h
 .\objects\gprs.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

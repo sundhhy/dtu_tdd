@@ -22,6 +22,7 @@
 .\objects\spi.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\spi.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\spi.o: BSP\hardwareConfig.h
+.\objects\spi.o: .\config\system_cfg.h
 .\objects\spi.o: ..\dtu_tdd\sdhError.h
 .\objects\spi.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\spi.o: ..\dtu_tdd\osObjects.h

@@ -24,6 +24,7 @@
 .\objects\serial485_uart.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\serial485_uart.o: BSP\hardwareConfig.h
 .\objects\serial485_uart.o: BSP\spi.h
+.\objects\serial485_uart.o: .\config\system_cfg.h
 .\objects\serial485_uart.o: ..\dtu_tdd\sdhError.h
 .\objects\serial485_uart.o: ..\dtu_tdd\osObjects.h
 .\objects\serial485_uart.o: D:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\RTOS\RTX\INC\cmsis_os.h

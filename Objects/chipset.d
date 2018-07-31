@@ -24,3 +24,4 @@
 .\objects\chipset.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\chipset.o: BSP\hardwareConfig.h
 .\objects\chipset.o: BSP\spi.h
+.\objects\chipset.o: .\config\system_cfg.h

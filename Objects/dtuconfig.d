@@ -34,6 +34,7 @@
 .\objects\dtuconfig.o: .\sdh_lib\hw_w25q.h
 .\objects\dtuconfig.o: .\BSP\hardwareConfig.h
 .\objects\dtuconfig.o: .\BSP\spi.h
+.\objects\dtuconfig.o: .\config\system_cfg.h
 .\objects\dtuconfig.o: .\sdh_lib\list.h
 .\objects\dtuconfig.o: .\system\system.h
 .\objects\dtuconfig.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

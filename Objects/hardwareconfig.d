@@ -22,3 +22,4 @@
 .\objects\hardwareconfig.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\hardwareconfig.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\hardwareconfig.o: BSP\spi.h
+.\objects\hardwareconfig.o: .\config\system_cfg.h

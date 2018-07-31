@@ -27,23 +27,27 @@ Project File Date:  07/25/2018
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 1 (build 61)', folder: 'D:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Target 1'
-compiling modbus_master.c...
-sdh_lib\modbus_master.c(264): warning:  #940-D: missing return statement at end of non-void function "ModbusMaster_decode_pkt"
-  }
-sdh_lib\modbus_master.c: 1 warning, 0 errors
 compiling KTZ3.c...
-device_server\KTZ3.c(58): warning:  #144-D: a value of type "void (*)(Device_server *)" cannot be used to initialize an entity of type "os_pthread"
+device_server\KTZ3.c(94): warning:  #144-D: a value of type "void (*)(Device_server *)" cannot be used to initialize an entity of type "os_pthread"
   
 sThreadDef (ktz3_run, osPriorityNormal, 1, 0);                   // thread object
-device_server\KTZ3.c(103): warning:  #223-D: function "threadActive" declared implicitly
-  		threadActive();
-device_server\KTZ3.c(100): warning:  #177-D: variable "modbus_buf" was declared but never referenced
-  	uint8_t  modbus_buf[64];
-device_server\KTZ3.c: 3 warnings, 0 errors
+device_server\KTZ3.c(219): warning:  #940-D: missing return statement at end of non-void function "ktz3_deal_write_msg"
+  }
+device_server\KTZ3.c(111): warning:  #177-D: function "ktz3_get_datatype" was declared but never referenced
+  static int ktz3_get_datatype(char *s);
+device_server\KTZ3.c(112): warning:  #177-D: function "ktz3_get_datavalue" was declared but never referenced
+  static int ktz3_get_datavalue(char *s);
+device_server\KTZ3.c(113): warning:  #177-D: function "ktz3_datatype_2_modbus_addr" was declared but never referenced
+  static int ktz3_datatype_2_modbus_addr();
+device_server\KTZ3.c(114): warning:  #177-D: function "ktz3_put_modbus_val" was declared but never referenced
+  static int ktz3_put_modbus_val();
+device_server\KTZ3.c(115): warning:  #177-D: function "ktz3_datatype_2_string" was declared but never referenced
+  static int ktz3_datatype_2_string(char *buf, int buf_size);
+device_server\KTZ3.c: 7 warnings, 0 errors
 linking...
-Program Size: Code=63360 RO-data=1100 RW-data=636 ZI-data=18956  
+Program Size: Code=60688 RO-data=1124 RW-data=672 ZI-data=18912  
 FromELF: creating hex file...
-".\Objects\dtu_tdd.axf" - 0 Error(s), 4 Warning(s).
+".\Objects\dtu_tdd.axf" - 0 Error(s), 7 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -153,7 +157,7 @@ Package Vendor: Keil
    * Component: Keil::Device:StdPeriph Drivers:USART:3.5.0
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_usart.h
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_usart.c
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

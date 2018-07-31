@@ -24,6 +24,7 @@
 .\objects\gprs_uart.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\gprs_uart.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\gprs_uart.o: BSP\spi.h
+.\objects\gprs_uart.o: .\config\system_cfg.h
 .\objects\gprs_uart.o: ..\dtu_tdd\sdhError.h
 .\objects\gprs_uart.o: ..\dtu_tdd\osObjects.h
 .\objects\gprs_uart.o: D:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\RTOS\RTX\INC\cmsis_os.h

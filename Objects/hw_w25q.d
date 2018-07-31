@@ -23,6 +23,7 @@
 .\objects\hw_w25q.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 .\objects\hw_w25q.o: D:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc\misc.h
 .\objects\hw_w25q.o: .\BSP\spi.h
+.\objects\hw_w25q.o: .\config\system_cfg.h
 .\objects\hw_w25q.o: ..\dtu_tdd\osObjects.h
 .\objects\hw_w25q.o: D:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\RTOS\RTX\INC\cmsis_os.h
 .\objects\hw_w25q.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h

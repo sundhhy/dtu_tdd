@@ -33,6 +33,7 @@
 .\objects\thread_rtu.o: .\sdh_lib\hw_w25q.h
 .\objects\thread_rtu.o: .\BSP\hardwareConfig.h
 .\objects\thread_rtu.o: .\BSP\spi.h
+.\objects\thread_rtu.o: .\config\system_cfg.h
 .\objects\thread_rtu.o: ..\dtu_tdd\osObjects.h
 .\objects\thread_rtu.o: .\sdh_lib\list.h
 .\objects\thread_rtu.o: .\system\system.h

@@ -33,3 +33,4 @@
 .\objects\times.o: .\sdh_lib\CircularBuffer.h
 .\objects\times.o: .\BSP\hardwareConfig.h
 .\objects\times.o: .\BSP\spi.h
+.\objects\times.o: .\config\system_cfg.h
