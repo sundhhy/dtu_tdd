@@ -199,7 +199,10 @@ int main (void) {
 	dsys.cfg_change = 0;
 
 	Init_system_config();
-	Dtu_config.work_mode  = MODE_DVS_TEST;
+	
+	//dvs test
+	Dtu_config.work_mode  = MODE_KTZ3;
+	Dtu_config.output_mode = 0;
 	sprintf(Dtu_config.admin_Phone[0],"15858172663");
 
 	

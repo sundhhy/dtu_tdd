@@ -295,7 +295,7 @@ int ModbusMaster_decode_pkt(uint8_t *adu, int adu_len)
 	//连续写入返回的格式是：功能码，起始地址，寄存器数量
 	//取出地址和值，上传
 	
-	func_code &= 0x70;
+	func_code &= 0x7f;
 	
 	if(func_code < 5)
 	{
@@ -708,8 +708,10 @@ static int ModbusMaster_ModbusMasterTransaction(uint8_t u8MBFunction, uint8_t *b
 	 // append CRC
   u16CRC = CRC16(u8ModbusADU, u8ModbusADUSize);
   
-  u8ModbusADU[u8ModbusADUSize++] = lowByte(u16CRC);
+//  u8ModbusADU[u8ModbusADUSize++] = lowByte(u16CRC);
+//  u8ModbusADU[u8ModbusADUSize++] = highByte(u16CRC);
   u8ModbusADU[u8ModbusADUSize++] = highByte(u16CRC);
+  u8ModbusADU[u8ModbusADUSize++] = lowByte(u16CRC);
   u8ModbusADU[u8ModbusADUSize] = 0;
 	
 	if(u8ModbusADUSize > buf_size)
