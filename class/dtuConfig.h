@@ -41,7 +41,7 @@
 #define IP_LEN		16
 #define IP_ADDR_LEN		64
 
-#define NUM_DVS_SLAVE_DEV			8		//设备服务器可支持的从设备数量
+#define NUM_DVS_SLAVE_DEV			32		//设备服务器可支持的从设备数量
 
 
 

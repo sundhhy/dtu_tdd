@@ -115,7 +115,9 @@ static int ktz3_put_modbus_val();
 static int ktz3_datatype_2_string(char *buf, int buf_size);
 
 
-static int ktz3_deal_modbus_data(uint8_t SlaveID, uint16_t reg_addr, void *data);
+static int ktz3_up_read_ack(uint8_t slave_addr, uint8_t func_code, uint8_t num_byte, uint8_t *data);
+static int ktz3_up_write_ack(uint8_t slave_addr, uint8_t func_code, uint16_t reg_addr, uint16_t val);		
+static int ktz3_up_err(uint8_t slave_addr, uint8_t func_code, uint8_t err_code);
 
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
@@ -154,7 +156,7 @@ static 	int ktz3_init(Device_server *self)
 	tid_ktz3 = osThreadCreate(osThread(ktz3_run), self);
 	if (!tid_ktz3) return(-1);
 
-	MDM_register_update(ktz3_deal_modbus_data);
+	MDM_register_update(ktz3_up_read_ack, ktz3_up_write_ack, ktz3_up_err);
 	return(0);
 }
 
@@ -204,12 +206,67 @@ static int ktz3_data_down(Device_server *self, int data_src, void *data_buf, int
 	return 0;
 	
 }
-
-static int ktz3_deal_modbus_data(uint8_t SlaveID, uint16_t reg_addr, void *data)
+static ktz3_reg_t *ktz3_get_reg(uint8_t SlaveID)
 {
+	
+	
+}
+
+static int ktz3_up_read_ack(uint8_t slave_addr, uint8_t func_code, uint8_t num_byte, uint8_t *data)
+{
+	
+	ktz3_reg_t *p_reg;
+	uint16_t tmp_u16;
+	uint8_t i, j;
+	
+	p_reg = ktz3_get_reg(slave_addr);
+	if(p_reg == NULL)
+		return -1;
+	
+	
+	switch(func_code)
+	{
+		case MDM_U8_READ_COILS:	
+				p_reg->reg_0x = *data;
+				break;
+		case MDM_U8_READ_DISCRETEINPUTS:	
+				p_reg->reg_1x =  *data;
+				break;
+		case MDM_U16_READ_HOLD_REG:	
+				for(i = 0, j = 0; i < num_byte; i+= 2)
+				{
+					tmp_u16 = data[i] | (data[i + 1] << 8);
+					p_reg->reg_3x[j++] = tmp_u16;
+					
+				}
+			
+			
+				break;
+		case MDM_U16_READ_INPUT_REG:	
+				for(i = 0, j = 0; i < num_byte; i+= 2)
+				{
+					tmp_u16 = data[i] | (data[i + 1] << 8);
+					p_reg->reg_4x[j++] = tmp_u16;
+					
+				}
+				break;
+		
+	}
 	
 	return 0;
 	
+}
+
+static int ktz3_up_write_ack(uint8_t slave_addr, uint8_t func_code, uint16_t reg_addr, uint16_t val)
+{
+	
+	
+}
+
+static int ktz3_up_err(uint8_t slave_addr, uint8_t func_code, uint8_t err_code)
+{
+	
+	return 0;
 }
 static int ktz3_deal_write_msg(Device_server *self, uint8_t *buf, int buf_size)
 {
