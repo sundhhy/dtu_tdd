@@ -23,6 +23,12 @@
 
 所用的485串口必须已经初始化过。
 
+实现的功能：
+1 KTZZ3 周期性采集
+2 将wr_modbus_msg_t转化成modbus 指令发给设备
+3 短信服务协议解析
+4 将KTZ3信息格式化成短信协议规定的进行输出
+
 */
 
 
@@ -30,6 +36,10 @@
 //------------------------------------------------------------------------------
 // const defines
 //------------------------------------------------------------------------------
+const char *ktz3_head_format = "KTZ3 Addr:%d \n";
+const char *ktz3_0x_1x_format = "0X=%xh,\t1x=%xh\n";
+const char *ktze_3x_format = "3001=%04xh,\t3002=%x04h\n3003=%xh,\t3004=%x04h\n3005=%x04h\n";
+const char *ktze_4x_format = "4001=%04xh,\t4002=%x04h\n4003=%xh,\t4004=%x04h\n4005=%x04h,\t4006=%x04h\n4007=%x04h,\t4008=%x04h\n";
 
 //------------------------------------------------------------------------------
 // module global vars
@@ -49,6 +59,8 @@
 // const defines
 //------------------------------------------------------------------------------
 #define NUM_WR_MSGS		16
+
+#define KTZ3_FLAG_TIME_OUT			1
 //------------------------------------------------------------------------------
 // local types
 //------------------------------------------------------------------------------
@@ -107,12 +119,15 @@ static int ktz3_data_down(Device_server *self, int data_src, void *data_buf, int
 static int ktz3_deal_write_msg(Device_server *self, uint8_t *buf, int buf_size);
 static void ktz3_poll_modbus_dev(Device_server *self, uint8_t *buf, int buf_size);
 
+static int ktz3_reg_val_2_string(uint8_t slave_id, uint16_t addr, char *buf, uint16_t buf_size);
 
 static int ktz3_get_datatype(char *s);
 static int ktz3_get_datavalue(char *s);
 static int ktz3_datatype_2_modbus_addr();
 static int ktz3_put_modbus_val();
 static int ktz3_datatype_2_string(char *buf, int buf_size);
+static ktz3_reg_t *ktz3_get_reg(uint8_t SlaveID);
+
 
 
 static int ktz3_up_read_ack(uint8_t slave_addr, uint8_t func_code, uint8_t num_byte, uint8_t *data);
@@ -351,6 +366,34 @@ static void ktz3_poll_modbus_dev(Device_server *self, uint8_t *buf, int buf_size
 		
 	}
 	
+	
+}
+//将制定的寄存器的值转化成字符串
+//addr = 0 全部地址的数据
+//addr={0134}{Xx} 某一组的数据
+//addr=abcd 具体的地址
+//todo:目前只实现addr=0的功能
+//返回字符串的长度
+static int ktz3_reg_val_2_string(uint8_t slave_id, uint16_t addr, char *buf, uint16_t buf_size)
+{
+	
+	
+	ktz3_reg_t *p_reg;
+
+	
+	p_reg = ktz3_get_reg(slave_id);
+	
+	if(p_reg == NULL)
+		return NULL;
+	sprintf(buf, "KTZ3 Addr:%d \n\
+								0X=%xh,\t1x=%xh\n\
+								3001=%04xh,\t3002=%x04h\n3003=%xh,\t3004=%x04h\n3005=%x04h\n\
+								4001=%04xh,\t4002=%x04h\n4003=%xh,\t4004=%x04h\n4005=%x04h,\t4006=%x04h\n4007=%x04h,\t4008=%x04h\n", \
+								slave_id,
+								p_reg->reg_0x, p_reg->reg_1x, \
+								p_reg->reg_3x[0], p_reg->reg_3x[1], p_reg->reg_3x[2], p_reg->reg_3x[3], p_reg->reg_3x[4], \
+								p_reg->reg_4x[0], p_reg->reg_4x[1], p_reg->reg_4x[2], p_reg->reg_4x[3],\
+								p_reg->reg_4x[4], p_reg->reg_4x[5], p_reg->reg_4x[6], p_reg->reg_4x[7]);
 	
 }
 
