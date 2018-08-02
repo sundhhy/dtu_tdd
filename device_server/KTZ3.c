@@ -1,7 +1,7 @@
 //============================================================================//
 //            G L O B A L   D E F I N I T I O N S                             //
 //============================================================================//
-
+#include <stdio.h>
 #include <string.h>
 
 #include "cmsis_os.h"                                           // CMSIS RTOS header file
@@ -59,6 +59,10 @@ const char *ktze_4x_format = "4001=%04xh,\t4002=%x04h\n4003=%xh,\t4004=%x04h\n40
 // const defines
 //------------------------------------------------------------------------------
 #define NUM_WR_MSGS		16
+
+#define KTZ3_0X_START_REG_ADDR		1
+#define KTZ3_1X_START_REG_ADDR		1
+
 
 #define KTZ3_FLAG_TIME_OUT			1
 //------------------------------------------------------------------------------
@@ -119,14 +123,14 @@ static int ktz3_data_down(Device_server *self, int data_src, void *data_buf, int
 static int ktz3_deal_write_msg(Device_server *self, uint8_t *buf, int buf_size);
 static void ktz3_poll_modbus_dev(Device_server *self, uint8_t *buf, int buf_size);
 
-static int ktz3_reg_val_2_string(uint8_t slave_id, uint16_t addr, char *buf, uint16_t buf_size);
+static int ktz3_reg_val_2_string(uint8_t slave_addr, uint16_t addr, char *buf, uint16_t buf_size);
 
 static int ktz3_get_datatype(char *s);
 static int ktz3_get_datavalue(char *s);
 static int ktz3_datatype_2_modbus_addr();
 static int ktz3_put_modbus_val();
 static int ktz3_datatype_2_string(char *buf, int buf_size);
-static ktz3_reg_t *ktz3_get_reg(uint8_t SlaveID);
+static int ktz3_salve_id_2_num(uint8_t slave_id);
 
 
 
@@ -221,47 +225,49 @@ static int ktz3_data_down(Device_server *self, int data_src, void *data_buf, int
 	return 0;
 	
 }
-static ktz3_reg_t *ktz3_get_reg(uint8_t SlaveID)
+static int ktz3_salve_id_2_num(uint8_t slave_id)
 {
-	return &ktz3_data->arr_dev_reg[0];
+	return 0;
 	
 }
 
 static int ktz3_up_read_ack(uint8_t slave_addr, uint8_t func_code, uint8_t num_byte, uint8_t *data)
 {
 	
-	ktz3_reg_t *p_reg;
+	int num;
+
 	uint16_t tmp_u16;
 	uint8_t i, j;
 	
-	p_reg = ktz3_get_reg(slave_addr);
-	if(p_reg == NULL)
+	num = ktz3_salve_id_2_num(slave_addr);
+	if(num < 0)
 		return -1;
 	
 	
 	switch(func_code)
 	{
 		case MDM_U8_READ_COILS:	
-				p_reg->reg_0x = *data;
+				//线圈的起始寄存器是1，所以数据要
+				ktz3_data->arr_dev_reg[num].reg_0x = (*data) << KTZ3_0X_START_REG_ADDR;
 				break;
 		case MDM_U8_READ_DISCRETEINPUTS:	
-				p_reg->reg_1x =  *data;
+				ktz3_data->arr_dev_reg[num].reg_1x =  (*data) << KTZ3_1X_START_REG_ADDR;
 				break;
 		case MDM_U16_READ_HOLD_REG:	
 				for(i = 0, j = 0; i < num_byte; i+= 2)
 				{
-					tmp_u16 = data[i] | (data[i + 1] << 8);
-					p_reg->reg_3x[j++] = tmp_u16;
+					//大端，高位在前
+					tmp_u16 = data[i + 1] | (data[i] << 8);
+					ktz3_data->arr_dev_reg[num].reg_3x[j++] = tmp_u16;
 					
 				}
-			
-			
 				break;
 		case MDM_U16_READ_INPUT_REG:	
 				for(i = 0, j = 0; i < num_byte; i+= 2)
 				{
-					tmp_u16 = data[i] | (data[i + 1] << 8);
-					p_reg->reg_4x[j++] = tmp_u16;
+					//大端，高位在前
+					tmp_u16 = data[i + 1] | (data[i] << 8);
+					ktz3_data->arr_dev_reg[num].reg_4x[j++] = tmp_u16;
 					
 				}
 				break;
@@ -299,7 +305,7 @@ static void ktz3_read_dev(uint8_t mdb_id)
 	
 	
 	//读取0X寄存器
-	pdu_len = ModbusMaster_readCoils(mdb_id, 1, num_addr_x[0], mdb_buf, sizeof(mdb_buf));
+	pdu_len = ModbusMaster_readCoils(mdb_id, KTZ3_0X_START_REG_ADDR, num_addr_x[0], mdb_buf, sizeof(mdb_buf));
 	if(pdu_len < 0)
 		return;
 	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
@@ -311,7 +317,7 @@ static void ktz3_read_dev(uint8_t mdb_id)
 	}
 	
 	//读取1X寄存器
-	pdu_len = ModbusMaster_readDiscreteInputs(mdb_id, 1, num_addr_x[1], mdb_buf, sizeof(mdb_buf));
+	pdu_len = ModbusMaster_readDiscreteInputs(mdb_id, KTZ3_1X_START_REG_ADDR, num_addr_x[1], mdb_buf, sizeof(mdb_buf));
 	if(pdu_len < 0)
 		return;
 	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
@@ -374,22 +380,26 @@ static void ktz3_poll_modbus_dev(Device_server *self, uint8_t *buf, int buf_size
 //addr=abcd 具体的地址
 //todo:目前只实现addr=0的功能
 //返回字符串的长度
-static int ktz3_reg_val_2_string(uint8_t slave_id, uint16_t addr, char *buf, uint16_t buf_size)
+static int ktz3_reg_val_2_string(uint8_t slave_addr, uint16_t addr, char *buf, uint16_t buf_size)
 {
 	
 	
-	ktz3_reg_t *p_reg;
 
+	int num;
+
+	ktz3_reg_t		*p_reg;
 	
-	p_reg = ktz3_get_reg(slave_id);
+	num = ktz3_salve_id_2_num(slave_addr);
+	if(num < 0)
+		return -1;
 	
-	if(p_reg == NULL)
-		return NULL;
+	p_reg = &ktz3_data->arr_dev_reg[num];
+
 	sprintf(buf, "KTZ3 Addr:%d \n\
 								0X=%xh,\t1x=%xh\n\
 								3001=%04xh,\t3002=%x04h\n3003=%xh,\t3004=%x04h\n3005=%x04h\n\
 								4001=%04xh,\t4002=%x04h\n4003=%xh,\t4004=%x04h\n4005=%x04h,\t4006=%x04h\n4007=%x04h,\t4008=%x04h\n", \
-								slave_id,
+								slave_addr,
 								p_reg->reg_0x, p_reg->reg_1x, \
 								p_reg->reg_3x[0], p_reg->reg_3x[1], p_reg->reg_3x[2], p_reg->reg_3x[3], p_reg->reg_3x[4], \
 								p_reg->reg_4x[0], p_reg->reg_4x[1], p_reg->reg_4x[2], p_reg->reg_4x[3],\
