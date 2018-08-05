@@ -33,7 +33,7 @@
 //------------------------------------------------------------------------------
 // const defines
 //------------------------------------------------------------------------------
-
+#define DVS_TEST_ON		0			
 //------------------------------------------------------------------------------
 // local types
 //------------------------------------------------------------------------------
@@ -41,6 +41,7 @@
 //------------------------------------------------------------------------------
 // local vars
 //------------------------------------------------------------------------------
+#if DVS_TEST_ON == 1
 static void test_run(Device_server *self);
 
 
@@ -53,6 +54,7 @@ osThreadDef (test_run, osPriorityNormal, 1, 0);                   // thread obje
 
 static 	int test_init(Device_server *self);
 static int test_data_down(Device_server *self, int data_src, void *data_buf, int data_len);
+#endif
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
 //============================================================================//
@@ -61,11 +63,12 @@ static int test_data_down(Device_server *self, int data_src, void *data_buf, int
 
 CTOR(Dvs_test)
 SUPER_CTOR(Device_server);
+#if DVS_TEST_ON == 1
 FUNCTION_SETTING(Device_server.init, test_init);
 FUNCTION_SETTING( Device_server.run, test_run);
 
 FUNCTION_SETTING( Device_server.data_down, test_data_down);
-
+#endif
 END_CTOR
 
 //=========================================================================//
@@ -75,6 +78,7 @@ END_CTOR
 //=========================================================================//
 /// \name Private Functions
 /// \{
+#if DVS_TEST_ON == 1
 static 	int test_init(Device_server *self)
 {
 	Dvs_test			*cthis = SUB_PTR( self, Device_server, Dvs_test);
@@ -135,4 +139,4 @@ static int test_data_down(Device_server *self, int data_src, void *data_buf, int
 	
 }
 
-
+#endif

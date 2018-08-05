@@ -204,6 +204,7 @@ int main (void) {
 	Dtu_config.work_mode  = MODE_KTZ3;
 	Dtu_config.output_mode = 0;
 	sprintf(Dtu_config.admin_Phone[0],"15858172663");
+	Dtu_config.dvs_slave_id[0] = 1;
 
 	
 	s485_uart_init( &Conf_S485Usart_default, NULL);

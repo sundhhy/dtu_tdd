@@ -54,8 +54,8 @@
 //static const uint8_t ku8MBReadInputRegisters         = 0x04; ///< Modbus function 0x04 Read Input Registers
 //static const uint8_t ku8MBWriteSingleRegister        = 0x06; ///< Modbus function 0x06 Write Single Register
 //static const uint8_t ku8MBWriteMultipleRegisters     = 0x10; ///< Modbus function 0x10 Write Multiple Registers
-static const uint8_t ku8MBMaskWriteRegister          = 0x16; ///< Modbus function 0x16 Mask Write Register
-static const uint8_t ku8MBReadWriteMultipleRegisters = 0x17; ///< Modbus function 0x17 Read Write Multiple Registers
+//static const uint8_t ku8MBMaskWriteRegister          = 0x16; ///< Modbus function 0x16 Mask Write Register
+//static const uint8_t ku8MBReadWriteMultipleRegisters = 0x17; ///< Modbus function 0x17 Read Write Multiple Registers
 
 // Modbus timeout [milliseconds]
 //static const uint16_t ku16MBResponseTimeout          = 2000; ///< Modbus timeout [milliseconds]
@@ -97,21 +97,7 @@ static uint8_t highByte(uint16_t val);
 //============================================================================//
 //            P U B L I C   F U N C T I O N S                                 //
 //============================================================================//
-//void ModbusMaster_begin(void)
-// {
-//  // _u8MBSlave = slave;
-//	 _u8TransmitBufferIndex = 0;
-//   u16TransmitBufferLength = 0;
-//	 //???????
-//	 Modbus_Master_RB_Initialize();
-// }
-// 
-// void ModbusMaster_beginTransmission(uint16_t u16Address)
-//{
-//  _u16WriteAddress = u16Address;
-//  _u8TransmitBufferIndex = 0;
-//  u16TransmitBufferLength = 0;
-//}
+
 
 
 int MDM_register_update(mdm_up_read_ack up_read, mdm_up_write_ack up_write, mdm_up_err up_err)
@@ -120,164 +106,30 @@ int MDM_register_update(mdm_up_read_ack up_read, mdm_up_write_ack up_write, mdm_
 	func_up_write = up_write;
 	func_err_update = up_err;
 	
+	return 0;
 }
 
-//// eliminate this function in favor of using existing MB request functions
-//uint8_t ModbusMaster_requestFrom(uint16_t address, uint16_t quantity)
-//{
-//  uint8_t read;
-//  // clamp to buffer length
-//  if (quantity > ku8MaxBufferSize)
-//  {
-//    quantity = ku8MaxBufferSize;
-//  }
-//  // set rx buffer iterator vars
-//  _u8ResponseBufferIndex = 0;
-//  _u8ResponseBufferLength = read;
 
-//  return read;
-//}
-//void  ModbusMaster_sendBit(uint8_t data)
-//{
-//  uint8_t txBitIndex = u16TransmitBufferLength % 16;
-//  if ((u16TransmitBufferLength >> 4) < ku8MaxBufferSize)
-//  {
-//    if (0 == txBitIndex)
-//    {
-//      _u16TransmitBuffer[_u8TransmitBufferIndex] = 0;
-//    }
-//    bitWrite(_u16TransmitBuffer[_u8TransmitBufferIndex], txBitIndex, data);
-//    u16TransmitBufferLength++;
-//    _u8TransmitBufferIndex = u16TransmitBufferLength >> 4;
-//  }
-//}
-
-//void ModbusMaster_send16(uint16_t data)
-//{
-//  if (_u8TransmitBufferIndex < ku8MaxBufferSize)
-//  {
-//    _u16TransmitBuffer[_u8TransmitBufferIndex++] = data;
-//    u16TransmitBufferLength = _u8TransmitBufferIndex << 4;
-//  }
-//}
-
-//void ModbusMaster_send32(uint32_t data)
-//{
-//  ModbusMaster_send16(lowWord(data));
-//  ModbusMaster_send16(highWord(data));
-//}
-
-//void ModbusMaster_send8(uint8_t data)
-//{
-//  ModbusMaster_send16((uint16_t)(data));
-//}
-
-//uint8_t ModbusMaster_available(void)
-//{
-//  return _u8ResponseBufferLength - _u8ResponseBufferIndex;
-//}
-
-
-//uint16_t ModbusMaster_receive(void)
-//{
-//  if (_u8ResponseBufferIndex < _u8ResponseBufferLength)
-//  {
-//    return _u16ResponseBuffer[_u8ResponseBufferIndex++];
-//  }
-//  else
-//  {
-//    return 0xFFFF;
-//  }
-//}
-
-
-///**
-//Retrieve data from response buffer.
-//@see ModbusMaster::clearResponseBuffer()
-//@param u8Index index of response buffer array (0x00..0x3F)
-//@return value in position u8Index of response buffer (0x0000..0xFFFF)
-//@ingroup buffer
-//*/
-//uint16_t ModbusMaster_getResponseBuffer(uint8_t u8Index)
-//{
-//  if (u8Index < ku8MaxBufferSize)
-//  {
-//    return _u16ResponseBuffer[u8Index];
-//  }
-//  else
-//  {
-//    return 0xFFFF;
-//  }
-//}
-
-
-///**
-//Clear Modbus response buffer.
-//@see ModbusMaster::getResponseBuffer(uint8_t u8Index)
-//@ingroup buffer
-//*/
-//void ModbusMaster_clearResponseBuffer()
-//{
-//  uint8_t i;
-//  
-//  for (i = 0; i < ku8MaxBufferSize; i++)
-//  {
-//    _u16ResponseBuffer[i] = 0;
-//  }
-//}
-
-
-///**
-//Place data in transmit buffer.
-//@see ModbusMaster::clearTransmitBuffer()
-//@param u8Index index of transmit buffer array (0x00..0x3F)
-//@param u16Value value to place in position u8Index of transmit buffer (0x0000..0xFFFF)
-//@return 0 on success; exception number on failure
-//@ingroup buffer
-//*/
-//uint8_t ModbusMaster_setTransmitBuffer(uint8_t u8Index, uint16_t u16Value)
-//{
-//  if (u8Index < ku8MaxBufferSize)
-//  {
-//    _u16TransmitBuffer[u8Index] = u16Value;
-//    return ku8MBSuccess;
-//  }
-//  else
-//  {
-//    return ku8MBIllegalDataAddress;
-//  }
-//}
-
-
-///**
-//Clear Modbus transmit buffer.
-//@see ModbusMaster::setTransmitBuffer(uint8_t u8Index, uint16_t u16Value)
-//@ingroup buffer
-//*/
-//void ModbusMaster_clearTransmitBuffer()
-//{
-//  uint8_t i;
-//  
-//  for (i = 0; i < ku8MaxBufferSize; i++)
-//  {
-//    _u16TransmitBuffer[i] = 0;
-//  }
-//}
 //成功返回0
-//crc错误返回-1
+//crc错误返灰modubus 协议的错误码
+
 int ModbusMaster_decode_pkt(uint8_t *adu, int adu_len)
 {
 	uint8_t  	slave_addr;
 	uint8_t		func_code;
 	uint16_t	tmp_u16;
+	uint16_t	reg_addr;
 	uint16_t	calc_crc;
-	
+	int 		err_ret;
 	
 	//校验crc
 	tmp_u16 = adu[adu_len - 1] + (adu[adu_len - 2] << 8);	  //read crc
 	calc_crc = CRC16(adu, (adu_len - 2));
 	if(tmp_u16 != calc_crc)
+	{
+		err_ret = -1;
 		goto err;
+	}
 	
 	slave_addr = adu[0];
 	func_code = adu[1];
@@ -286,7 +138,7 @@ int ModbusMaster_decode_pkt(uint8_t *adu, int adu_len)
 	{
 //		if(func_err_update)
 			func_err_update(slave_addr, func_code &0x70, adu[2]);
-		
+		err_ret = adu[2];
 		goto exit;
 		
 	}
@@ -307,7 +159,9 @@ int ModbusMaster_decode_pkt(uint8_t *adu, int adu_len)
 	{
 		//写命令的返回
 //		if(func_up_write)
-		func_up_write(slave_addr, func_code, *(uint16_t *)(adu+2), *(uint16_t *)(adu+4));
+		reg_addr = adu[3] | (adu[2] << 8);
+		tmp_u16 = adu[5] | (adu[4] << 8);
+		func_up_write(slave_addr, func_code, reg_addr, tmp_u16);
 		
 	}
 
@@ -316,7 +170,7 @@ exit:
 	
 err:
 	
-	return -1;
+	return err_ret;
 }
 
 
@@ -482,14 +336,14 @@ corresponding output to be ON. A logical '0' requests it to be OFF.
 @return 0 on success; exception number on failure
 @ingroup discrete
 */
-uint8_t ModbusMaster_writeMultipleCoils(uint8_t SlaveID,uint16_t u16WriteAddress,
-  uint16_t u16BitQty, uint8_t *buf, int buf_size)
-{
-	_u8MBSlave = SlaveID;
-  _u16WriteAddress = u16WriteAddress;
-  _u16WriteQty = u16BitQty;
-  return ModbusMaster_ModbusMasterTransaction(MDM_WRITE_MULT_COILS, buf, buf_size);
-}
+//uint8_t ModbusMaster_writeMultipleCoils(uint8_t SlaveID,uint16_t u16WriteAddress,
+//  uint16_t u16BitQty, uint8_t *buf, int buf_size)
+//{
+//	_u8MBSlave = SlaveID;
+//  _u16WriteAddress = u16WriteAddress;
+//  _u16WriteQty = u16BitQty;
+//  return ModbusMaster_ModbusMasterTransaction(MDM_WRITE_MULT_COILS, buf, buf_size);
+//}
 /*
 uint8_t ModbusMaster_writeMultipleCoils()
 {
@@ -510,14 +364,14 @@ is packed as one word per register.
 @return 0 on success; exception number on failure
 @ingroup register
 */
-uint8_t ModbusMaster_writeMultipleRegisters(uint8_t SlaveID,uint16_t u16WriteAddress,
-  uint16_t u16WriteQty, uint8_t *buf, int buf_size)
-{
-	_u8MBSlave = SlaveID;
-  _u16WriteAddress = u16WriteAddress;
-  _u16WriteQty = u16WriteQty;
-  return ModbusMaster_ModbusMasterTransaction(MDM_WRITE_MULT_REGS, buf, buf_size);
-}
+//uint8_t ModbusMaster_writeMultipleRegisters(uint8_t SlaveID,uint16_t u16WriteAddress,
+//  uint16_t u16WriteQty, uint8_t *buf, int buf_size)
+//{
+//	_u8MBSlave = SlaveID;
+//  _u16WriteAddress = u16WriteAddress;
+//  _u16WriteQty = u16WriteQty;
+//  return ModbusMaster_ModbusMasterTransaction(MDM_WRITE_MULT_REGS, buf, buf_size);
+//}
 
 // new version based on Wire.h
 
@@ -545,16 +399,15 @@ Result = (Current Contents && And_Mask) || (Or_Mask && (~And_Mask))
 @return 0 on success; exception number on failure
 @ingroup register
 */
-uint8_t ModbusMaster_maskWriteRegister(uint8_t SlaveID,uint16_t u16WriteAddress,
-  uint16_t u16AndMask, uint16_t u16OrMask, uint8_t *buf, int buf_size)
-{
-	uint16_t *p_u16 = (uint16_t *)buf;
-	_u8MBSlave = SlaveID;
-  _u16WriteAddress = u16WriteAddress;
-  p_u16[0] = u16AndMask;
-  p_u16[1] = u16OrMask;
-  return ModbusMaster_ModbusMasterTransaction(ku8MBMaskWriteRegister, buf, buf_size);
-}
+//uint8_t ModbusMaster_write_input_reg(uint8_t SlaveID,uint16_t u16WriteAddress,
+//  uint16_t u16_val, uint8_t *buf, int buf_size)
+//{
+//	uint16_t *p_u16 = (uint16_t *)buf;
+//	_u8MBSlave = SlaveID;
+//  _u16WriteAddress = u16WriteAddress;
+//  p_u16[0] = u16_val;
+//  return ModbusMaster_ModbusMasterTransaction(MDM_WRITE_SINGLE_REG, buf, buf_size);
+//}
 
 
 /**
@@ -574,16 +427,16 @@ buffer.
 @return 0 on success; exception number on failure
 @ingroup register
 */
-uint8_t ModbusMaster_readWriteMultipleRegisters(uint8_t SlaveID,uint16_t u16ReadAddress,
-  uint16_t u16ReadQty, uint16_t u16WriteAddress, uint16_t u16WriteQty, uint8_t *buf, int buf_size)
-{
-	_u8MBSlave = SlaveID;
-  _u16ReadAddress = u16ReadAddress;
-  _u16ReadQty = u16ReadQty;
-  _u16WriteAddress = u16WriteAddress;
-  _u16WriteQty = u16WriteQty;
-  return ModbusMaster_ModbusMasterTransaction(ku8MBReadWriteMultipleRegisters, buf, buf_size);
-}
+//uint8_t ModbusMaster_readWriteMultipleRegisters(uint8_t SlaveID,uint16_t u16ReadAddress,
+//  uint16_t u16ReadQty, uint16_t u16WriteAddress, uint16_t u16WriteQty, uint8_t *buf, int buf_size)
+//{
+//	_u8MBSlave = SlaveID;
+//  _u16ReadAddress = u16ReadAddress;
+//  _u16ReadQty = u16ReadQty;
+//  _u16WriteAddress = u16WriteAddress;
+//  _u16WriteQty = u16WriteQty;
+//  return ModbusMaster_ModbusMasterTransaction(ku8MBReadWriteMultipleRegisters, buf, buf_size);
+//}
 
 
 
@@ -616,7 +469,7 @@ static int ModbusMaster_ModbusMasterTransaction(uint8_t u8MBFunction, uint8_t *b
   uint8_t u8ModbusADUSize = 0;
   uint8_t i, u8Qty;
   uint16_t u16CRC;
-	uint16_t *p_u16 = (uint16_t *)buf;
+	uint16_t write_val = *(uint16_t *)buf;
 //  uint32_t u32StartTime;
 //  uint8_t u8BytesLeft = 8;
 //  uint8_t u8MBStatus = ku8MBSuccess;
@@ -631,7 +484,7 @@ static int ModbusMaster_ModbusMasterTransaction(uint8_t u8MBFunction, uint8_t *b
     case MDM_U8_READ_DISCRETEINPUTS:
     case MDM_U16_READ_INPUT_REG:
     case MDM_U16_READ_HOLD_REG:
-    case ku8MBReadWriteMultipleRegisters:
+//    case ku8MBReadWriteMultipleRegisters:
       u8ModbusADU[u8ModbusADUSize++] = highByte(_u16ReadAddress);
       u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16ReadAddress);
       u8ModbusADU[u8ModbusADUSize++] = highByte(_u16ReadQty);
@@ -642,11 +495,10 @@ static int ModbusMaster_ModbusMasterTransaction(uint8_t u8MBFunction, uint8_t *b
   switch(u8MBFunction)
   {
     case MDM_WRITE_SINGLE_COIL:
-    case ku8MBMaskWriteRegister:
-    case MDM_WRITE_MULT_COILS:
     case MDM_WRITE_SINGLE_REG:
-    case MDM_WRITE_MULT_REGS:
-    case ku8MBReadWriteMultipleRegisters:
+//    case MDM_WRITE_MULT_COILS:
+//    case MDM_WRITE_MULT_REGS:
+//    case ku8MBReadWriteMultipleRegisters:
       u8ModbusADU[u8ModbusADUSize++] = highByte(_u16WriteAddress);
       u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteAddress);
       break;
@@ -660,49 +512,44 @@ static int ModbusMaster_ModbusMasterTransaction(uint8_t u8MBFunction, uint8_t *b
       break;
       
     case MDM_WRITE_SINGLE_REG:
-      u8ModbusADU[u8ModbusADUSize++] = highByte(p_u16[0]);
-      u8ModbusADU[u8ModbusADUSize++] = lowByte(p_u16[0]);
+      u8ModbusADU[u8ModbusADUSize++] = highByte(write_val);
+      u8ModbusADU[u8ModbusADUSize++] = lowByte(write_val);
       break;
       
-    case MDM_WRITE_MULT_COILS:
-      u8ModbusADU[u8ModbusADUSize++] = highByte(_u16WriteQty);
-      u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteQty);
-      u8Qty = (_u16WriteQty % 8) ? ((_u16WriteQty >> 3) + 1) : (_u16WriteQty >> 3);
-      u8ModbusADU[u8ModbusADUSize++] = u8Qty;
-      for (i = 0; i < u8Qty; i++)
-      {
-        switch(i % 2)
-        {
-          case 0: // i is even
-            u8ModbusADU[u8ModbusADUSize++] = lowByte(p_u16[i >> 1]);
-            break;
-            
-          case 1: // i is odd
-            u8ModbusADU[u8ModbusADUSize++] = highByte(p_u16[i >> 1]);
-            break;
-        }
-      }
-      break;
+//    case MDM_WRITE_MULT_COILS:
+//      u8ModbusADU[u8ModbusADUSize++] = highByte(_u16WriteQty);
+//      u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteQty);
+//      u8Qty = (_u16WriteQty % 8) ? ((_u16WriteQty >> 3) + 1) : (_u16WriteQty >> 3);
+//      u8ModbusADU[u8ModbusADUSize++] = u8Qty;
+//      for (i = 0; i < u8Qty; i++)
+//      {
+//        switch(i % 2)
+//        {
+//          case 0: // i is even
+//            u8ModbusADU[u8ModbusADUSize++] = lowByte(write_val);
+//            break;
+//            
+//          case 1: // i is odd
+//            u8ModbusADU[u8ModbusADUSize++] = highByte(write_val);
+//            break;
+//        }
+//      }
+//      break;
       
-    case MDM_WRITE_MULT_REGS:
-    case ku8MBReadWriteMultipleRegisters:
-      u8ModbusADU[u8ModbusADUSize++] = highByte(_u16WriteQty);
-      u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteQty);
-      u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteQty << 1);
+//    case MDM_WRITE_MULT_REGS:
+//    case ku8MBReadWriteMultipleRegisters:
+//      u8ModbusADU[u8ModbusADUSize++] = highByte(_u16WriteQty);
+//      u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteQty);
+//      u8ModbusADU[u8ModbusADUSize++] = lowByte(_u16WriteQty << 1);
+//      
+//      for (i = 0; i < lowByte(_u16WriteQty); i++)
+//      {
+//        u8ModbusADU[u8ModbusADUSize++] = highByte(p_u16[i]);
+//        u8ModbusADU[u8ModbusADUSize++] = lowByte(p_u16[i]);
+//      }
+//      break;
       
-      for (i = 0; i < lowByte(_u16WriteQty); i++)
-      {
-        u8ModbusADU[u8ModbusADUSize++] = highByte(p_u16[i]);
-        u8ModbusADU[u8ModbusADUSize++] = lowByte(p_u16[i]);
-      }
-      break;
-      
-    case ku8MBMaskWriteRegister:
-      u8ModbusADU[u8ModbusADUSize++] = highByte(p_u16[0]);
-      u8ModbusADU[u8ModbusADUSize++] = lowByte(p_u16[0]);
-      u8ModbusADU[u8ModbusADUSize++] = highByte(p_u16[1]);
-      u8ModbusADU[u8ModbusADUSize++] = lowByte(p_u16[1]);
-      break;
+   
   }
 	
 	 // append CRC

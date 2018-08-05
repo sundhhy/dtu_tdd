@@ -49,7 +49,7 @@ CLASS(gprs_t)
 	int	(*read_seq_TextSMS)( gprs_t *self, char *phnNmbr, int seq, char *buf, int *len);
 	int (*delete_sms)( gprs_t *self, int seq);
 	
-	int (*read_smscAddr)(gprs_t *self, char *addr);
+//	int (*read_smscAddr)(gprs_t *self, char *addr);
 	int (*set_smscAddr)(gprs_t *self, char *addr);
 	int (*get_apn)( gprs_t *self, char *buf);
 	int (*set_dns_ip)( gprs_t *self, char *dns_ip);
@@ -57,15 +57,15 @@ CLASS(gprs_t)
 	int ( *tcpClose)( gprs_t *self, int cnntNum); 
 	int (*sendto_tcp)( gprs_t *self, int cnnt_num, char *data, int len);
 	int (*sendto_tcp_buf)( gprs_t *self, char *data, int len);
-	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
+//	int (*recvform_tcp)( gprs_t *self, char *buf, int *lsize);
 	
 
 
-	
+#if TDD_GPRS_SMS == 1	
 	int (*sms_test)( gprs_t *self, char *phnNmbr, char *buf, int bufsize);
 	int (*buf_test)( gprs_t *self, char *buf, int len);
 	int (*tcp_test)( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize);
-	
+#endif
 	int (*report_event)( gprs_t *self, char *buf, int *lsize);
 //	void (*free_event)( gprs_t *self, void *event);
 	int (*deal_tcpclose_event)(gprs_t *self);

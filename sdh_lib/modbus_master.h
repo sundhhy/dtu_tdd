@@ -18,9 +18,9 @@
 #define MDM_U16_READ_INPUT_REG						4
 
 #define MDM_WRITE_SINGLE_COIL			5
-#define MDM_WRITE_MULT_COILS				0xf
+//#define MDM_WRITE_MULT_COILS				0xf
 #define MDM_WRITE_SINGLE_REG				6
-#define MDM_WRITE_MULT_REGS					0x10
+//#define MDM_WRITE_MULT_REGS					0x10
 
 //------------------------------------------------------------------------------
 // typedef
@@ -45,10 +45,10 @@ uint8_t ModbusMaster_readHoldingRegisters(uint8_t SlaveID,uint16_t u16ReadAddres
 uint8_t ModbusMaster_readInputRegisters(uint8_t SlaveID,uint16_t u16ReadAddress,uint8_t u16ReadQty, uint8_t *buf, int buf_size);	
 uint8_t ModbusMaster_writeSingleCoil(uint8_t SlaveID,uint16_t u16WriteAddress, uint8_t u8State, uint8_t *buf, int buf_size);
 uint8_t ModbusMaster_writeSingleRegister(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16WriteValue, uint8_t *buf, int buf_size);
-uint8_t ModbusMaster_writeMultipleCoils(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16BitQty, uint8_t *buf, int buf_size);
-uint8_t ModbusMaster_writeMultipleRegisters(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16WriteQty, uint8_t *buf, int buf_size);
+//uint8_t ModbusMaster_writeMultipleCoils(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16BitQty, uint8_t *buf, int buf_size);
+//uint8_t ModbusMaster_writeMultipleRegisters(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16WriteQty, uint8_t *buf, int buf_size);
 //写值的时候，buf会被内部临时用于参数传递,来节省本模块的资源消耗
-uint8_t ModbusMaster_maskWriteRegister(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16AndMask, uint16_t u16OrMask, uint8_t *buf, int buf_size);
+//uint8_t ModbusMaster_write_input_reg(uint8_t SlaveID,uint16_t u16WriteAddress,uint16_t u16_val, uint8_t *buf, int buf_size);
 //写值的时候，buf会被内部临时用于参数传递,来节省本模块的资源消耗
 uint8_t ModbusMaster_readWriteMultipleRegisters(uint8_t SlaveID,uint16_t u16ReadAddress,uint16_t u16ReadQty, uint16_t u16WriteAddress, uint16_t u16WriteQty, uint8_t *buf, int buf_size);
 

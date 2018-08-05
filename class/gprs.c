@@ -1547,44 +1547,44 @@ int sendto_tcp( gprs_t *self, int cnnt_num, char *data, int len)
  * @retval	>0 数据的连接号
  * @retval	ERR_FAIL 接收失败	
  */
-int recvform_tcp( gprs_t *self, char *buf, int *lsize)
-{
-	#if 0
-	int ret;
-	char *pp;
-	int recv_seq = -1;
-	int tmp = 0;
-	int buf_size = *lsize ;
-	*lsize = 0;
-	
-	ret = UART_RECV( buf, buf_size);
-	if( ret < 1)
-	 return ERR_FAIL;
+//int recvform_tcp( gprs_t *self, char *buf, int *lsize)
+//{
+//	#if 0
+//	int ret;
+//	char *pp;
+//	int recv_seq = -1;
+//	int tmp = 0;
+//	int buf_size = *lsize ;
+//	*lsize = 0;
+//	
+//	ret = UART_RECV( buf, buf_size);
+//	if( ret < 1)
+//	 return ERR_FAIL;
 
-	pp = strstr((const char*)buf,"CLOSED");
-	if( pp)
-	{
-		tmp = strcspn( buf, "0123456789");	
-		recv_seq = atoi( buf + tmp);
-		Ip_cnnState.cnn_state[ recv_seq] = CNNT_DISCONNECT;
-		return recv_seq;
-	}
-	pp = strstr((const char*)buf,"RECEIVE");	
-	if( pp == NULL)
-		return ERR_FAIL;
-	
-	tmp = strcspn( buf, "0123456789");	
-	recv_seq = atoi( buf + tmp);
-	*lsize = atoi( buf + tmp + 1);
-	
-	while( *pp != '\x00A')
-		pp++;
-	memcpy( buf, pp, *lsize);
+//	pp = strstr((const char*)buf,"CLOSED");
+//	if( pp)
+//	{
+//		tmp = strcspn( buf, "0123456789");	
+//		recv_seq = atoi( buf + tmp);
+//		Ip_cnnState.cnn_state[ recv_seq] = CNNT_DISCONNECT;
+//		return recv_seq;
+//	}
+//	pp = strstr((const char*)buf,"RECEIVE");	
+//	if( pp == NULL)
+//		return ERR_FAIL;
+//	
+//	tmp = strcspn( buf, "0123456789");	
+//	recv_seq = atoi( buf + tmp);
+//	*lsize = atoi( buf + tmp + 1);
+//	
+//	while( *pp != '\x00A')
+//		pp++;
+//	memcpy( buf, pp, *lsize);
 
-	return recv_seq;
-	#endif
-	return 0;
-}
+//	return recv_seq;
+//	#endif
+//	return 0;
+//}
 
 
 
@@ -2091,79 +2091,79 @@ int get_apn( gprs_t *self, char *buf)
 
 
 
-int read_smscAddr(gprs_t *self, char *addr)
-{
-	short step = 0;
-	short	retry = RETRY_TIMES;
-	char *pp = NULL;
-//	int tmp = 0;
-	if( check_phoneNO( addr) == ERR_OK)
-		return ERR_OK;
-	
-	//返回SIM卡的默认短信中心号码
-	while(1)
-	{
-		switch( step)
-		{
-			case 0:
-				strcpy( Gprs_cmd_buf,"AT+CSCA=?\r\n");
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
-				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
-				if( pp)
-				{
-					step ++;
-					retry = RETRY_TIMES;
-					break;
-				}
-				if( retry)
-					retry --;
-				else
-					return ERR_FAIL;
-				break;
-			case 1:
-				sprintf( Gprs_cmd_buf,"AT+CSCA?\r\n");
-				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
-				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
-				if( pp)
-				{
-					//+CSCA: "+8613800571500",145
-//					tmp = strcspn( pp, "0123456789");	
-					
-					pp = strstr((const char*)Gprs_cmd_buf,"+CSCA:");
-					if( pp)
-					{
-						pp += strlen("+CSCA:") + 1;
-						//"+8613800571500",145
-						while( *pp != ',')
-						{
-							
-							*addr = *pp;
-							addr ++;
-							pp ++;
-							
-						}
+//int read_smscAddr(gprs_t *self, char *addr)
+//{
+//	short step = 0;
+//	short	retry = RETRY_TIMES;
+//	char *pp = NULL;
+////	int tmp = 0;
+//	if( check_phoneNO( addr) == ERR_OK)
+//		return ERR_OK;
+//	
+//	//返回SIM卡的默认短信中心号码
+//	while(1)
+//	{
+//		switch( step)
+//		{
+//			case 0:
+//				strcpy( Gprs_cmd_buf,"AT+CSCA=?\r\n");
+//				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+//				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+//				if( pp)
+//				{
+//					step ++;
+//					retry = RETRY_TIMES;
+//					break;
+//				}
+//				if( retry)
+//					retry --;
+//				else
+//					return ERR_FAIL;
+//				break;
+//			case 1:
+//				sprintf( Gprs_cmd_buf,"AT+CSCA?\r\n");
+//				serial_cmmn( Gprs_cmd_buf, CMDBUF_LEN,1000);
+//				pp = strstr((const char*)Gprs_cmd_buf,"OK");	
+//				if( pp)
+//				{
+//					//+CSCA: "+8613800571500",145
+////					tmp = strcspn( pp, "0123456789");	
+//					
+//					pp = strstr((const char*)Gprs_cmd_buf,"+CSCA:");
+//					if( pp)
+//					{
+//						pp += strlen("+CSCA:") + 1;
+//						//"+8613800571500",145
+//						while( *pp != ',')
+//						{
+//							
+//							*addr = *pp;
+//							addr ++;
+//							pp ++;
+//							
+//						}
 
-						return ERR_OK;
-					}
-					return ERR_FAIL;
-				}
-				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
-				if( pp)
-				{
-					return ERR_FAIL;
-				}
-				if(	retry)
-					retry --;
-				else
-					return ERR_FAIL;
-				break;
-			default:
-				return ERR_FAIL;
-		}
-	}
-	
-	
-}
+//						return ERR_OK;
+//					}
+//					return ERR_FAIL;
+//				}
+//				pp = strstr((const char*)Gprs_cmd_buf,"ERROR");	
+//				if( pp)
+//				{
+//					return ERR_FAIL;
+//				}
+//				if(	retry)
+//					retry --;
+//				else
+//					return ERR_FAIL;
+//				break;
+//			default:
+//				return ERR_FAIL;
+//		}
+//	}
+//	
+//	
+//}
 
 
 int set_smscAddr(gprs_t *self, char *addr)
@@ -2354,7 +2354,7 @@ int check_ip(char *ip)
 	return ERR_BAD_PARAMETER;
 	
 }
-
+#if TDD_GPRS_SMS == 1
 int buf_test( gprs_t *self, char *buf, int len)
 {
 	int  i  = 0 ;
@@ -2591,6 +2591,8 @@ int tcp_test( gprs_t *self, char *tets_addr, int portnum, char *buf, int bufsize
 	
 	
 }
+
+#endif
 
 static int SerilTxandRx( char *buf, int bufsize, int count)
 {
@@ -3194,11 +3196,13 @@ FUNCTION_SETTING(read_phnNmbr_TextSMS, read_phnNmbr_TextSMS);
 FUNCTION_SETTING(read_seq_TextSMS, read_seq_TextSMS);
 
 FUNCTION_SETTING(delete_sms, delete_sms);
-
+#if TDD_GPRS_SMS == 1
 FUNCTION_SETTING(buf_test, buf_test);
 FUNCTION_SETTING(sms_test, sms_test);
 FUNCTION_SETTING(sms_test, sms_test);
+FUNCTION_SETTING(tcp_test, tcp_test);
 
+#endif
 FUNCTION_SETTING(get_apn, get_apn);
 
 FUNCTION_SETTING(report_event, report_event);
@@ -3210,7 +3214,7 @@ FUNCTION_SETTING(deal_smsrecv_event, Gprs_Event_smsRecv);
 
 FUNCTION_SETTING(get_firstDiscnt_seq, get_firstDiscnt_seq);
 FUNCTION_SETTING(get_firstCnt_seq, get_firstCnt_seq);
-FUNCTION_SETTING(read_smscAddr, read_smscAddr);
+//FUNCTION_SETTING(read_smscAddr, read_smscAddr);
 FUNCTION_SETTING(set_smscAddr, set_smscAddr);
 FUNCTION_SETTING(set_dns_ip, set_dns_ip);
 FUNCTION_SETTING(tcpClose, tcpClose);
@@ -3218,8 +3222,7 @@ FUNCTION_SETTING(tcpip_cnnt, tcpip_cnnt);
 FUNCTION_SETTING(sendto_tcp, sendto_tcp);
 FUNCTION_SETTING(sendto_tcp_buf, sendto_tcp_buf);
 
-FUNCTION_SETTING(recvform_tcp, recvform_tcp);
-FUNCTION_SETTING(tcp_test, tcp_test);
+//FUNCTION_SETTING(recvform_tcp, recvform_tcp);
 FUNCTION_SETTING(run, GprsRun);
 
 END_CTOR
