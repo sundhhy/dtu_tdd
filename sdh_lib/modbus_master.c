@@ -465,7 +465,7 @@ Sequence:
 */
 static int ModbusMaster_ModbusMasterTransaction(uint8_t u8MBFunction, uint8_t *buf, int buf_size)
 {
-  uint8_t u8ModbusADU[256];
+  uint8_t u8ModbusADU[128];
   uint8_t u8ModbusADUSize = 0;
   uint8_t i, u8Qty;
   uint16_t u16CRC;

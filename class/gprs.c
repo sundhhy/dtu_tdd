@@ -862,41 +862,56 @@ int	read_phnNmbr_TextSMS( gprs_t *self, char *phnNmbr, char *in_buf, char *out_b
 				
 				if( pp)
 				{
+					// 内容从第一个\00A 开始，\r\nOK\r\n 结束
 					number = 0;
-					while( *pp != '\0')
+					pp = strstr(pp, "\r\n");
+					pp += 2;
+					ptarget = strstr(pp, "\r\nOK\r\n");
+					if((pp != NULL) && (ptarget != NULL))
 					{
-						if( *pp == '\x00A')			/// 内容从第一个\00A 开始， 第二个\00A结束
-						{
-							if( text_begin == 0) {
-								text_begin = 1;
-								
-								pp ++;
-								continue;
-							}
-							else {
-								text_end = 1;
-								
-							}
-						}
-						if( text_end || number > ( *len - 1))
-						{
+						number = ptarget - pp;
+						if(number > (*len - 1))
+							number = (*len - 1);
+						memcpy(out_buf, pp, number);
+						out_buf[number] = 0;
+						*len = number;
+					}
+					
+					
+//					while( *pp != '\0')
+//					{
+//						if( *pp == '\x00A')			
+//						{
+//							if( text_begin == 0) {
+//								text_begin = 1;
+//								
+//								pp ++;
+//								continue;
+//							}
+//							else {
+//								text_end = 1;
+//								
+//							}
+//						}
+//						if( text_end || number > ( *len - 1))
+//						{
+//							
+//							*ptarget  = '\0';
+//							*len = number;
+////							dsys.gprs.rx_sms_seq = i + 1;
+//							return i;
+//						}
+//						
+//						
+//						if( text_begin) {
+//							number ++;
+//							*ptarget = *pp;
+//							ptarget ++;
+//						}
+//						
+//						pp ++;
 							
-							*ptarget  = '\0';
-							*len = number;
-//							dsys.gprs.rx_sms_seq = i + 1;
-							return i;
-						}
-						
-						
-						if( text_begin) {
-							number ++;
-							*ptarget = *pp;
-							ptarget ++;
-						}
-						
-						pp ++;
-							
-					}		// while( *pp != '\0')
+//					}		// while( *pp != '\0')
 					
 //todo  如果出现接收到的数据没有结尾怎么办？
 					return i;

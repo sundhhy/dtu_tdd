@@ -308,7 +308,7 @@ static void ktz3_run(Device_server *self)
 	{
 		threadActive();
 	#if TDD_KTZ3 == 1
-		sprintf(test_buf, "KTZ3 ADDR=1\nwrite\n4001=8,4002=9\n0002=1\n");
+		sprintf(test_buf, "KTZ3 ADDR=1\nwrite\n4001=0x18,4002=19\n0002=1\n");
 		self->data_down(self, 0, test_buf, strlen(test_buf));
 	#endif
 		ktz3_poll_modbus_dev(self);
@@ -488,7 +488,7 @@ static int ktz3_deal_write_msg(Device_server *self)
 
 		
 	}
-	for(i = 1; i <= NUM_DVS_SLAVE_DEV; i++)
+	for(i = 0; i <= NUM_DVS_SLAVE_DEV; i++)
 	{
 		for(j = 0; j < ADMIN_PHNOE_NUM; j++)
 			ktz3_wr_cmd_ack(j, Dtu_config.dvs_slave_id[i]);
@@ -585,7 +585,7 @@ static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id)
 
 	modbus_wr_obj_t	*p_obj;
 	uint8_t 	i;
-	uint8_t 	count;
+	uint8_t 	count = 0;
 	uint8_t		has_wr_coil = 0;
 
 	
@@ -617,6 +617,7 @@ static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id)
 				else
 				{
 					has_wr_coil = 1;
+					ktz3_data->arr_wr_msg[i].flag = 0;
 					continue;
 				}
 				break;
@@ -656,7 +657,8 @@ static void ktz3_read_dev(uint8_t mdb_id)
 	uint8_t		mdb_buf[64];
 	int			pdu_len;	
 
-	
+	if(mdb_id < 1)
+		return;
 	
 	//读取0X寄存器
 	pdu_len = ModbusMaster_readCoils(mdb_id, KTZ3_0X_START_REG_ADDR, ktz3_num_regs[0], mdb_buf, sizeof(mdb_buf));
@@ -911,6 +913,11 @@ static int ktz3_msg_deal_wr_cmd(char *msg,  uint8_t msg_src, uint8_t sld)
 	uint8_t n;
 	uint8_t i;
 	//写寄存器=写值 对列从指令的下一行开始
+	p_key = strstr( msg, "Write");
+	if(p_key)
+	{
+		goto move_first_rea_addr;
+	}
 	p_key = strstr( msg, "write");
 	if(p_key)
 	{
@@ -922,6 +929,7 @@ static int ktz3_msg_deal_wr_cmd(char *msg,  uint8_t msg_src, uint8_t sld)
 		goto move_first_rea_addr;
 	}
 move_first_rea_addr:
+	
 	while(*p_key != '\0')
 	{
 		p_key ++;
@@ -941,6 +949,9 @@ move_first_rea_addr:
 		reg_addr[n] = strtoul(p_data, &p_data, 16);
 		
 		//检查地址范围
+		if(reg_addr[n] == 0)
+			break;
+		
 		if(((reg_addr[n] > ktz3_num_regs[0]) && ( reg_addr[n] < 0x4000)) || (reg_addr[n] > (0x4000 + ktz3_num_regs[3])))
 		{
 			err_code = KTZ3_ERR_ADDR_RANGE;
