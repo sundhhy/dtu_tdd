@@ -896,9 +896,56 @@ static void dtu_conf(char *data)
 			
 			goto exit;
 		}
+		else if( strcmp(pcmd ,"KTZ3") == 0)
+		{
+				//ATC+KTZ3=起始位置，地址1，....
+			//i作为参数序号,j作为起始位置
+			if(i == 0)
+			{
+				j =  atoi( parg);
+				if(j >= NUM_DVS_SLAVE_DEV)
+				{
+					strcpy( data, "ERROR");
+					ack_str( data);
+					goto exit;
+					
+				}
+			}
+			else
+			{
+				
+				i_data = atoi( parg);
+				if((i_data == 0) || (i_data > 247))
+				{
+					strcpy( data, "ERROR");
+					ack_str( data);
+					goto exit;
+					
+				}
+				else if((j + i - 1) < NUM_DVS_SLAVE_DEV)
+				{
+					
+					Dtu_config.dvs_slave_id[j + i - 1] = i_data;
+				}
+				else
+				{
+					strcpy( data, "OK");
+					ack_str( data);
+					goto exit;
+					
+				}
+				
+			}
+			i ++;
+		}
+		//参数取完了
 		if( parg == NULL)
 		{
-			strcpy( data, "ERROR");
+			//设置DVS地址的时候，参数到结束就认为完成了
+			if( strcmp(pcmd ,"KTZ3") == 0)
+				strcpy( data, "OK");
+			else
+				strcpy( data, "ERROR");
 			ack_str( data);
 			goto exit;
 		}
