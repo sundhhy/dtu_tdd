@@ -139,7 +139,7 @@ int ModbusMaster_decode_pkt(uint8_t *adu, int adu_len)
 //		if(func_err_update)
 			func_err_update(slave_addr, func_code &0x70, adu[2]);
 		err_ret = adu[2];
-		goto exit;
+		goto err;
 		
 	}
 	//读取命令的返回格式是：功能码，字节数，数据

@@ -115,6 +115,13 @@ gprs_t *GprsGetInstance(void)
 	
 }
 
+int GPRS_is_sms_ready(void)
+{
+	
+	return (dsys.gprs.flag_ready >= 2);
+	
+}
+
 int GPRS_send_sms(int fd, char *data)
 {
 	int ret;
@@ -122,7 +129,7 @@ int GPRS_send_sms(int fd, char *data)
 	gprs_t	*this_gprs = GprsGetInstance();
 	if(fd >= ADMIN_PHNOE_NUM)
 			return -1;
-	
+	this_gprs->lock( this_gprs);
 	while(retry)
 	{
 		
@@ -140,7 +147,7 @@ int GPRS_send_sms(int fd, char *data)
 		
 		
 	}
-	
+	this_gprs->unlock( this_gprs);
 	
 	return ret;
 	

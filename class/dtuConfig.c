@@ -898,6 +898,35 @@ static void dtu_conf(char *data)
 		}
 		else if( strcmp(pcmd ,"KTZ3") == 0)
 		{
+			
+			
+			if( *parg == '?')
+			{
+//				memset( data, 0 ,sizeof( CONFIG_BUF_LEN));
+				sprintf(data, "List KTZ3 addr:\n");
+				for( i = 0; i < NUM_DVS_SLAVE_DEV; i ++)
+				{
+					if(Dtu_config.dvs_slave_id[i] == 0)
+						continue;
+					sprintf(tmpbuf, "[%d]=%d,", i, Dtu_config.dvs_slave_id[i]);
+					strcat( data, tmpbuf);
+					
+					
+				}
+				data[strlen( data) -1] = '\0';		//去除最后一个逗号
+				ack_str( data);
+				goto exit;
+			}
+			
+			if( parg == NULL)
+			{
+				//设置DVS地址的时候，参数到结束就认为完成了
+				strcpy( data, "OK");
+				ack_str( data);
+				goto exit;
+				
+			}
+			
 				//ATC+KTZ3=起始位置，地址1，....
 			//i作为参数序号,j作为起始位置
 			if(i == 0)
@@ -937,15 +966,13 @@ static void dtu_conf(char *data)
 				
 			}
 			i ++;
+			
 		}
 		//参数取完了
 		if( parg == NULL)
 		{
-			//设置DVS地址的时候，参数到结束就认为完成了
-			if( strcmp(pcmd ,"KTZ3") == 0)
-				strcpy( data, "OK");
-			else
-				strcpy( data, "ERROR");
+			
+			strcpy( data, "ERROR");
 			ack_str( data);
 			goto exit;
 		}

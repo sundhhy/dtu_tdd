@@ -352,8 +352,10 @@ void s485_Uart_ioctl(int cmd, ...)
 **
 ** @return
 **/
+#if TDD_485 == 1
 int s485_uart_test(char *buf, int size)
 {
+
 	char *pp = NULL;
     int len;
 	
@@ -373,9 +375,9 @@ int s485_uart_test(char *buf, int size)
 		if( len > 0)
 			s485_Uart_write( buf, len);
 	}
-	
-}
 
+}
+#endif
 /*! gprs uart dma Configuration*/
 void DMA_s485Uart_Init(void)
 {

@@ -137,5 +137,6 @@ void GprsTcpCnnectBeagin();
 void GprsTcpCnnectFinish();
 
 int GPRS_send_sms(int fd, char *data);
+int GPRS_is_sms_ready(void);		//短信是否可发送 1 可发送，0不可发送
 
 #endif

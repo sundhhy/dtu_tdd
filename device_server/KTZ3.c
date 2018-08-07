@@ -141,7 +141,7 @@ static int ktz3_deal_write_msg(Device_server *self);
 static void ktz3_poll_modbus_dev(Device_server *self);
 
 static int ktz3_reg_val_2_string(uint8_t slave_addr, uint16_t addr, char *buf, uint16_t buf_size);
-static void ktz3_read_dev(uint8_t mdb_id);
+static int ktz3_read_dev(uint8_t mdb_id);
 static void ktz3_write_dev(uint8_t mdb_id);
 static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id);		//写对象处理之后，应答给用户
 
@@ -165,39 +165,39 @@ static int ktz3_up_err(uint8_t slave_addr, uint8_t func_code, uint8_t err_code);
 //            P U B L I C   F U N C T I O N S                                 //
 //============================================================================//
 
-uint8_t Check_bit(uint8_t *data, int bit)
-{
-	int i, j ;
-	i = bit/8;
-	j = bit % 8;
-	return ( data[i] & ( 1 << j));
+//uint8_t check_bit(uint8_t *data, int bit)
+//{
+//	int i, j ;
+//	i = bit/8;
+//	j = bit % 8;
+//	return ( data[i] & ( 1 << j));
 
 
-}
+//}
 
-void Clear_bit(uint8_t *data, int bit)
-{
-	int i, j ;
-	i = bit/8;
-	j = bit % 8;
-	data[i] &= ~( 1 << j);
-
-
-
-
-}
-
-void Set_bit(uint8_t *data, int bit)
-{
-	int i, j ;
-	i = bit/8;
-	j = bit % 8;
-	data[i] |=  1 << j;
+//void Clear_bit(uint8_t *data, int bit)
+//{
+//	int i, j ;
+//	i = bit/8;
+//	j = bit % 8;
+//	data[i] &= ~( 1 << j);
 
 
 
 
-}
+//}
+
+//void Set_bit(uint8_t *data, int bit)
+//{
+//	int i, j ;
+//	i = bit/8;
+//	j = bit % 8;
+//	data[i] |=  1 << j;
+
+
+
+
+//}
 
 
 
@@ -302,15 +302,16 @@ static void ktz3_run(Device_server *self)
 {
 #if TDD_KTZ3 == 1
 
-	char  test_buf[64];
+	static char  test_buf[128];
+	
+	sprintf(test_buf, "KTZ3 ADDR=1\nwrite\n4001=1,4002=2,0002=1,4003=1,4004=2,4005=1,4006=2,4007=1,4008=2,\nkkk");
+	self->data_down(self, 0, test_buf, strlen(test_buf));
+	
 #endif
 	while(1)
 	{
 		threadActive();
-	#if TDD_KTZ3 == 1
-		sprintf(test_buf, "KTZ3 ADDR=1\nwrite\n4001=0x18,4002=19\n0002=1\n");
-		self->data_down(self, 0, test_buf, strlen(test_buf));
-	#endif
+
 		ktz3_poll_modbus_dev(self);
 		ktz3_deal_write_msg(self);
 		osDelay(1000);
@@ -328,6 +329,13 @@ static int ktz3_data_down(Device_server *self, int data_src, void *data_buf, int
 	uint8_t 	target_addr = 0;
 	uint8_t		cmd;
 	char		err_str[32];
+	char *p_msg = data_buf;
+	
+	//必须以KTZ3开头
+	
+	if((p_msg[0] != 'K') || (p_msg[1] != 'T') || (p_msg[2] != 'Z') || (p_msg[3] != '3'))
+		return -1;
+	
 	//读取目标设备地址，并验证头部信息是否正确
 	if(ktz3_msg_get_slave_addr(data_buf, &target_addr) < 0)
 	{
@@ -353,7 +361,7 @@ err_exit:
 	switch(err_code)
 	{
 		case KTZ3_ERR_HEAD:
-			sprintf(err_str,"\nERR:msg head err\n");
+			sprintf(err_str,"\nERR:addr err!\n");
 			break;
 		case KTZ3_ERR_CMD:
 			sprintf(err_str,"\nERR:unkonw cmd\n");
@@ -373,9 +381,18 @@ err_exit:
 }
 static int ktz3_salve_id_2_num(uint8_t slave_id)
 {
+	int i;
 #if TDD_KTZ3 == 1
+	
 	return 0;
 #endif
+	for(i = 0; i < NUM_DVS_SLAVE_DEV; i++)
+	{
+		if(slave_id == Dtu_config.dvs_slave_id[i])
+			return i;
+		
+	}
+	return -1;
 }
 
 static int ktz3_up_read_ack(uint8_t slave_addr, uint8_t func_code, uint8_t num_byte, uint8_t *data)
@@ -385,6 +402,8 @@ static int ktz3_up_read_ack(uint8_t slave_addr, uint8_t func_code, uint8_t num_b
 
 	uint16_t tmp_u16;
 	uint8_t i, j;
+	
+	
 	
 	num = ktz3_salve_id_2_num(slave_addr);
 	if(num < 0)
@@ -434,7 +453,7 @@ static int ktz3_up_write_ack(uint8_t slave_addr, uint8_t func_code, uint16_t reg
 	ktz3_reg_t		*p_reg;
 	
 	
-	
+
 	
 	num = ktz3_salve_id_2_num(slave_addr);
 	if(num < 0)
@@ -449,9 +468,9 @@ static int ktz3_up_write_ack(uint8_t slave_addr, uint8_t func_code, uint16_t reg
 			if(reg_addr > ktz3_num_regs[0])
 				break;
 			if(val == 0xff00)
-				Set_bit(&p_reg->reg_0x, reg_addr);
+				set_bit(&p_reg->reg_0x, reg_addr);
 			else if(val == 0x0000)
-				Clear_bit(&p_reg->reg_0x, reg_addr);
+				clear_bit(&p_reg->reg_0x, reg_addr);
 				break;
 		case MDM_WRITE_SINGLE_REG:
 			if(reg_addr > ktz3_num_regs[3])
@@ -510,7 +529,10 @@ static void ktz3_poll_modbus_dev(Device_server *self)
 	//读取设备的寄存器
 	for(i = 0; i < NUM_DVS_SLAVE_DEV; i++)
 	{
-		ktz3_read_dev(Dtu_config.dvs_slave_id[i]);
+		if(ktz3_read_dev(Dtu_config.dvs_slave_id[i]) == 0)
+			ktz3_data->arr_dev_flag[i] = 1;
+		else
+			ktz3_data->arr_dev_flag[i] = 0;
 	}
 #endif
 	
@@ -528,7 +550,7 @@ static void ktz3_write_dev(uint8_t mdb_id)
 	for(i = 0; i < KTZ3_NUM_WR_OBJ; i ++)
 	{
 		
-		if((ktz3_data->arr_wr_msg[i].flag == 0) || (ktz3_data->arr_wr_msg[i].slave_id != mdb_id))
+		if((ktz3_data->arr_wr_msg[i].flag != 1) || (ktz3_data->arr_wr_msg[i].slave_id != mdb_id))
 			continue;
 		if(ktz3_data->arr_wr_msg[i].reg_addr < 0x1000)
 		{
@@ -578,7 +600,7 @@ static void ktz3_write_dev(uint8_t mdb_id)
 //根据modbus_wr_obj_t的flag来返回给用户
 static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id)
 {
-	char		sms_buf[256];
+	char		sms_buf[160];		//实测同时写8个X寄存器和0X寄存器，返回的长度只需要130个字节
 	char		tmp_buf[32];
 	int 		num;
 	ktz3_reg_t		*p_reg;
@@ -588,13 +610,15 @@ static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id)
 	uint8_t 	count = 0;
 	uint8_t		has_wr_coil = 0;
 
+	if(!GPRS_is_sms_ready())
+		return;
 	
 	num = ktz3_salve_id_2_num(mdb_id);
 	if(num < 0)
 		return;
 	p_reg = &ktz3_data->arr_dev_reg[num];
 	
-	sprintf(sms_buf,"KTZ3 ADDR=%d\nwrite\n", mdb_id);
+	sprintf(sms_buf,"KTZ3 addr=%d\nwrite\n", mdb_id);
 	
 	//对线圈的写入应答放在最后应答
 	for(i = 0, count = 0; i < KTZ3_NUM_WR_OBJ; i ++)
@@ -604,22 +628,27 @@ static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id)
 			(ktz3_data->arr_wr_msg[i].msg_src != msg_src))
 			continue;
 		p_obj = &ktz3_data->arr_wr_msg[i];
-		count ++;
 		
-		sprintf(tmp_buf,"%x", ktz3_data->arr_wr_msg[i].reg_addr);
+		if(p_obj->reg_addr > 0x1000)
+		{
+			sprintf(tmp_buf,"%x", ktz3_data->arr_wr_msg[i].reg_addr);
+			count ++;
+
+		}
+		else
+		{
+			has_wr_coil = 1;
+			ktz3_data->arr_wr_msg[i].flag = 0;
+			continue;
+
+		}
 		strcat(sms_buf, tmp_buf);
 		switch(ktz3_data->arr_wr_msg[i].flag)
 		{
 				
 			case KTZ3_OBJ_SUCCEED:
-				if(p_obj->reg_addr > 0x1000)
-					sprintf(tmp_buf,"=0x%04X", p_reg->reg_4x[p_obj->reg_addr & 0xfff]);
-				else
-				{
-					has_wr_coil = 1;
-					ktz3_data->arr_wr_msg[i].flag = 0;
-					continue;
-				}
+				sprintf(tmp_buf,"=0x%04X", p_reg->reg_4x[(p_obj->reg_addr & 0xfff) - 1]);
+				
 				break;
 			case KTZ3_OBJ_TX_ERR:
 				sprintf(tmp_buf,":485 tx err");
@@ -643,27 +672,32 @@ static void ktz3_wr_cmd_ack(uint8_t msg_src, uint8_t mdb_id)
 		ktz3_data->arr_wr_msg[i].slave_id = 0;
 		ktz3_data->arr_wr_msg[i].flag = 0;
 	}
+	if(count & 1)
+	{
+		sms_buf[strlen(sms_buf) - 1] = '\n';
+		
+	}
 	if(has_wr_coil)
-		sprintf(tmp_buf,"=0x%X\n", p_reg->reg_0x);
+		sprintf(tmp_buf,"0X=0x%X\n", p_reg->reg_0x);
 	strcat(sms_buf, tmp_buf);
 	
 	if(count || has_wr_coil)
 		GPRS_send_sms(msg_src, sms_buf);
 }
 
-static void ktz3_read_dev(uint8_t mdb_id)
+static int ktz3_read_dev(uint8_t mdb_id)
 {
 	
 	uint8_t		mdb_buf[64];
 	int			pdu_len;	
 
-	if(mdb_id < 1)
-		return;
+	if((mdb_id < 1) || (mdb_id > 247))
+		return -1;
 	
 	//读取0X寄存器
 	pdu_len = ModbusMaster_readCoils(mdb_id, KTZ3_0X_START_REG_ADDR, ktz3_num_regs[0], mdb_buf, sizeof(mdb_buf));
-	if(pdu_len < 0)
-		return;
+//	if(pdu_len < 0)
+//		return;
 	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
 		goto cmm_err;
 	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
@@ -674,8 +708,8 @@ static void ktz3_read_dev(uint8_t mdb_id)
 	
 	//读取1X寄存器
 	pdu_len = ModbusMaster_readDiscreteInputs(mdb_id, KTZ3_1X_START_REG_ADDR, ktz3_num_regs[1], mdb_buf, sizeof(mdb_buf));
-	if(pdu_len < 0)
-		return;
+//	if(pdu_len < 0)
+//		return;
 	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
 		goto cmm_err;
 	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
@@ -686,8 +720,8 @@ static void ktz3_read_dev(uint8_t mdb_id)
 	
 	//读取3X寄存器
 	pdu_len = ModbusMaster_readHoldingRegisters(mdb_id, 1, ktz3_num_regs[3], mdb_buf, sizeof(mdb_buf));
-	if(pdu_len < 0)
-		return;
+//	if(pdu_len < 0)
+//		return;
 	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
 		goto cmm_err;
 	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
@@ -698,8 +732,8 @@ static void ktz3_read_dev(uint8_t mdb_id)
 	
 	//读取4X寄存器
 	pdu_len = ModbusMaster_readInputRegisters(mdb_id, 1, ktz3_num_regs[2], mdb_buf, sizeof(mdb_buf));
-	if(pdu_len < 0)
-		return;
+//	if(pdu_len < 0)
+//		return;
 	if(s485_Uart_write((char		*)mdb_buf, pdu_len) != ERR_OK)
 		goto cmm_err;
 	pdu_len = s485_Uart_read((char		*)mdb_buf, sizeof(mdb_buf));
@@ -708,9 +742,11 @@ static void ktz3_read_dev(uint8_t mdb_id)
 		ModbusMaster_decode_pkt(mdb_buf, pdu_len);
 	}
 	
+	
+	return 0;
 	cmm_err:
 	
-		return;
+		return -1;
 	
 }
 
@@ -732,25 +768,35 @@ static int ktz3_reg_val_2_string(uint8_t slave_addr, uint16_t addr, char *buf, u
 	
 	num = ktz3_salve_id_2_num(slave_addr);
 	if(num < 0)
+	{
+		sprintf(buf, "KTZ3 addr:%d\nREAD\nUnknown addr\n",slave_addr);
 		return -1;
+	}
+	if(ktz3_data->arr_dev_flag[num] == 0)
+	{
+		sprintf(buf, "KTZ3 addr:%d\nREAD\ndevice not connected\n",slave_addr);
+		return -1;
+		
+	}
 	
 	p_reg = &ktz3_data->arr_dev_reg[num];
 //字符串分行写，下一行不能有空格,否则会把空格也算入内
-	sprintf(buf, "KTZ3 Addr:%d\r\n\
-0X=0x%X,1X=0x%X\r\n\
-3001=0x%04X,3002=0x%04X\r\n\
-3003=0x%04X,3004=0x%04X\r\n\
-3005=0x%04X\r\n\
-4001=0x%04X,4002=0x%04X\r\n\
-4003=0x%04X,4004=0x%04X\r\n\
-4005=0x%04X,4006=0x%04X\r\n\
-4007=0x%04X,4008=0x%04X\r\n", \
+	sprintf(buf, "KTZ3 addr:%d\nREAD\n\
+0X=0x%X,1X=0x%X\n\
+3001=0x%04X,3002=0x%04X\n\
+3003=0x%04X,3004=0x%04X\n\
+3005=0x%04X\n\
+4001=0x%04X,4002=0x%04X\n\
+4003=0x%04X,4004=0x%04X\n\
+4005=0x%04X,4006=0x%04X\n\
+4007=0x%04X,4008=0x%04X\n", \
 	slave_addr,
 	p_reg->reg_0x, p_reg->reg_1x, \
 	p_reg->reg_3x[0], p_reg->reg_3x[1], p_reg->reg_3x[2], p_reg->reg_3x[3], p_reg->reg_3x[4], \
 	p_reg->reg_4x[0], p_reg->reg_4x[1], p_reg->reg_4x[2], p_reg->reg_4x[3],\
 	p_reg->reg_4x[4], p_reg->reg_4x[5], p_reg->reg_4x[6], p_reg->reg_4x[7]);
 	
+	return 0;
 }
 
 
@@ -803,9 +849,7 @@ static int ktz3_msg_get_slave_addr(char *msg, uint8_t *p_sld)
 	uint8_t	i;
 	
 	
-	p_key = strstr( msg, "KTZ3");
-	if(p_key == NULL)
-		return -1;
+	
 	
 	if(Get_key_val(msg,"addr", s_sld, 4) < 0)
 	{
@@ -951,9 +995,13 @@ move_first_rea_addr:
 		//检查地址范围
 		if(reg_addr[n] == 0)
 			break;
-		
+#if TDD_KTZ3 == 0		
 		if(((reg_addr[n] > ktz3_num_regs[0]) && ( reg_addr[n] < 0x4000)) || (reg_addr[n] > (0x4000 + ktz3_num_regs[3])))
+#else
+		if(((reg_addr[n] > ktz3_num_regs[0]) && ( reg_addr[n] < 0x4000)))		//故意不对地址上限进行判断
+#endif
 		{
+			//
 			err_code = KTZ3_ERR_ADDR_RANGE;
 			goto err;
 		}

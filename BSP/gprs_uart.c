@@ -284,8 +284,10 @@ void gprs_Uart_ioctl(int cmd, ...)
 **
 ** @return
 **/
+#if TDD_UART == 1
 int gprs_uart_test(char *buf, int size)
 {
+
 	char *pp = NULL;
     
 	
@@ -300,9 +302,9 @@ int gprs_uart_test(char *buf, int size)
 		return ERR_OK;
 	
 	return ERR_UNKOWN;
-	
-}
 
+}
+#endif	
 
 
 
