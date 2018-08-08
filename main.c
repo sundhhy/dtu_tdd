@@ -113,7 +113,7 @@ int main (void) {
 	 
   // initialize peripherals here
 	RCC_Configuration();
-//	IWDG_Configuration();
+	IWDG_Configuration();
 
 	NVIC_Configuration();
 	
@@ -201,10 +201,12 @@ int main (void) {
 	Init_system_config();
 	
 	//dvs test
-	Dtu_config.work_mode  = MODE_KTZ3;
-	Dtu_config.output_mode = 0;
-	sprintf(Dtu_config.admin_Phone[0],"15858172663");
-	Dtu_config.dvs_slave_id[0] = 1;
+//	Dtu_config.work_mode  = MODE_KTZ3;
+//	Dtu_config.output_mode = 0;
+//	sprintf(Dtu_config.admin_Phone[0],"15858172663");
+//	sprintf(Dtu_config.admin_Phone[0],"17788587219");
+//	for(u32_val = 0; u32_val < 32; u32_val++)
+//		Dtu_config.dvs_slave_id[u32_val] = u32_val;
 
 	
 	s485_uart_init( &Conf_S485Usart_default, NULL);
@@ -218,7 +220,7 @@ int main (void) {
 	{
 		
 		
-		if( NEED_ADC( Dtu_config.work_mode)) 
+		if( NEED_ADC(Dtu_config.work_mode)) 
 		{
 			create_adc();
 			regist_timejob( 50, ADC_50ms);

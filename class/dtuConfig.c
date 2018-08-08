@@ -906,12 +906,10 @@ static void dtu_conf(char *data)
 				sprintf(data, "List KTZ3 addr:\n");
 				for( i = 0; i < NUM_DVS_SLAVE_DEV; i ++)
 				{
-					if(Dtu_config.dvs_slave_id[i] == 0)
+					if((Dtu_config.dvs_slave_id[i] < 1) || (Dtu_config.dvs_slave_id[i] > 247))
 						continue;
 					sprintf(tmpbuf, "[%d]=%d,", i, Dtu_config.dvs_slave_id[i]);
 					strcat( data, tmpbuf);
-					
-					
 				}
 				data[strlen( data) -1] = '\0';		//去除最后一个逗号
 				ack_str( data);

@@ -717,6 +717,11 @@ static int ktz3_read_dev(uint8_t mdb_id)
 	{
 		ModbusMaster_decode_pkt(mdb_buf, pdu_len);
 	}
+	else
+	{
+		
+		goto cmm_err;
+	}
 	
 	//¶ÁÈ¡3X¼Ä´æÆ÷
 	pdu_len = ModbusMaster_readHoldingRegisters(mdb_id, 1, ktz3_num_regs[3], mdb_buf, sizeof(mdb_buf));
@@ -767,11 +772,11 @@ static int ktz3_reg_val_2_string(uint8_t slave_addr, uint16_t addr, char *buf, u
 	ktz3_reg_t		*p_reg;
 	
 	num = ktz3_salve_id_2_num(slave_addr);
-	if(num < 0)
-	{
-		sprintf(buf, "KTZ3 addr:%d\nREAD\nUnknown addr\n",slave_addr);
-		return -1;
-	}
+//	if(num < 0)
+//	{
+//		sprintf(buf, "KTZ3 addr:%d\nREAD\nUnknown addr\n",slave_addr);
+//		return -1;
+//	}
 	if(ktz3_data->arr_dev_flag[num] == 0)
 	{
 		sprintf(buf, "KTZ3 addr:%d\nREAD\ndevice not connected\n",slave_addr);

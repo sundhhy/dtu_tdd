@@ -116,7 +116,7 @@ int W25Q_write_flash(uint32_t addr, uint8_t *buf, uint32_t bytes)
 	while(bytes)
 	{
 		
-		ret = w25q_wr_page(buf, pg, bytes);
+		ret = w25q_wr_page(buf + wr_bytes, pg, bytes);
 		if( ret < 0)
 			break;
 		
@@ -140,7 +140,7 @@ int W25Q_read_flash(uint32_t addr, uint8_t *buf, uint32_t bytes)
 	while(bytes)
 	{
 		
-		ret = w25q_rd_page(buf, pg, bytes);
+		ret = w25q_rd_page(buf + rd_bytes, pg, bytes);
 		if( ret < 0)
 			break;
 		

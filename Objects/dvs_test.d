@@ -1,6 +1,6 @@
 .\objects\dvs_test.o: device_server\dvs_test.c
 .\objects\dvs_test.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
-.\objects\dvs_test.o: D:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\RTOS\RTX\INC\cmsis_os.h
+.\objects\dvs_test.o: d:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.0\CMSIS\RTOS\RTX\INC\cmsis_os.h
 .\objects\dvs_test.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\dvs_test.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\dvs_test.o: ..\dtu_tdd\osObjects.h

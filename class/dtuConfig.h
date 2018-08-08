@@ -13,8 +13,9 @@
 #define MODE_SMS									1			//
 #define MODE_REMOTERTU						2
 #define MODE_LOCALRTU							3
-#define MODE_DVS_TEST							4			//设备KTZ3的服务模式
-#define MODE_KTZ3									5			//设备KTZ3的服务模式
+#define MODE_KTZ3									4			//设备KTZ3的服务模式
+#define MODE_DVS_TEST							5			//设备KTZ3的服务模式
+
 #define MODE_BEGIN								0
 #define MODE_END									6
 #define NEED_ADC( mode)				((mode > MODE_SMS) && (mode < MODE_DVS_TEST))
